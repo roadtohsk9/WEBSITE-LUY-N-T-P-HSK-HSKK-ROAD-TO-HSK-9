@@ -26,6 +26,24 @@ Backend kiểm tra chữ ký HMAC, thời gian webhook, loại giao dịch tiề
 
 Có thể dùng `SEPAY_API_KEY` thay cho HMAC trong cấu hình đặc biệt, nhưng HMAC được khuyến nghị. Không khai báo đồng thời hai biến nếu bạn chưa chủ động chọn phương thức xác thực.
 
+
+## 2A. Thanh toán PRO từ trang mua PRO cũ (`payment.html`)
+
+Các nút mua PRO ở `practice.html` và `courses.html` dùng luồng đơn PRO riêng. Bản cập nhật này tạo mã chuyển khoản riêng cho từng đơn theo dạng `RT9P` + 10 chữ số; QR trả về có sẵn số tiền gói PRO và đúng mã chuyển khoản. Khi SePay xác nhận giao dịch hợp lệ, backend đối soát `pro_orders`, ghi nhận mã giao dịch duy nhất và tự kích hoạt quyền PRO cho tài khoản khớp email.
+
+Để SePay nhận diện mã nếu bạn bật bộ lọc “Chỉ gửi khi có mã thanh toán”, vào **Cấu hình Công ty → Cấu hình chung → Cấu trúc mã thanh toán**, thêm mẫu:
+
+- Tiền tố: `RT9P`
+- Hậu tố tối thiểu: `10`
+- Hậu tố tối đa: `10`
+- Loại ký tự: **Số nguyên**
+
+Nếu webhook đang bật bộ lọc “Chỉ gửi khi có mã thanh toán”, phải lưu cấu trúc trên trước khi thử giao dịch. Nếu không bật bộ lọc này, SePay vẫn cần gửi nội dung chuyển khoản nguyên bản để server tìm mã `RT9P...`.
+
+Email ở trang mua PRO phải thuộc một tài khoản ROAD TO HSK 9 đã đăng ký. PRO được cấp cho tài khoản gắn với email đó; việc nhập một email chưa có tài khoản sẽ bị từ chối để tránh nhận tiền nhưng không có tài khoản để mở quyền.
+
+**Lưu ý về ngân hàng:** nếu nhận tiền vào tài khoản KienLongBank trong ảnh SePay, mã BIN VietQR là `970452` (có thể dùng mã ngắn `KLB` nếu hệ thống VietQR đang dùng mã ngắn). Số tài khoản phải là số tài khoản nhận tiền mà webhook đang theo dõi; không tự thay bằng số tài khoản ảo (VA) trừ khi webhook cũng được cấu hình nhận đúng VA đó.
+
 ## 3. Đối soát trong Admin
 
 Admin → **Sản phẩm & Tài liệu** có danh sách đơn hàng, mã đơn, mã chuyển khoản, học viên, sản phẩm, tiền hàng, VAT, tổng tiền và trạng thái. Nút **Đối soát** chỉ dùng khi Admin đã kiểm tra khoản tiền thực tế vào tài khoản. Khi xác nhận, quyền PRO/tài liệu được mở ngay. Không dùng nút này chỉ dựa trên ảnh chụp do người mua gửi.

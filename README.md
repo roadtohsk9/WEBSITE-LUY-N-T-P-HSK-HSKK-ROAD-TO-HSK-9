@@ -26,3 +26,8 @@ Nền tảng luyện thi HSK 3–6 với kho đề Reading/Listening và bộ qu
 - Front-end mới đọc các đề đã publish qua `/api/practice` và mở bài qua `/hsk-exam.html?id=...`.
 - Cấu trúc `content` của câu hỏi tùy thuộc định dạng mà Admin builder lưu. Trang thi hỗ trợ các cấu trúc câu hỏi phổ biến gồm `questions`, `items`, `parts`, `sections`, `groups`, `passages`, các trường `question/prompt/questionText`, và `options/choices`. Nên kiểm tra một đề thực tế sau khi nhập để xác nhận hiển thị đúng.
 - Đã loại bỏ chức năng và cấu hình đăng nhập Google. Hệ thống tiếp tục sử dụng luồng tài khoản học viên được Admin cấp.
+
+
+## HSKK / HSK 3.0 Speaking
+
+See `HSKK_MODULE_SETUP_VI.md` for admin publishing, microphone recording, Gemini configuration, and test steps. Candidate entry: `/hskk.html`; Admin tab: `HSKK 2.0 / 3.0`.

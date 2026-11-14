@@ -7,6 +7,7 @@ const AdmZip = require('adm-zip');
 const { URL } = require('url');
 const { Pool } = require('pg');
 const { gradeWriting, gradeSpeaking, isProWriting, isProSpeaking, DEEPSEEK_MODEL } = require('./ai-grading');
+const { gradeHskkWithGemini, GEMINI_MODEL, isGeminiConfigured } = require('./hskk-gemini');
 
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT || 3000);
@@ -29,7 +30,7 @@ if (!fs.existsSync(DB_FILE)) fs.writeFileSync(DB_FILE, '[]', 'utf8');
 
 function readLegacyDB(){ try { return JSON.parse(fs.readFileSync(DB_FILE,'utf8')); } catch { return []; } }
 function json(res,status,payload){ const body=JSON.stringify(payload); res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type, Authorization'}); res.end(body); }
-function body(req){ return new Promise((resolve,reject)=>{let s=''; req.on('data',c=>{s+=c;if(s.length>90e6){reject(new Error('Request too large'));req.destroy();}});req.on('end',()=>{try{resolve(s?JSON.parse(s):{})}catch(e){reject(new Error('Invalid JSON request'))}});req.on('error',reject)}); }
+function body(req){ return new Promise((resolve,reject)=>{let s=''; req.on('data',c=>{s+=c;if(s.length>20e6){reject(new Error('Request too large'));req.destroy();}});req.on('end',()=>{try{resolve(s?JSON.parse(s):{})}catch(e){reject(new Error('Invalid JSON request'))}});req.on('error',reject)}); }
 function tokenFrom(req){ return (req.headers.authorization||'').replace(/^Bearer\s+/,'').trim(); }
 function admin(req){ const t=tokenFrom(req); return !!(t && TOKENS.has(t) && TOKENS.get(t)>Date.now()); }
 function candidate(req){ const t=tokenFrom(req); const c=t && CANDIDATE_TOKENS.get(t); if(!c || c.expiresAt<Date.now()) return null; return c.user; }
@@ -200,6 +201,49 @@ async function fulfillStoreOrder(orderId, transaction){
     return {ok:true,activatedPro:proItems.length>0,unlockedDocuments:items.filter(x=>x.product_type==='document').length};
   }catch(err){try{await client.query('ROLLBACK')}catch{};throw err;}finally{client.release();}
 }
+async function fulfillProOrder(orderId, transaction){
+  if(!pool)throw new Error('Database is unavailable');
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const order=(await client.query('SELECT * FROM pro_orders WHERE id=$1 FOR UPDATE',[orderId])).rows[0];
+    if(!order){await client.query('ROLLBACK');return {ok:false,reason:'order_not_found'};}
+    if(order.status==='approved'){
+      await client.query('COMMIT');
+      return {ok:true,alreadyPaid:true,activatedPro:true};
+    }
+    const userId=order.user_id || (await client.query(
+      `SELECT id FROM users WHERE lower(trim(email))=lower(trim($1)) ORDER BY created_at DESC LIMIT 1`,[order.email]
+    )).rows[0]?.id || null;
+    if(!userId){await client.query('ROLLBACK');return {ok:false,reason:'account_not_found'};}
+    const skillAccess=normalizeSkills(Array.isArray(order.skill_access)?order.skill_access:[]);
+    if(!skillAccess.length){await client.query('ROLLBACK');return {ok:false,reason:'invalid_skill_access'};}
+    const txnInsert=await client.query(`INSERT INTO pro_payment_transactions(provider,provider_transaction_id,pro_order_id,amount,raw_payload)
+      VALUES($1,$2,$3,$4,$5::jsonb) ON CONFLICT(provider,provider_transaction_id) DO NOTHING RETURNING id`,[
+      String(transaction.provider||'sepay'),String(transaction.id),order.id,Number(transaction.amount||0),JSON.stringify(transaction.raw||{})
+    ]);
+    if(!txnInsert.rowCount){await client.query('COMMIT');return {ok:true,duplicate:true};}
+    const current=(await client.query('SELECT skill_access,expires_at,status FROM pro_entitlements WHERE user_id=$1 LIMIT 1',[userId])).rows[0];
+    const skillSet=new Set(skillAccess);
+    if(current && current.status==='active' && new Date(current.expires_at)>new Date()){
+      (Array.isArray(current.skill_access)?current.skill_access:[]).forEach(x=>skillSet.add(String(x)));
+    }
+    const mergedSkills=[...skillSet].filter(x=>ALL_SKILLS.includes(x));
+    const days=Math.max(1,Number(order.duration_days||30));
+    if(!mergedSkills.length){await client.query('ROLLBACK');return {ok:false,reason:'invalid_skill_access'};}
+    await client.query(`INSERT INTO pro_entitlements(id,user_id,skills,skill_access,source,status,starts_at,expires_at)
+      VALUES($1,$2,$3,$4::jsonb,'sepay_pro_purchase','active',NOW(),NOW()+make_interval(days=>$5))
+      ON CONFLICT(user_id) DO UPDATE SET skills=EXCLUDED.skills,skill_access=EXCLUDED.skill_access,source='sepay_pro_purchase',status='active',
+      starts_at=CASE WHEN pro_entitlements.expires_at<=NOW() THEN NOW() ELSE pro_entitlements.starts_at END,
+      expires_at=GREATEST(pro_entitlements.expires_at,NOW())+make_interval(days=>$5),updated_at=NOW()`,
+      [crypto.randomUUID(),userId,Math.min(4,mergedSkills.length),JSON.stringify(mergedSkills),days]);
+    await client.query(`UPDATE pro_orders SET user_id=$2,status='approved',provider_transaction_id=$3,updated_at=NOW() WHERE id=$1`,
+      [order.id,userId,String(transaction.id)]);
+    await client.query('COMMIT');
+    return {ok:true,activatedPro:true};
+  }catch(err){try{await client.query('ROLLBACK')}catch{};throw err;}finally{client.release();}
+}
+
 async function seedStoreProducts(){
   if(!pool)return;
   const features=[
@@ -348,6 +392,39 @@ async function initDB(){
     submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
   await dbQuery(`CREATE INDEX IF NOT EXISTS hsk_mock_attempts_exam_idx ON hsk_mock_attempts(mock_exam_id,submitted_at DESC)`);
+  await dbQuery(`CREATE TABLE IF NOT EXISTS hskk_exams (
+    id UUID PRIMARY KEY,
+    version TEXT NOT NULL CHECK(version IN ('2.0','3.0')),
+    level TEXT NOT NULL,
+    level_label TEXT NOT NULL DEFAULT '',
+    test_no INTEGER NOT NULL DEFAULT 1,
+    title TEXT NOT NULL DEFAULT '',
+    description TEXT DEFAULT '',
+    duration_minutes INTEGER NOT NULL DEFAULT 20,
+    prep_minutes INTEGER NOT NULL DEFAULT 0,
+    content JSONB NOT NULL DEFAULT '{"sections":[]}'::jsonb,
+    published BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(version,level,test_no)
+  )`);
+  await dbQuery(`CREATE INDEX IF NOT EXISTS hskk_exams_published_idx ON hskk_exams(published,version,level,updated_at DESC)`);
+  await dbQuery(`CREATE TABLE IF NOT EXISTS hskk_attempts (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    exam_id UUID REFERENCES hskk_exams(id) ON DELETE SET NULL,
+    student_name TEXT NOT NULL DEFAULT '',
+    candidate_code TEXT NOT NULL DEFAULT '',
+    recordings JSONB NOT NULL DEFAULT '[]'::jsonb,
+    total_score NUMERIC,
+    feedback JSONB NOT NULL DEFAULT '{}'::jsonb,
+    status TEXT NOT NULL DEFAULT 'pending',
+    error_message TEXT DEFAULT '',
+    submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`);
+  await dbQuery(`CREATE INDEX IF NOT EXISTS hskk_attempts_user_idx ON hskk_attempts(user_id,submitted_at DESC)`);
+  await dbQuery(`CREATE INDEX IF NOT EXISTS hskk_attempts_exam_idx ON hskk_attempts(exam_id,submitted_at DESC)`);
   await dbQuery(`CREATE TABLE IF NOT EXISTS test_categories (
     id UUID PRIMARY KEY,
     name TEXT NOT NULL,
@@ -528,6 +605,19 @@ async function initDB(){
   await dbQuery(`ALTER TABLE pro_orders ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT ''`);
   await dbQuery(`ALTER TABLE pro_orders ADD COLUMN IF NOT EXISTS duration_days INTEGER DEFAULT 30`);
   await dbQuery(`ALTER TABLE pro_orders ADD COLUMN IF NOT EXISTS skill_access JSONB NOT NULL DEFAULT '[]'::jsonb`);
+  await dbQuery(`ALTER TABLE pro_orders ADD COLUMN IF NOT EXISTS transfer_code TEXT NOT NULL DEFAULT ''`);
+  await dbQuery(`ALTER TABLE pro_orders ADD COLUMN IF NOT EXISTS provider_transaction_id TEXT NOT NULL DEFAULT ''`);
+  await dbQuery(`CREATE UNIQUE INDEX IF NOT EXISTS pro_orders_transfer_code_unique ON pro_orders(transfer_code) WHERE transfer_code<>''`);
+  await dbQuery(`CREATE TABLE IF NOT EXISTS pro_payment_transactions (
+    id BIGSERIAL PRIMARY KEY,
+    provider TEXT NOT NULL,
+    provider_transaction_id TEXT NOT NULL,
+    pro_order_id UUID NOT NULL REFERENCES pro_orders(id) ON DELETE CASCADE,
+    amount INTEGER NOT NULL DEFAULT 0,
+    raw_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(provider,provider_transaction_id)
+  )`);
   await dbQuery(`CREATE INDEX IF NOT EXISTS course_enrollments_created_idx ON course_enrollments(created_at DESC)`);
   await dbQuery(`CREATE INDEX IF NOT EXISTS course_enrollments_course_idx ON course_enrollments(course_id)`);
   await dbQuery(`ALTER TABLE practice_tests ADD COLUMN IF NOT EXISTS source_url TEXT DEFAULT ''`);
@@ -730,21 +820,129 @@ async function api(req,res,url){
     }
     let event; try{event=JSON.parse(raw.toString('utf8'));}catch{return json(res,400,{success:false,message:'Invalid JSON'});}
     const transferType=String(event.transferType||event.transfer_type||'').toLowerCase();
-    const content=String(event.content||event.description||'');
+    const content=String(event.content||event.description||event.code||'');
     const amount=Math.round(Number(event.transferAmount??event.amount??0));
     const txnId=String(event.id??event.referenceCode??'').trim();
     if(transferType!=='in'||!txnId||!content||!Number.isFinite(amount)||amount<=0)return json(res,200,{success:true,ignored:true});
     const settings=(await dbQuery('SELECT account_number FROM payment_settings WHERE id=1 LIMIT 1')).rows[0]||{};
     if(settings.account_number && String(event.accountNumber||'').trim()!==String(settings.account_number).trim())return json(res,200,{success:true,ignored:true,reason:'account_mismatch'});
     const order=(await dbQuery(`SELECT id,total_amount FROM store_orders WHERE status='pending' AND position(upper(transfer_code) in upper($1))>0 LIMIT 1`,[content])).rows[0];
-    if(!order)return json(res,200,{success:true,unmatched:true});
-    if(Number(order.total_amount)!==amount)return json(res,200,{success:true,amountMismatch:true});
-    const fulfilled=await fulfillStoreOrder(order.id,{provider:'sepay',id:txnId,amount,raw:event});
-    return json(res,200,{success:true,...fulfilled});
+    if(order){
+      if(Number(order.total_amount)!==amount)return json(res,200,{success:true,amountMismatch:true});
+      const fulfilled=await fulfillStoreOrder(order.id,{provider:'sepay',id:txnId,amount,raw:event});
+      return json(res,200,{success:true,orderType:'store',...fulfilled});
+    }
+    const proOrder=(await dbQuery(`SELECT id,amount FROM pro_orders WHERE status='pending' AND transfer_code<>'' AND position(upper(transfer_code) in upper($1))>0 LIMIT 1`,[content])).rows[0];
+    if(!proOrder)return json(res,200,{success:true,unmatched:true});
+    if(Number(proOrder.amount)!==amount)return json(res,200,{success:true,amountMismatch:true});
+    const fulfilled=await fulfillProOrder(proOrder.id,{provider:'sepay',id:txnId,amount,raw:event});
+    if(!fulfilled.ok)return json(res,409,{success:false,...fulfilled});
+    return json(res,200,{success:true,orderType:'pro',...fulfilled});
   }
 
   if(url.pathname==='/api/health' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} return json(res,200,{ok:true,service:'HSK Exam API',database:!!pool}); }
   if(url.pathname==='/api/ai/status' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} const keyConfigured=!!String(process.env.DEEPSEEK_API_KEY||'').trim(); return json(res,200,{ok:true,configured:keyConfigured,model:DEEPSEEK_MODEL,serverSideKey:keyConfigured,writesToDatabase:!!pool}); }
+  if(url.pathname==='/api/hskk/ai-status' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} return json(res,200,{ok:true,configured:isGeminiConfigured(),model:GEMINI_MODEL,provider:'Google Gemini'}); }
+
+  if(url.pathname==='/api/hskk/exams' && req.method==='GET'){
+    const version=String(url.searchParams.get('version')||'').trim();
+    const level=String(url.searchParams.get('level')||'').trim();
+    const params=[]; let where='published=TRUE';
+    if(version){params.push(version);where+=` AND version=$${params.length}`;}
+    if(level){params.push(level);where+=` AND level=$${params.length}`;}
+    const rows=(await dbQuery(`SELECT id,version,level,level_label,test_no,title,description,duration_minutes,prep_minutes,updated_at FROM hskk_exams WHERE ${where} ORDER BY version,level,test_no,updated_at DESC`,params)).rows;
+    return json(res,200,{ok:true,exams:rows});
+  }
+  if(url.pathname.match(/^\/api\/hskk\/exams\/[0-9a-f-]+$/i) && req.method==='GET'){
+    const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Vui lòng đăng nhập để mở nội dung đề HSKK.'});
+    const id=url.pathname.split('/').pop();
+    const row=(await dbQuery('SELECT id,version,level,level_label,test_no,title,description,duration_minutes,prep_minutes,content FROM hskk_exams WHERE id=$1 AND published=TRUE LIMIT 1',[id])).rows[0];
+    if(!row)return json(res,404,{ok:false,message:'Không tìm thấy đề HSKK hoặc đề chưa được xuất bản.'});
+    // Only return candidate-facing fields. Never expose model answers, internal notes or reference transcripts.
+    const publicContent={sections:(row.content?.sections||[]).map(sec=>({title:String(sec.title||''),instruction:String(sec.instruction||''),tasks:(sec.tasks||[]).map(t=>({
+      id:String(t.id||''),type:String(t.type||'question'),text:t.showText===false?'':String(t.text||''),showText:t.showText!==false,
+      audioUrl:String(t.audioUrl||''),imageUrl:String(t.imageUrl||''),pinyin:String(t.pinyin||''),
+      prepSeconds:Math.max(0,Number(t.prepSeconds||0)),speakSeconds:Math.max(1,Number(t.speakSeconds||30))
+    }))}))};
+    return json(res,200,{ok:true,exam:{id:row.id,version:row.version,level:row.level,level_label:row.level_label,test_no:row.test_no,title:row.title,description:row.description,duration_minutes:row.duration_minutes,prep_minutes:row.prep_minutes,content:publicContent}});
+  }
+  if(url.pathname==='/api/hskk/submit' && req.method==='POST'){
+    const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'});
+    const b=await body(req); const examId=String(b.examId||'');
+    const exam=(await dbQuery('SELECT * FROM hskk_exams WHERE id=$1 AND published=TRUE LIMIT 1',[examId])).rows[0];
+    if(!exam)return json(res,404,{ok:false,message:'Không tìm thấy đề HSKK đang hoạt động.'});
+    const recordings=Array.isArray(b.recordings)?b.recordings:[];
+    if(!recordings.length)return json(res,400,{ok:false,message:'Bài thi chưa có bản ghi âm.'});
+    const taskMap=new Map((exam.content?.sections||[]).flatMap(sec=>(sec.tasks||[]).map(t=>[String(t.id),{...t,sectionTitle:sec.title||''}])));
+    let bytes=0; const meta=[];
+    for(const r of recordings){
+      const task=taskMap.get(String(r.taskId||'')); if(!task)return json(res,400,{ok:false,message:'Bài ghi âm chứa mã câu hỏi không hợp lệ.'});
+      const audio=String(r.audio||'').replace(/^data:[^,]*;base64,/,'');
+      if(!audio||!/^[A-Za-z0-9+/=]+$/.test(audio))return json(res,400,{ok:false,message:'Có bản ghi âm không hợp lệ.'});
+      bytes+=Math.floor(audio.length*3/4);
+      meta.push({taskId:String(task.id),sectionTitle:taskMap.get(String(task.id)).sectionTitle,taskType:String(task.type||''),question:String(task.text||''),referenceText:String(task.referenceText||''),mime:String(r.mime||'audio/webm'),durationSeconds:Number(r.durationSeconds||0)});
+    }
+    if(bytes>12*1024*1024)return json(res,413,{ok:false,message:'Tổng dung lượng bản ghi vượt 12 MB. Hãy giảm thời lượng hoặc chia bài thi thành các lượt luyện ngắn hơn.'});
+    const submittedIds=new Set(recordings.map(r=>String(r.taskId||'')));
+    if(submittedIds.size!==taskMap.size || [...taskMap.keys()].some(taskId=>!submittedIds.has(taskId)))return json(res,400,{ok:false,message:'Bài nộp chưa có bản ghi của tất cả câu hỏi hoặc có câu bị ghi lặp. Vui lòng thi lại để đảm bảo đủ dữ liệu chấm.'});
+    const id=crypto.randomUUID();
+    await dbQuery(`INSERT INTO hskk_attempts(id,user_id,exam_id,student_name,candidate_code,recordings,status) VALUES($1,$2,$3,$4,$5,$6::jsonb,'pending')`,[id,u.id,examId,u.full_name||'',u.registration_id||u.eit_code||'',JSON.stringify(meta)]);
+    const geminiRecordings=recordings.map(r=>({...r,sectionTitle:taskMap.get(String(r.taskId||''))?.sectionTitle||'',taskType:taskMap.get(String(r.taskId||''))?.type||'',question:taskMap.get(String(r.taskId||''))?.text||'',referenceText:taskMap.get(String(r.taskId||''))?.referenceText||'',prepSeconds:taskMap.get(String(r.taskId||''))?.prepSeconds||0,answerSeconds:taskMap.get(String(r.taskId||''))?.speakSeconds||0}));
+    setImmediate(async()=>{
+      try{
+        const feedback=await gradeHskkWithGemini({exam,recordings:geminiRecordings});
+        await dbQuery(`UPDATE hskk_attempts SET total_score=$1,feedback=$2::jsonb,status='completed',error_message='',updated_at=NOW() WHERE id=$3`,[Number(feedback.totalScore||0),JSON.stringify(feedback),id]);
+      }catch(err){
+        console.error('HSKK Gemini grading failed:',err);
+        try{await dbQuery(`UPDATE hskk_attempts SET status='failed',error_message=$1,updated_at=NOW() WHERE id=$2`,[String(err.message||'Gemini grading failed'),id]);}
+        catch(dbErr){console.error('HSKK failure status update failed:',dbErr);}
+      }
+    });
+    return json(res,202,{ok:true,id,status:'pending',ai:{available:isGeminiConfigured(),model:GEMINI_MODEL},message:'Đã nhận bài. Gemini đang phân tích; trang kết quả sẽ tự cập nhật khi hoàn tất.'});
+  }
+  if(url.pathname.match(/^\/api\/hskk\/result\/[0-9a-f-]+$/i) && req.method==='GET'){
+    const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Phiên đăng nhập đã hết hạn.'});
+    const id=url.pathname.split('/').pop();
+    const row=(await dbQuery(`SELECT a.id,a.user_id,a.student_name,a.candidate_code,a.recordings,a.total_score,a.feedback,a.status,a.error_message,a.submitted_at,e.version,e.level,e.level_label,e.title AS exam_title FROM hskk_attempts a LEFT JOIN hskk_exams e ON e.id=a.exam_id WHERE a.id=$1 AND a.user_id=$2 LIMIT 1`,[id,u.id])).rows[0];
+    if(!row)return json(res,404,{ok:false,message:'Không tìm thấy kết quả.'});
+    return json(res,200,{ok:true,result:{id:row.id,studentName:row.student_name,candidateCode:row.candidate_code,recordingCount:Array.isArray(row.recordings)?row.recordings.length:0,totalScore:row.total_score==null?null:Number(row.total_score),feedback:row.feedback||{},status:row.status,errorMessage:row.error_message||'',submittedAt:row.submitted_at,version:row.version,level:row.level,levelLabel:row.level_label,examTitle:row.exam_title}});
+  }
+  if(url.pathname==='/api/admin/hskk/exams' && req.method==='GET'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const rows=(await dbQuery('SELECT * FROM hskk_exams ORDER BY version,level,test_no,updated_at DESC')).rows;
+    return json(res,200,{ok:true,exams:rows});
+  }
+  if(url.pathname==='/api/admin/hskk/exams' && req.method==='POST'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const b=await body(req); const id=String(b.id||crypto.randomUUID());
+    const version=String(b.version||'2.0'); const level=String(b.level||'beginner'); const levelLabel=String(b.levelLabel||''); const title=String(b.title||'').trim();
+    const testNo=Math.max(1,Math.floor(Number(b.testNo||1))); const duration=Math.min(240,Math.max(1,Math.floor(Number(b.durationMinutes||20)))); const prep=Math.min(60,Math.max(0,Math.floor(Number(b.prepMinutes||0))));
+    const content=b.content&&typeof b.content==='object'?b.content:{}; const sections=Array.isArray(content.sections)?content.sections:[];
+    const validLevel=version==='2.0'?['beginner','intermediate','advanced'].includes(level):version==='3.0'?['3','4','5','6'].includes(level):false;
+    if(!validLevel)return json(res,400,{ok:false,message:'Phiên bản hoặc cấp độ HSKK không hợp lệ.'});
+    if(!title||!sections.length||sections.some(s=>!Array.isArray(s.tasks)||!s.tasks.length))return json(res,400,{ok:false,message:'Đề cần có tiêu đề và ít nhất một phần với câu hỏi.'});
+    const totalTasks=sections.reduce((n,s)=>n+(s.tasks||[]).length,0); if(totalTasks>150)return json(res,400,{ok:false,message:'Một đề không được vượt quá 150 nhiệm vụ.'});
+    for(const sec of sections)for(const t of sec.tasks){
+      if(!t.id||!t.type||!Number.isFinite(Number(t.speakSeconds))||Number(t.speakSeconds)<1||Number(t.speakSeconds)>900)return json(res,400,{ok:false,message:'Mỗi câu cần mã, dạng câu hỏi và thời gian trả lời hợp lệ.'});
+      if(b.published===true){
+        if(['listen_repeat','listen_answer','listen_recall'].includes(String(t.type))&&!String(t.audioUrl||'').trim())return json(res,400,{ok:false,message:`Không thể xuất bản: câu “${String(t.id)}” thuộc dạng nghe nhưng chưa có audio.`});
+        if(String(t.type)==='picture'&&!String(t.imageUrl||'').trim())return json(res,400,{ok:false,message:`Không thể xuất bản: câu “${String(t.id)}” thuộc dạng nhìn tranh nhưng chưa có ảnh.`});
+        if(String(t.type)==='read_aloud'&&(!String(t.text||'').trim()||t.showText===false))return json(res,400,{ok:false,message:`Không thể xuất bản: câu đọc thành tiếng “${String(t.id)}” cần có văn bản hiển thị cho học viên.`});
+        if(String(t.type)==='question'&&!String(t.text||'').trim()&&!String(t.audioUrl||'').trim())return json(res,400,{ok:false,message:`Không thể xuất bản: câu hỏi “${String(t.id)}” cần có văn bản hoặc audio.`});
+      }
+    }
+    const r=await dbQuery(`INSERT INTO hskk_exams(id,version,level,level_label,test_no,title,description,duration_minutes,prep_minutes,content,published) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11) ON CONFLICT(id) DO UPDATE SET version=EXCLUDED.version,level=EXCLUDED.level,level_label=EXCLUDED.level_label,test_no=EXCLUDED.test_no,title=EXCLUDED.title,description=EXCLUDED.description,duration_minutes=EXCLUDED.duration_minutes,prep_minutes=EXCLUDED.prep_minutes,content=EXCLUDED.content,published=EXCLUDED.published,updated_at=NOW() RETURNING *`,[id,version,level,levelLabel,testNo,title,String(b.description||''),duration,prep,JSON.stringify(content),b.published===true]);
+    return json(res,200,{ok:true,exam:r.rows[0],message:'Đã lưu đề HSKK.'});
+  }
+  if(url.pathname.match(/^\/api\/admin\/hskk\/exams\/[0-9a-f-]+$/i) && req.method==='DELETE'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'}); const id=url.pathname.split('/').pop();
+    const r=await dbQuery('DELETE FROM hskk_exams WHERE id=$1',[id]); if(!r.rowCount)return json(res,404,{ok:false,message:'Không tìm thấy đề HSKK.'}); return json(res,200,{ok:true});
+  }
+  if(url.pathname==='/api/admin/hskk/attempts' && req.method==='GET'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const rows=(await dbQuery(`SELECT a.id,a.student_name,a.candidate_code,a.total_score,a.status,a.error_message,a.submitted_at,e.version,e.level,e.level_label,e.title AS exam_title FROM hskk_attempts a LEFT JOIN hskk_exams e ON e.id=a.exam_id ORDER BY a.submitted_at DESC LIMIT 200`)).rows;
+    return json(res,200,{ok:true,attempts:rows});
+  }
 
   if(url.pathname==='/api/admin/login' && req.method==='POST'){
     const b=await body(req); if(b.password!==ADMIN_PASSWORD)return json(res,401,{ok:false,message:'Invalid password'});
@@ -1202,8 +1400,8 @@ async function api(req,res,url){
   }
   if(url.pathname==='/api/admin/pro-orders' && req.method==='GET'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
-    const rows=(await dbQuery(`SELECT id,user_id,student_name,email,phone,skills,amount,status,plan,duration_days,skill_access,created_at FROM pro_orders ORDER BY created_at DESC`)).rows;
-    return json(res,200,{ok:true,orders:rows.map(x=>({id:x.id,userId:x.user_id||'',studentName:x.student_name,email:x.email,phone:x.phone||'',skills:Number(x.skills),amount:Number(x.amount),status:x.status,plan:x.plan||'',durationDays:Number(x.duration_days||30),skillAccess:Array.isArray(x.skill_access)?x.skill_access:[],createdAt:x.created_at}))});
+    const rows=(await dbQuery(`SELECT id,user_id,student_name,email,phone,skills,amount,status,plan,duration_days,skill_access,transfer_code,provider_transaction_id,created_at FROM pro_orders ORDER BY created_at DESC`)).rows;
+    return json(res,200,{ok:true,orders:rows.map(x=>({id:x.id,userId:x.user_id||'',studentName:x.student_name,email:x.email,phone:x.phone||'',skills:Number(x.skills),amount:Number(x.amount),status:x.status,plan:x.plan||'',durationDays:Number(x.duration_days||30),skillAccess:Array.isArray(x.skill_access)?x.skill_access:[],transferCode:x.transfer_code||'',transactionId:x.provider_transaction_id||'',createdAt:x.created_at}))});
   }
   if(url.pathname==='/api/admin/content' && req.method==='GET'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'}); const tests=(await dbQuery('SELECT id,skill,volume,test_no,title,question_type,total_questions,audio_url,source_file,source_url,series_label,display_test_label,card_label,card_subtitle,attempts_count,status_label,button_label,cover_url,category_id,(SELECT name FROM test_categories WHERE id=practice_tests.category_id) AS category_name,published,updated_at FROM practice_tests ORDER BY skill,volume,test_no')).rows; const predictions=(await dbQuery('SELECT * FROM prediction_files ORDER BY created_at DESC')).rows; const courses=(await dbQuery('SELECT * FROM course_posts ORDER BY created_at ASC')).rows; return json(res,200,{ok:true,tests,predictions,courses});
@@ -1342,12 +1540,23 @@ async function api(req,res,url){
   }
   if(url.pathname==='/api/pro/purchase-public' && req.method==='POST'){
     const b=await body(req); const plan=String(b.plan||'').trim(); const cfg=getProPlan(plan); if(!cfg)return json(res,400,{ok:false,message:'Gói PRO không hợp lệ.'});
-    const c=candidate(req); const fullName=String(b.fullName||c?.full_name||'').trim(); const email=String(b.email||c?.email||'').trim().toLowerCase(); const phone=String(b.phone||'').trim();
+    const c=candidate(req); const fullName=String(b.fullName||c?.full_name||'').trim(); const email=String(c?.email||b.email||'').trim().toLowerCase(); const phone=String(b.phone||'').trim();
     if(!fullName||!email)return json(res,400,{ok:false,message:'Vui lòng nhập họ tên và email để tạo đơn PRO.'});
+    if(c?.email && String(b.email||c.email).trim().toLowerCase()!==String(c.email).trim().toLowerCase())return json(res,400,{ok:false,message:'Email mua PRO phải trùng với email của tài khoản đang đăng nhập.'});
     let userId=c?.id||null;
     if(!userId){ userId=(await dbQuery(`SELECT id FROM users WHERE lower(trim(email))=$1 ORDER BY (auth_provider='google') DESC,created_at DESC LIMIT 1`,[email])).rows[0]?.id||null; }
-    const r=await dbQuery(`INSERT INTO pro_orders(id,user_id,student_name,email,skills,amount,status,phone,plan,duration_days,skill_access) VALUES($1,$2,$3,$4,$5,$6,'pending',$7,$8,$9,$10::jsonb) RETURNING id,created_at`,[crypto.randomUUID(),userId,fullName,email,cfg.skills,cfg.amount,phone,plan,cfg.durationDays,JSON.stringify(cfg.skillAccess)]);
-    return json(res,201,{ok:true,id:r.rows[0].id,amount:cfg.amount,plan,durationDays:cfg.durationDays,message:'Đã tạo yêu cầu PRO.'});
+    if(!userId)return json(res,400,{ok:false,message:'Email này chưa liên kết với tài khoản ROAD TO HSK 9. Hãy đăng ký/đăng nhập tài khoản trước, sau đó dùng đúng email tài khoản để mua PRO tự động.'});
+    const settings=(await dbQuery('SELECT bank_code,bank_name,account_name,account_number FROM payment_settings WHERE id=1 LIMIT 1')).rows[0]||{};
+    if(!String(settings.bank_code||'').trim()||!String(settings.account_number||'').trim())return json(res,400,{ok:false,message:'Admin chưa cấu hình Mã ngân hàng/BIN VietQR và Số tài khoản. Hãy cập nhật tại Admin → Cấu hình thanh toán trước khi tạo QR PRO.'});
+    const id=crypto.randomUUID();
+    const transferCode=`RT9P${crypto.randomInt(0,10000000000).toString().padStart(10,'0')}`;
+    const r=await dbQuery(`INSERT INTO pro_orders(id,user_id,student_name,email,skills,amount,status,phone,plan,duration_days,skill_access,transfer_code)
+      VALUES($1,$2,$3,$4,$5,$6,'pending',$7,$8,$9,$10::jsonb,$11) RETURNING id,created_at`,
+      [id,userId,fullName,email,cfg.skills,cfg.amount,phone,plan,cfg.durationDays,JSON.stringify(cfg.skillAccess),transferCode]);
+    const qrUrl=makeVietQrUrl(settings,cfg.amount,transferCode);
+    return json(res,201,{ok:true,id:r.rows[0].id,amount:cfg.amount,plan,durationDays:cfg.durationDays,transferCode,
+      payment:{qrUrl,qrIsDynamic:true,bankName:settings.bank_name||'',accountName:settings.account_name||'',accountNumber:settings.account_number||''},
+      message:'Đã tạo đơn PRO. Quét QR để thanh toán đúng số tiền và nội dung đã được điền sẵn.'});
   }
   if(url.pathname==='/api/pro/purchase' && req.method==='POST'){
     const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Please log in before purchasing PRO.'});
