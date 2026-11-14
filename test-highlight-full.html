@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FULL Highlight Test - ROAD TO HSK 9</title>
+<link rel="stylesheet" href="css/modules.css">
+<style>
+body { font-family: "Be Vietnam Pro", Arial, sans-serif; background: #f8fafc; margin: 0; padding: 20px; }
+.container { max-width: 1000px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+h1 { color: #d1121e; margin-top: 0; }
+.test-pane { margin: 30px 0; padding: 20px; border: 1px solid #e5e7eb; border-radius: 10px; background: #f9fafb; line-height: 1.8; }
+.test-pane#passagePane { display: none; }
+.test-pane.active { display: block; }
+.tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+.tabs button { padding: 10px 20px; background: #e5e7eb; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600; }
+.tabs button.active { background: #d1121e; color: #fff; }
+.status { position: fixed; bottom: 20px; right: 20px; background: #fff; border: 2px solid #d1121e; border-radius: 10px; padding: 15px; max-width: 400px; max-height: 300px; overflow-y: auto; font-size: 12px; font-family: monospace; }
+.status strong { display: block; color: #d1121e; margin-bottom: 10px; }
+.log-line { margin: 5px 0; padding: 3px; background: #f9fafb; border-radius: 3px; }
+.log-line.error { background: #fee; color: #c00; }
+.log-line.success { background: #efe; color: #060; }
+.log-line.debug { background: #eef; color: #06c; }
+.log-line.warn { background: #ffe; color: #a60; }
+.controls { margin-bottom: 20px; display: flex; gap: 10px; }
+.controls button { padding: 10px 15px; background: #d1121e; color: white; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600; }
+.test-section { margin: 20px 0; padding: 15px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; }
+</style>
+<link rel="stylesheet" href="css/eit-motion.css"></head>
+<body>
+
+<div class="container">
+  <h1>🧪 FULL Highlight & Note Test Suite</h1>
+  
+  <div class="controls">
+    <button onclick="clearLogs()">Clear Logs</button>
+    <button onclick="testLocalStorage()">Test localStorage</button>
+    <button onclick="testElements()">Test Elements</button>
+    <button onclick="testFunctions()">Test Functions</button>
+  </div>
+
+  <div class="tabs">
+    <button class="active" onclick="switchPane('passage')">Reading (Passage)</button>
+    <button onclick="switchPane('question')">Reading (Questions)</button>
+    <button onclick="switchPane('listening')">Listening</button>
+  </div>
+
+  <div class="test-pane active" id="passagePane">
+    <h2>📖 Reading Passage</h2>
+    <p>The ocean covers more than 70% of Earth's surface, yet we understand less about it than we do about the moon. Below the waves exists a vast and complex world of ecosystems, each adapted to unique environmental conditions. From the sunlit tropical coral reefs to the crushing depths of the abyssal zone, marine life demonstrates extraordinary diversity and resilience.</p>
+    <p>Coral reefs, often called the rainforests of the sea, support more than a quarter of all known marine species despite covering less than 0.1% of the ocean floor. These vibrant ecosystems rely on a delicate balance between coral polyps and symbiotic algae called zooxanthellae. When water temperatures rise due to climate change, this partnership breaks down, leading to coral bleaching and ecosystem collapse.</p>
+  </div>
+
+  <div class="test-pane" id="questionPane">
+    <h2>❓ Reading Questions</h2>
+    <p><strong>Question 1:</strong> According to the passage, what percentage of marine species live in coral reefs?</p>
+    <p>A) Less than 10%<br>B) More than 25%<br>C) Exactly 50%</p>
+  </div>
+
+  <div class="test-pane" id="listeningPane">
+    <h2>🎧 Listening Questions</h2>
+    <p><strong>SECTION 1</strong></p>
+    <p><strong>Question 1:</strong> What is the main topic of the conversation?</p>
+    <p>A) Hotel booking procedures<br>B) Travel insurance options<br>C) Flight information services</p>
+  </div>
+
+  <div class="test-section">
+    <strong>Instructions:</strong>
+    <ol>
+      <li>Select any text in the pane above</li>
+      <li>A menu with "Highlight" and "Note" should appear</li>
+      <li>Click "Highlight" → text turns brown</li>
+      <li>Click again → text turns pink</li>
+      <li>Watch the logs on the right for debug information</li>
+      <li>Check localStorage to verify data saved</li>
+    </ol>
+  </div>
+</div>
+
+<!-- UI Elements -->
+<div class="selection-menu" id="selectionMenu">
+  <button id="highlightBtn">Highlight</button>
+  <button id="noteBtn">Note</button>
+</div>
+
+<div class="notes-panel" id="notesPanel">
+  <div class="notes-title">
+    Notes
+    <button id="closeNotes" class="icon-btn" style="background:none;border:none;cursor:pointer;">×</button>
+  </div>
+  <textarea id="noteInput" placeholder="Write a note..."></textarea>
+  <button id="saveNote">Save note</button>
+</div>
+
+<!-- Status Log -->
+<div class="status">
+  <strong>📊 Debug Log</strong>
+  <div id="logContainer"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let logs = [];
+let lastSelection = null;
+let currentPane = 'passage';
+
+// Logging utility
+function log(msg, type = 'debug') {
+  const timestamp = new Date().toLocaleTimeString();
+  const line = `[${timestamp}] ${msg}`;
+  logs.unshift({ msg: line, type });
+  if (logs.length > 50) logs.pop();
+  updateLogDisplay();
+  console.log(`[${type.toUpperCase()}]`, msg);
+}
+
+function clearLogs() {
+  logs = [];
+  updateLogDisplay();
+  log('Logs cleared', 'warn');
+}
+
+function updateLogDisplay() {
+  const container = $('logContainer');
+  container.innerHTML = logs.map(l => 
+    `<div class="log-line ${l.type}">${l.msg}</div>`
+  ).join('');
+}
+
+function switchPane(pane) {
+  currentPane = pane;
+  document.querySelectorAll('.test-pane').forEach(p => p.classList.remove('active'));
+  if (pane === 'listening') {
+    $('listeningPane').classList.add('active');
+  } else if (pane === 'question') {
+    $('questionPane').classList.add('active');
+  } else {
+    $('passagePane').classList.add('active');
+  }
+  
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  log(`Switched to ${pane} pane`, 'debug');
+}
+
+// Test functions
+function testLocalStorage() {
+  log('Testing localStorage...', 'debug');
+  try {
+    localStorage.setItem('test-key', 'test-value');
+    const val = localStorage.getItem('test-key');
+    if (val === 'test-value') {
+      log('✓ localStorage working', 'success');
+      localStorage.removeItem('test-key');
+    } else {
+      log('✗ localStorage failed', 'error');
+    }
+  } catch (e) {
+    log('✗ localStorage error: ' + e.message, 'error');
+  }
+}
+
+function testElements() {
+  log('Testing DOM elements...', 'debug');
+  const elements = ['selectionMenu', 'highlightBtn', 'noteBtn', 'notesPanel', 'passagePane', 'questionPane', 'listeningPane'];
+  let found = 0;
+  elements.forEach(id => {
+    if ($(id)) {
+      found++;
+      log(`✓ Found #${id}`, 'success');
+    } else {
+      log(`✗ Missing #${id}`, 'error');
+    }
+  });
+  log(`${found}/${elements.length} elements found`, found === elements.length ? 'success' : 'warn');
+}
+
+function testFunctions() {
+  log('Testing functions...', 'debug');
+  const tests = [
+    ['wrapSelection', typeof wrapSelection],
+    ['toggle color', true]
+  ];
+  
+  if (typeof wrapSelection === 'function') {
+    log('✓ wrapSelection function exists', 'success');
+  } else {
+    log('✗ wrapSelection function missing', 'error');
+  }
+}
+
+// Setup selection detection
+document.addEventListener('selectionchange', () => {
+  const sel = window.getSelection();
+  if (sel.toString().length === 0) return;
+  
+  const text = sel.toString();
+  log(`Selected: "${text.substring(0, 40)}..."`, 'debug');
+  
+  const range = sel.getRangeAt(0);
+  const pane = currentPane;
+  
+  lastSelection = {
+    text: text,
+    range: range,
+    pane: pane
+  };
+  
+  const menu = $('selectionMenu');
+  const rect = range.getBoundingClientRect();
+  menu.classList.add('show');
+  menu.style.left = (rect.left + window.scrollX) + 'px';
+  menu.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+  
+  log(`Menu positioned at (${rect.left}, ${rect.bottom})`, 'debug');
+});
+
+// Close menu on mousedown outside
+document.addEventListener('mousedown', e => {
+  if (!e.target.closest('#selectionMenu')) {
+    $('selectionMenu').classList.remove('show');
+  }
+});
+
+// Highlight button
+$('highlightBtn').onclick = () => {
+  if (!lastSelection) {
+    log('No selection to highlight', 'warn');
+    return;
+  }
+  
+  log(`Highlight clicked for: "${lastSelection.text.substring(0, 40)}..."`, 'debug');
+  
+  const range = lastSelection.range;
+  const wrapper = document.createElement('span');
+  
+  // Check if already highlighted
+  const existing = range.commonAncestorContainer?.parentElement?.closest?.('span.hl-brown, span.hl-pink');
+  
+  if (existing && existing.textContent.trim() === lastSelection.text.trim()) {
+    // Toggle color
+    if (existing.classList.contains('hl-brown')) {
+      log('✓ Toggling to pink', 'success');
+      existing.classList.remove('hl-brown');
+      existing.classList.add('hl-pink');
+      existing.style.backgroundColor = '#FF007F';
+      existing.style.color = '#FFF';
+    } else {
+      log('✓ Removing highlight', 'success');
+      const parent = existing.parentNode;
+      while (existing.firstChild) parent.insertBefore(existing.firstChild, existing);
+      parent.removeChild(existing);
+    }
+  } else {
+    // Create new highlight
+    log('✓ Creating brown highlight', 'success');
+    wrapper.className = 'hl-brown';
+    wrapper.textContent = lastSelection.text;
+    wrapper.style.backgroundColor = '#352315';
+    wrapper.style.color = '#FFFFFF';
+    wrapper.style.display = 'inline';
+    wrapper.style.padding = '2px 4px';
+    wrapper.style.borderRadius = '2px';
+    
+    try {
+      range.surroundContents(wrapper);
+      log('✓ Used surroundContents', 'success');
+    } catch (error) {
+      log('⚠ Using fallback wrapping method', 'warn');
+      const fragment = range.extractContents();
+      wrapper.appendChild(fragment);
+      range.insertNode(wrapper);
+    }
+  }
+  
+  $('selectionMenu').classList.remove('show');
+  window.getSelection()?.removeAllRanges();
+  lastSelection = null;
+};
+
+// Note button
+$('noteBtn').onclick = () => {
+  if (!lastSelection) {
+    log('No selection for note', 'warn');
+    return;
+  }
+  
+  log(`Note opened for: "${lastSelection.text.substring(0, 40)}..."`, 'debug');
+  $('notesPanel').classList.add('open');
+  $('noteInput').value = lastSelection.text;
+  $('noteInput').focus();
+  $('selectionMenu').classList.remove('show');
+};
+
+$('closeNotes').onclick = () => {
+  log('Notes panel closed', 'debug');
+  $('notesPanel').classList.remove('open');
+};
+
+$('saveNote').onclick = () => {
+  const noteText = $('noteInput').value;
+  log(`✓ Note saved: "${noteText.substring(0, 30)}..."`, 'success');
+  $('notesPanel').classList.remove('open');
+  $('noteInput').value = '';
+};
+
+// Initial log
+log('Test page ready', 'success');
+log('Click elements to run tests', 'debug');
+log('Select text to test highlight', 'debug');
+</script>
+
+</body>
+</html>

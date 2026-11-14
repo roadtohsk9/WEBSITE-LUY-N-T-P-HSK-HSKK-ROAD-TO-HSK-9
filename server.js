@@ -7,7 +7,6 @@ const AdmZip = require('adm-zip');
 const { URL } = require('url');
 const { Pool } = require('pg');
 const { gradeWriting, gradeSpeaking, isProWriting, isProSpeaking, DEEPSEEK_MODEL } = require('./ai-grading');
-const { gradeHskWriting, gradeHskTranslation, gradeHskkSpeaking, GEMINI_MODEL, isGeminiConfigured } = require('./google-hsk-grading');
 
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT || 3000);
@@ -18,7 +17,9 @@ const DB_FILE = path.join(DATA_DIR, 'submissions.json');
 const TOKENS = new Map();
 const CANDIDATE_TOKENS = new Map();
 const UPLOAD_DIR = path.join(ROOT, 'uploads');
+const PRIVATE_DOC_DIR = path.join(ROOT, '.private-documents');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+fs.mkdirSync(PRIVATE_DOC_DIR, { recursive: true });
 
 if (!DATABASE_URL) console.warn('WARNING: DATABASE_URL/POSTGRES_URL is not set. PostgreSQL mode is unavailable.');
 const pool = DATABASE_URL ? new Pool({ connectionString: DATABASE_URL, max: 5 }) : null;
@@ -36,42 +37,6 @@ function hashPassword(password){ const salt=crypto.randomBytes(16).toString('hex
 function verifyPassword(password, stored){ try { const [salt,hash]=String(stored).split(':'); if(!salt||!hash)return false; const a=Buffer.from(hash,'hex'); const b=crypto.scryptSync(String(password),salt,64); return a.length===b.length && crypto.timingSafeEqual(a,b); } catch { return false; } }
 function safeName(s){return String(s||'').replace(/[^a-zA-Z0-9._-]/g,'_')}
 
-// Strip answer keys and grading metadata from public exam payloads. These are
-// returned only by the submission endpoint after the candidate's work is saved.
-const PRIVATE_PRACTICE_CONTENT_KEYS=new Set([
-  'answer','answers','answerkey','answer_key','correctanswer','correct_answer',
-  'correctoption','correct_option','correctoptions','correct_options',
-  'explanation','explanations','solution','solutions','modelanswer','model_answer',
-  'referenceanswer','reference_answer','gradingrubric','grading_rubric'
-]);
-function sanitizePracticeContent(value){
-  if(Array.isArray(value))return value.map(sanitizePracticeContent);
-  if(value&&typeof value==='object'){
-    return Object.fromEntries(Object.entries(value)
-      .filter(([key])=>!PRIVATE_PRACTICE_CONTENT_KEYS.has(String(key).toLowerCase().replace(/[\s-]/g,'_')))
-      .map(([key,item])=>[key,sanitizePracticeContent(item)]));
-  }
-  return value;
-}
-
-function answerNorm(value){return String(value??'').normalize('NFKC').toLowerCase().trim().replace(/[\s\u3000]/g,'').replace(/[.,，。!?！？:：;；'"“”‘’()（）]/g,'')}
-function gradeObjectiveTest(test,studentAnswers){
-  const questions=Array.isArray(test.content?.questions)?test.content.questions:[];
-  const key=test.answer_key&&typeof test.answer_key==='object'?test.answer_key:{};
-  const rows=questions.map((q,i)=>{
-    const n=String(q.number??i+1),candidateAnswer=studentAnswers?.[n]??studentAnswers?.[`Q${n}`]??'';
-    let correct=key[n]??key[`Q${n}`]??key[`q${n}`]??key[`question${n}`];
-    if(correct===undefined&&key.answers&&typeof key.answers==='object')correct=key.answers[n];
-    const accepted=Array.isArray(correct)?correct:String(correct??'').split(/[;|]/).map(x=>x.trim()).filter(Boolean);
-    const ok=accepted.length>0&&accepted.some(x=>answerNorm(x)===answerNorm(candidateAnswer));
-    return {number:n,answer:String(candidateAnswer??''),correct:Array.isArray(correct)?correct:String(correct??''),isCorrect:ok,explanation:String(test.explanations?.[n]??'')};
-  });
-  const scored=rows.filter(x=>String(x.correct??'').trim()!=='' || (Array.isArray(x.correct)&&x.correct.length));
-  if(!scored.length)throw new Error(`Đề ${String(test.skill).toUpperCase()} chưa có answer key nên không thể chấm tự động.`);
-  const correct=scored.filter(x=>x.isCorrect).length;
-  return {score:Math.round(correct/scored.length*10000)/100,correct,total:scored.length,details:scored};
-}
-
 async function dbQuery(text, params=[]){ if(!pool) throw new Error('Database is not configured. Please add DATABASE_URL in Vibe Host.'); return pool.query(text,params); }
 
 async function seedPracticeDemos(){
@@ -79,12 +44,182 @@ async function seedPracticeDemos(){
   if(!fs.existsSync(seedPath) || !pool) return;
   let pack; try{pack=JSON.parse(fs.readFileSync(seedPath,'utf8'));}catch(e){console.error('Practice seed read failed:',e);return;}
   for(const t of (pack.tests||[])){
-    if(![7,8,9,79].includes(Number(t.volume)) || !['listening','reading','writing','translation'].includes(String(t.skill||'').toLowerCase())) continue;
-    const audioUrl=t.skill==='listening' && Number(t.volume)===79 && Number(t.testNo)===1 && fs.existsSync(path.join(UPLOAD_DIR,'vol9-test1-listening.mp3')) ? '/uploads/vol9-test1-listening.mp3' : String(t.audioUrl||'');
+    const audioUrl=t.skill==='listening' && Number(t.volume)===9 && Number(t.testNo)===1 && fs.existsSync(path.join(UPLOAD_DIR,'vol9-test1-listening.mp3')) ? '/uploads/vol9-test1-listening.mp3' : String(t.audioUrl||'');
     await dbQuery(`INSERT INTO practice_tests(id,skill,volume,test_no,title,question_type,duration_minutes,total_questions,content,answer_key,explanations,audio_url,source_file,source_url,published)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb,$11::jsonb,$12,$13,$14,TRUE)
-      ON CONFLICT(skill,volume,test_no) DO NOTHING`,
-      [crypto.randomUUID(),String(t.skill).toLowerCase(),79,Number(t.testNo),t.title||'',t.questionType||'',Number(t.durationMinutes||60),Number(t.totalQuestions||40),JSON.stringify({questions:t.questions||[],question_groups:t.question_groups||[],passages:t.passages||[],sections:t.sections||[],unitImages:t.unitImages||[],audioUrl:t.audioUrl||'',rawText:t.rawText||'',instructions:t.instructions||'',transcript:t.transcript||''}),JSON.stringify(t.answerKey||{}),JSON.stringify(t.explanations||{}),audioUrl,t.sourceFile||'HSK7-9 demo seed',t.sourceUrl||'']);
+      ON CONFLICT(skill,volume,test_no) DO UPDATE SET title=EXCLUDED.title,question_type=EXCLUDED.question_type,duration_minutes=EXCLUDED.duration_minutes,total_questions=EXCLUDED.total_questions,content=EXCLUDED.content,answer_key=EXCLUDED.answer_key,explanations=EXCLUDED.explanations,audio_url=EXCLUDED.audio_url,source_file=EXCLUDED.source_file,source_url=EXCLUDED.source_url,published=TRUE,updated_at=NOW() WHERE EXCLUDED.source_file LIKE 'HSK3_H310%_PDF_IMPORT' AND practice_tests.source_file IS DISTINCT FROM EXCLUDED.source_file`,
+      [crypto.randomUUID(),String(t.skill).toLowerCase(),Number(t.volume),Number(t.testNo),t.title||'',t.questionType||'',Number(t.durationMinutes||60),Number(t.totalQuestions||40),JSON.stringify({questions:t.questions||[],question_groups:t.question_groups||[],passages:t.passages||[],sections:t.sections||[],unitImages:t.unitImages||[],audioUrl:t.audioUrl||'',rawText:t.rawText||'',instructions:t.instructions||'',transcript:t.transcript||''}),JSON.stringify(t.answerKey||{}),JSON.stringify(t.explanations||{}),audioUrl,t.sourceFile||'VOL9 demo import',t.sourceUrl||'']);
+  }
+}
+
+async function seedHsk6Papers(){
+  const seedPath=path.join(DATA_DIR,'hsk6_papers_seed.json');
+  if(!pool || !fs.existsSync(seedPath)) return;
+  let pack;
+  try{pack=JSON.parse(fs.readFileSync(seedPath,'utf8'));}
+  catch(e){console.error('HSK6 paper seed read failed:',e);return;}
+  let inserted=0, skipped=0;
+  for(const t of (pack.tests||[])){
+    try{
+      const result=await dbQuery(`INSERT INTO practice_tests(
+        id,skill,volume,test_no,title,question_type,duration_minutes,total_questions,
+        content,answer_key,explanations,audio_url,source_file,source_url,
+        series_label,display_test_label,card_label,card_subtitle,status_label,button_label,cover_url,published
+      ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb,$11::jsonb,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,TRUE)
+      ON CONFLICT(skill,volume,test_no) DO NOTHING`,[
+        crypto.randomUUID(),String(t.skill||'reading').toLowerCase(),Number(t.volume||6),Number(t.testNo),String(t.title||''),String(t.questionType||'Multiple Choice'),Number(t.durationMinutes||50),Number(t.totalQuestions||50),JSON.stringify(t.content||{}),JSON.stringify(t.answerKey||{}),JSON.stringify(t.explanations||{}),String(t.audioUrl||''),String(t.sourceFile||''),String(t.sourceUrl||''),String(t.seriesLabel||'HSK 6'),String(t.displayTestLabel||`Test ${t.testNo}`),String(t.cardLabel||String(t.skill||'').toUpperCase()),String(t.cardSubtitle||''),String(t.statusLabel||'Chưa hoàn thành'),String(t.buttonLabel||'Làm bài'),String(t.coverUrl||'')
+      ]);
+      if(result.rowCount) inserted++; else skipped++;
+    }catch(e){console.error('HSK6 paper seed failed for',t.title||t.testNo,e?.message||e);}
+  }
+  if(inserted||skipped) console.log(`HSK6 papers seed: ${inserted} inserted, ${skipped} existing rows skipped.`);
+}
+
+
+async function seedHsk5Papers(){
+  const seedPath=path.join(DATA_DIR,'hsk5_full_papers_seed.json');
+  if(!pool || !fs.existsSync(seedPath)) return;
+  let pack;
+  try{pack=JSON.parse(fs.readFileSync(seedPath,'utf8'));}
+  catch(e){console.error('HSK5 full paper seed read failed:',e);return;}
+  let inserted=0,updated=0,skipped=0;
+  for(const t of (pack.tests||[])){
+    try{
+      const result=await dbQuery(`INSERT INTO practice_tests(
+        id,skill,volume,test_no,title,question_type,duration_minutes,total_questions,
+        content,answer_key,explanations,audio_url,source_file,source_url,
+        series_label,display_test_label,card_label,card_subtitle,status_label,button_label,cover_url,published
+      ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb,$11::jsonb,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,TRUE)
+      ON CONFLICT(skill,volume,test_no) DO UPDATE SET
+        title=EXCLUDED.title,question_type=EXCLUDED.question_type,duration_minutes=EXCLUDED.duration_minutes,
+        total_questions=EXCLUDED.total_questions,content=EXCLUDED.content,answer_key=EXCLUDED.answer_key,
+        explanations=EXCLUDED.explanations,
+        audio_url=CASE WHEN COALESCE(NULLIF(EXCLUDED.audio_url,''),'')<>'' THEN EXCLUDED.audio_url ELSE COALESCE(practice_tests.audio_url,'') END,
+        source_file=EXCLUDED.source_file,source_url=EXCLUDED.source_url,series_label=EXCLUDED.series_label,
+        display_test_label=EXCLUDED.display_test_label,card_label=EXCLUDED.card_label,card_subtitle=EXCLUDED.card_subtitle,
+        status_label=EXCLUDED.status_label,button_label=EXCLUDED.button_label,cover_url=EXCLUDED.cover_url,
+        published=TRUE,updated_at=NOW()
+      WHERE EXCLUDED.source_file LIKE 'HSK5_FULL_PDF_IMPORT_%'`,[
+        crypto.randomUUID(),String(t.skill||'reading').toLowerCase(),Number(t.volume||5),Number(t.testNo),String(t.title||''),
+        String(t.questionType||'Multiple Choice'),Number(t.durationMinutes||45),Number(t.totalQuestions||45),
+        JSON.stringify(t.content||{}),JSON.stringify(t.answerKey||{}),JSON.stringify(t.explanations||{}),String(t.audioUrl||''),
+        String(t.sourceFile||''),String(t.sourceUrl||''),String(t.seriesLabel||'HSK5 · Đề chính thức'),String(t.displayTestLabel||`Test ${t.testNo}`),
+        String(t.cardLabel||String(t.skill||'').toUpperCase()),String(t.cardSubtitle||''),String(t.statusLabel||'Sẵn sàng luyện tập'),
+        String(t.buttonLabel||'Làm bài'),String(t.coverUrl||'')
+      ]);
+      if(result.rowCount){
+        const action=String(result.command||'');
+        if(action==='INSERT') inserted++; else updated++;
+      } else skipped++;
+    }catch(e){console.error('HSK5 paper seed failed for',t.title||t.testNo,e?.message||e);}
+  }
+  if(inserted||updated||skipped) console.log(`HSK5 full papers seed: ${inserted} inserted, ${updated} updated, ${skipped} unchanged.`);
+}
+
+async function seedCourses(){
+  if(!pool) return;
+  const seeds=[
+    {slug:'speaking-8-5',skill:'speaking',title:'Học tư duy Speaking với giáo viên 8.5 Speaking',description:'Tư duy triển khai ý, phản xạ và chiến lược Speaking theo định hướng 8.5.',price:500000,student_count:78,poster_url:'course-thumbnails/HINH1.jpg'},
+    {slug:'writing-cap-toc-5-6',skill:'writing',title:'Writing cấp tốc · Band 5–6',description:'Củng cố cấu trúc, ý tưởng và cách viết an toàn để kéo band từ 5 lên 6.',price:500000,student_count:56,poster_url:'course-thumbnails/HINH2.jpg'},
+    {slug:'writing-cap-toc-6-7',skill:'writing',title:'Writing cấp tốc · Band 6–7',description:'Tăng chất lượng Task 1 & Task 2, phát triển lập luận và kiểm soát lỗi để hướng tới band 7.',price:500000,student_count:34,poster_url:'course-thumbnails/HINH3.jpg'},
+    {slug:'listening-core-skills',skill:'listening',title:'Kỹ năng ôn Listening',description:'Chiến thuật nghe, bắt keyword, xử lý distractor và luyện theo từng Section.',price:500000,student_count:67,poster_url:'course-thumbnails/HINH4.jpg'},
+    {slug:'combo-writing-speaking',skill:'combo',title:'Combo Writing + Speaking',description:'Kết hợp 2 kỹ năng trọng tâm với lộ trình tối ưu, tiết kiệm chi phí và dễ theo dõi tiến bộ.',price:750000,student_count:41,poster_url:'course-thumbnails/HINH5.jpg'},
+    {slug:'combo-speaking-writing-listening',skill:'combo',title:'Combo Speaking Writing Listening',description:'Lộ trình 3 kỹ năng toàn diện, phù hợp cho học viên muốn học đồng thời và tiết kiệm hơn.',price:1200000,student_count:29,poster_url:'course-thumbnails/HINH6.jpg'}
+  ];
+  for(const c of seeds){
+    const exists=await dbQuery('SELECT id,price,student_count,poster_url FROM course_posts WHERE slug=$1 LIMIT 1',[c.slug]);
+    if(!exists.rows.length){
+      await dbQuery('INSERT INTO course_posts(id,skill,title,description,poster_url,link_url,slug,price,student_count) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)',[crypto.randomUUID(),c.skill,c.title,c.description,c.poster_url,'',c.slug,c.price,c.student_count]);
+    } else {
+      const row=exists.rows[0];
+      if((c.slug==='combo-writing-speaking' || c.slug==='combo-speaking-writing-listening') && Number(row.price||0)===500000){
+        await dbQuery('UPDATE course_posts SET skill=$1,title=$2,description=$3,price=$4,student_count=$5 WHERE slug=$6',[c.skill,c.title,c.description,c.price,c.student_count,c.slug]);
+      }
+      if(!row.poster_url){
+        await dbQuery('UPDATE course_posts SET poster_url=$1 WHERE slug=$2',[c.poster_url,c.slug]);
+      }
+    }
+  }
+}
+
+function readRawBody(req, maxBytes=2*1024*1024){
+  return new Promise((resolve,reject)=>{
+    const chunks=[]; let size=0;
+    req.on('data',chunk=>{size+=chunk.length;if(size>maxBytes){reject(new Error('Webhook payload too large'));req.destroy();return;}chunks.push(chunk);});
+    req.on('end',()=>resolve(Buffer.concat(chunks)));
+    req.on('error',reject);
+  });
+}
+function makeVietQrUrl(settings, amount, transferCode){
+  const bankCode=String(settings?.bank_code||'').trim();
+  const account=String(settings?.account_number||'').trim();
+  if(!bankCode||!account)return String(settings?.qr_url||'');
+  const params=new URLSearchParams({amount:String(Math.round(Number(amount)||0)),addInfo:String(transferCode||''),accountName:String(settings.account_name||'')});
+  return `https://img.vietqr.io/image/${encodeURIComponent(bankCode)}-${encodeURIComponent(account)}-compact2.png?${params.toString()}`;
+}
+async function fulfillStoreOrder(orderId, transaction){
+  if(!pool)throw new Error('Database is unavailable');
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const order=(await client.query('SELECT * FROM store_orders WHERE id=$1 FOR UPDATE',[orderId])).rows[0];
+    if(!order){await client.query('ROLLBACK');return {ok:false,reason:'order_not_found'};}
+    if(order.status==='paid'){await client.query('COMMIT');return {ok:true,alreadyPaid:true};}
+    const txnInsert=await client.query(`INSERT INTO payment_transactions(provider,provider_transaction_id,order_id,amount,raw_payload)
+      VALUES($1,$2,$3,$4,$5::jsonb) ON CONFLICT(provider,provider_transaction_id) DO NOTHING RETURNING id`,[
+      String(transaction.provider||'sepay'),String(transaction.id),order.id,Number(transaction.amount||0),JSON.stringify(transaction.raw||{})
+    ]);
+    if(!txnInsert.rowCount){await client.query('COMMIT');return {ok:true,duplicate:true};}
+    await client.query(`UPDATE store_orders SET status='paid',paid_at=NOW(),provider_transaction_id=$2,updated_at=NOW() WHERE id=$1`,[order.id,String(transaction.id)]);
+    const items=(await client.query('SELECT * FROM store_order_items WHERE order_id=$1',[order.id])).rows;
+    const proItems=items.filter(x=>x.product_type==='pro');
+    if(proItems.length && order.user_id){
+      const skillSet=new Set(); let totalDays=0;
+      const current=(await client.query(`SELECT skill_access,expires_at,status FROM pro_entitlements WHERE user_id=$1 LIMIT 1`,[order.user_id])).rows[0];
+      if(current && current.status==='active' && new Date(current.expires_at)>new Date()){
+        (Array.isArray(current.skill_access)?current.skill_access:[]).forEach(s=>skillSet.add(String(s)));
+      }
+      for(const item of proItems){
+        (Array.isArray(item.skill_access)?item.skill_access:[]).forEach(s=>skillSet.add(String(s)));
+        totalDays+=Math.max(1,Number(item.duration_days||30))*Math.max(1,Number(item.quantity||1));
+      }
+      const skills=[...skillSet].filter(x=>ALL_SKILLS.includes(x));
+      if(skills.length){
+        await client.query(`INSERT INTO pro_entitlements(id,user_id,skills,skill_access,source,status,starts_at,expires_at)
+          VALUES($1,$2,$3,$4::jsonb,'store_purchase','active',NOW(),NOW()+make_interval(days=>$5))
+          ON CONFLICT(user_id) DO UPDATE SET skills=EXCLUDED.skills,skill_access=EXCLUDED.skill_access,source='store_purchase',status='active',
+          starts_at=CASE WHEN pro_entitlements.expires_at<=NOW() THEN NOW() ELSE pro_entitlements.starts_at END,
+          expires_at=GREATEST(pro_entitlements.expires_at,NOW())+make_interval(days=>$5),updated_at=NOW()`,
+          [crypto.randomUUID(),order.user_id,Math.min(4,skills.length),JSON.stringify(skills),totalDays]);
+      }
+    }
+    for(const item of items.filter(x=>x.product_type==='document' && x.product_id && order.user_id)){
+      await client.query(`INSERT INTO document_access(id,user_id,product_id,order_id) VALUES($1,$2,$3,$4) ON CONFLICT(user_id,product_id) DO NOTHING`,[crypto.randomUUID(),order.user_id,item.product_id,order.id]);
+    }
+    await client.query('COMMIT');
+    return {ok:true,activatedPro:proItems.length>0,unlockedDocuments:items.filter(x=>x.product_type==='document').length};
+  }catch(err){try{await client.query('ROLLBACK')}catch{};throw err;}finally{client.release();}
+}
+async function seedStoreProducts(){
+  if(!pool)return;
+  const features=[
+    'Mở khóa các đề Writing và HSKK Cao cấp có gắn quyền PRO trong thời hạn gói.',
+    'Truy cập kho Prediction PDF dành cho học viên PRO.',
+    'Luyện tập và xem lại lịch sử bài làm, kết quả và phản hồi được hệ thống hỗ trợ.',
+    'Sử dụng khu vực Cá nhân hóa: sổ từ vựng, collocations, cấu trúc và công cụ ôn tập.',
+    'Một tài khoản sử dụng xuyên suốt; thời hạn được cộng nối khi mua gia hạn.'
+  ];
+  const plans=[
+    {slug:'road-pro-1-month',title:'ROAD PRO · 1 tháng',price:39000,duration:30,subtitle:'Khởi động lộ trình học tập nâng cao',features:[...features,'Phù hợp để trải nghiệm trọn bộ quyền PRO trong 30 ngày.']},
+    {slug:'road-pro-3-months',title:'ROAD PRO · 3 tháng',price:99000,duration:90,subtitle:'Gói tiết kiệm cho một chặng ôn thi',features:[...features,'Thời hạn 90 ngày; tối ưu chi phí hơn so với gia hạn từng tháng.']},
+    {slug:'road-pro-1-year',title:'ROAD PRO · 1 năm',price:399000,duration:365,subtitle:'Đồng hành xuyên suốt cả năm học',features:[...features,'Thời hạn 365 ngày; phù hợp với lộ trình học dài hạn.']}
+  ];
+  for(const plan of plans){
+    await dbQuery(`INSERT INTO store_products(id,slug,product_type,title,subtitle,description,features,price,duration_days,skill_access,vat_rate,published)
+      VALUES($1,$2,'pro',$3,$4,$5,$6::jsonb,$7,$8,$9::jsonb,NULL,TRUE) ON CONFLICT(slug) DO NOTHING`,[
+      crypto.randomUUID(),plan.slug,plan.title,plan.subtitle,
+      'Gói thành viên ROAD TO HSK 9, bao gồm các quyền học tập nâng cao được liệt kê bên dưới.',JSON.stringify(plan.features),plan.price,plan.duration,JSON.stringify(ALL_SKILLS)
+    ]);
   }
 }
 
@@ -147,7 +282,6 @@ async function initDB(){
   )`);
   await dbQuery(`ALTER TABLE results ADD COLUMN IF NOT EXISTS feedback JSONB NOT NULL DEFAULT '{}'::jsonb`);
   await dbQuery(`ALTER TABLE results ADD COLUMN IF NOT EXISTS feedback_published BOOLEAN NOT NULL DEFAULT FALSE`);
-  await dbQuery(`ALTER TABLE results ADD COLUMN IF NOT EXISTS translation NUMERIC`);
   await dbQuery(`CREATE TABLE IF NOT EXISTS ai_skill_reviews (
     id UUID PRIMARY KEY,
     submission_id UUID UNIQUE REFERENCES submissions(id) ON DELETE CASCADE,
@@ -162,12 +296,6 @@ async function initDB(){
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
   await dbQuery(`CREATE INDEX IF NOT EXISTS ai_skill_reviews_user_idx ON ai_skill_reviews(user_id,skill,created_at DESC)`);
-  await dbQuery(`CREATE TABLE IF NOT EXISTS pro_plans (id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT DEFAULT '', price INTEGER NOT NULL DEFAULT 0, duration_days INTEGER NOT NULL DEFAULT 30, skill_access JSONB NOT NULL DEFAULT '[]'::jsonb, active BOOLEAN NOT NULL DEFAULT TRUE, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
-  await dbQuery(`CREATE TABLE IF NOT EXISTS study_materials (id UUID PRIMARY KEY, title TEXT NOT NULL, description TEXT DEFAULT '', level TEXT DEFAULT 'HSK 7–9', skill TEXT DEFAULT '', price INTEGER NOT NULL DEFAULT 0, cover_url TEXT DEFAULT '', file_url TEXT DEFAULT '', active BOOLEAN NOT NULL DEFAULT TRUE, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
-  await dbQuery(`DELETE FROM study_materials WHERE CONCAT_WS(' ',COALESCE(level,''),COALESCE(title,''),COALESCE(description,'')) ~* 'HSK[[:space:]]*[3-6]'`);
-  await dbQuery(`UPDATE study_materials SET level='HSK 7–9' WHERE level IS DISTINCT FROM 'HSK 7–9'`);
-  await dbQuery(`CREATE TABLE IF NOT EXISTS material_orders (id UUID PRIMARY KEY, user_id UUID REFERENCES users(id) ON DELETE SET NULL, student_name TEXT NOT NULL DEFAULT '', email TEXT NOT NULL DEFAULT '', items JSONB NOT NULL DEFAULT '[]'::jsonb, amount INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'pending', created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
-  await dbQuery(`CREATE INDEX IF NOT EXISTS material_orders_created_idx ON material_orders(created_at DESC)`);
   await dbQuery(`CREATE TABLE IF NOT EXISTS practice_tests (
     id UUID PRIMARY KEY,
     skill TEXT NOT NULL,
@@ -196,42 +324,30 @@ async function initDB(){
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE(skill,volume,test_no)
   )`);
-  await dbQuery(`CREATE TABLE IF NOT EXISTS hsk79_mock_exams (
+  await dbQuery(`CREATE TABLE IF NOT EXISTS hsk_mock_exams (
     id UUID PRIMARY KEY,
-    title TEXT NOT NULL DEFAULT 'Thi thử tổng hợp HSK 7–9',
+    title TEXT NOT NULL DEFAULT 'HSK 6 · Full Mock Exam',
     description TEXT DEFAULT '',
     listening_test_id TEXT NOT NULL,
     reading_test_id TEXT NOT NULL,
     writing_test_id TEXT NOT NULL,
-    translation_test_id TEXT NOT NULL,
-    section_minutes JSONB NOT NULL DEFAULT '{"listening":45,"reading":70,"writing":90,"translation":100}'::jsonb,
+    hskk_test_id TEXT NOT NULL,
+    section_minutes JSONB NOT NULL DEFAULT '{"listening":35,"reading":50,"writing":45,"hskk":25}'::jsonb,
     published BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
-  await dbQuery(`CREATE TABLE IF NOT EXISTS hsk79_mock_attempts (
+  await dbQuery(`CREATE TABLE IF NOT EXISTS hsk_mock_attempts (
     id UUID PRIMARY KEY,
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    mock_exam_id UUID REFERENCES hsk79_mock_exams(id) ON DELETE SET NULL,
+    mock_exam_id UUID REFERENCES hsk_mock_exams(id) ON DELETE SET NULL,
     student_name TEXT NOT NULL DEFAULT '',
+    candidate_code TEXT NOT NULL DEFAULT '',
     answers JSONB NOT NULL DEFAULT '{}'::jsonb,
-    scores JSONB NOT NULL DEFAULT '{}'::jsonb,
-    overall_score NUMERIC(6,2),
-    estimated_level TEXT NOT NULL DEFAULT '',
+    recording_url TEXT DEFAULT '',
     submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
-  await dbQuery(`CREATE INDEX IF NOT EXISTS hsk79_mock_attempts_exam_idx ON hsk79_mock_attempts(mock_exam_id,submitted_at DESC)`);
-  await dbQuery(`CREATE TABLE IF NOT EXISTS hsk79_mock_settings (
-    id INTEGER PRIMARY KEY CHECK(id=1),
-    hsk7_min NUMERIC(5,2) NOT NULL DEFAULT 60,
-    hsk8_min NUMERIC(5,2) NOT NULL DEFAULT 75,
-    hsk9_min NUMERIC(5,2) NOT NULL DEFAULT 88,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-  )`);
-  await dbQuery(`INSERT INTO hsk79_mock_settings(id,hsk7_min,hsk8_min,hsk9_min) VALUES(1,60,75,88) ON CONFLICT(id) DO NOTHING`);
-  // Remove obsolete legacy mock tables; the new mock exam is one unified four-skill programme.
-  await dbQuery(`DROP TABLE IF EXISTS hsk_mock_attempts`);
-  await dbQuery(`DROP TABLE IF EXISTS hsk_mock_exams`);
+  await dbQuery(`CREATE INDEX IF NOT EXISTS hsk_mock_attempts_exam_idx ON hsk_mock_attempts(mock_exam_id,submitted_at DESC)`);
   await dbQuery(`CREATE TABLE IF NOT EXISTS test_categories (
     id UUID PRIMARY KEY,
     name TEXT NOT NULL,
@@ -285,7 +401,7 @@ async function initDB(){
   await dbQuery(`CREATE TABLE IF NOT EXISTS pro_entitlements (
     id UUID PRIMARY KEY,
     user_id UUID UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-    skills INTEGER NOT NULL DEFAULT 4 CHECK (skills BETWEEN 1 AND 5),
+    skills INTEGER NOT NULL DEFAULT 4 CHECK (skills BETWEEN 1 AND 4),
     skill_access JSONB NOT NULL DEFAULT '[]'::jsonb,
     source TEXT NOT NULL DEFAULT 'purchase',
     status TEXT NOT NULL DEFAULT 'active',
@@ -312,7 +428,7 @@ async function initDB(){
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     student_name TEXT NOT NULL DEFAULT '',
     email TEXT NOT NULL DEFAULT '',
-    skills INTEGER NOT NULL CHECK (skills BETWEEN 1 AND 5),
+    skills INTEGER NOT NULL CHECK (skills BETWEEN 1 AND 4),
     amount INTEGER NOT NULL DEFAULT 0,
     status TEXT NOT NULL DEFAULT 'pending',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -320,7 +436,7 @@ async function initDB(){
   )`);
   await dbQuery(`CREATE TABLE IF NOT EXISTS payment_settings (
     id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id=1),
-    payment_title TEXT NOT NULL DEFAULT 'THANH TOÁN HSK 7–9',
+    payment_title TEXT NOT NULL DEFAULT 'THANH TOÁN KHÓA HỌC EIT',
     qr_url TEXT DEFAULT '',
     bank_name TEXT DEFAULT '',
     account_name TEXT DEFAULT '',
@@ -330,13 +446,79 @@ async function initDB(){
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
   await dbQuery(`INSERT INTO payment_settings(id) VALUES(1) ON CONFLICT(id) DO NOTHING`);
-  await dbQuery(`CREATE TABLE IF NOT EXISTS app_migrations(name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
-  const legacySpeakMigration=(await dbQuery(`SELECT 1 FROM app_migrations WHERE name='v8_legacy_speaking_to_translation' LIMIT 1`)).rows.length>0;
-  if(!legacySpeakMigration){
-    await dbQuery(`UPDATE pro_entitlements SET skill_access=(SELECT COALESCE(jsonb_agg(CASE WHEN v.value='\"speaking\"'::jsonb THEN '\"translation\"'::jsonb ELSE v.value END),'[]'::jsonb) FROM jsonb_array_elements(skill_access) v(value)) WHERE skill_access @> '[\"speaking\"]'::jsonb`);
-    await dbQuery(`INSERT INTO app_migrations(name) VALUES('v8_legacy_speaking_to_translation') ON CONFLICT DO NOTHING`);
-  }
-  // HSKK speaking is now an independent PRO skill. Do not rewrite it on every startup.
+  await dbQuery(`ALTER TABLE payment_settings ADD COLUMN IF NOT EXISTS bank_code TEXT NOT NULL DEFAULT ''`);
+  await dbQuery(`ALTER TABLE payment_settings ADD COLUMN IF NOT EXISTS vat_rate NUMERIC(5,2) NOT NULL DEFAULT 8.00`);
+  await dbQuery(`CREATE TABLE IF NOT EXISTS store_products (
+    id UUID PRIMARY KEY,
+    slug TEXT UNIQUE NOT NULL,
+    product_type TEXT NOT NULL CHECK(product_type IN ('pro','document')),
+    title TEXT NOT NULL,
+    subtitle TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    features JSONB NOT NULL DEFAULT '[]'::jsonb,
+    price INTEGER NOT NULL DEFAULT 0 CHECK(price>=0),
+    duration_days INTEGER NOT NULL DEFAULT 0,
+    skill_access JSONB NOT NULL DEFAULT '[]'::jsonb,
+    cover_url TEXT NOT NULL DEFAULT '',
+    file_key TEXT NOT NULL DEFAULT '',
+    file_name TEXT NOT NULL DEFAULT '',
+    vat_rate NUMERIC(5,2),
+    published BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`);
+  await dbQuery(`CREATE INDEX IF NOT EXISTS store_products_public_idx ON store_products(published,product_type,created_at DESC)`);
+  await dbQuery(`CREATE TABLE IF NOT EXISTS store_orders (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    order_code TEXT UNIQUE NOT NULL,
+    transfer_code TEXT UNIQUE NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','paid','cancelled','expired')),
+    customer_name TEXT NOT NULL DEFAULT '',
+    customer_email TEXT NOT NULL DEFAULT '',
+    subtotal INTEGER NOT NULL DEFAULT 0,
+    vat_amount INTEGER NOT NULL DEFAULT 0,
+    total_amount INTEGER NOT NULL DEFAULT 0,
+    vat_breakdown JSONB NOT NULL DEFAULT '[]'::jsonb,
+    provider_transaction_id TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    paid_at TIMESTAMPTZ
+  )`);
+  await dbQuery(`CREATE INDEX IF NOT EXISTS store_orders_user_idx ON store_orders(user_id,created_at DESC)`);
+  await dbQuery(`CREATE TABLE IF NOT EXISTS store_order_items (
+    id UUID PRIMARY KEY,
+    order_id UUID NOT NULL REFERENCES store_orders(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES store_products(id) ON DELETE SET NULL,
+    product_type TEXT NOT NULL,
+    product_title TEXT NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    unit_price INTEGER NOT NULL DEFAULT 0,
+    line_subtotal INTEGER NOT NULL DEFAULT 0,
+    vat_rate NUMERIC(5,2) NOT NULL DEFAULT 0,
+    vat_amount INTEGER NOT NULL DEFAULT 0,
+    duration_days INTEGER NOT NULL DEFAULT 0,
+    skill_access JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`);
+  await dbQuery(`CREATE TABLE IF NOT EXISTS document_access (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    product_id UUID NOT NULL REFERENCES store_products(id) ON DELETE CASCADE,
+    order_id UUID NOT NULL REFERENCES store_orders(id) ON DELETE CASCADE,
+    granted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(user_id,product_id)
+  )`);
+  await dbQuery(`CREATE TABLE IF NOT EXISTS payment_transactions (
+    id BIGSERIAL PRIMARY KEY,
+    provider TEXT NOT NULL,
+    provider_transaction_id TEXT NOT NULL,
+    order_id UUID NOT NULL REFERENCES store_orders(id) ON DELETE CASCADE,
+    amount INTEGER NOT NULL DEFAULT 0,
+    raw_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(provider,provider_transaction_id)
+  )`);
   // Seed the admin-provided QR once if the DB does not have one yet.
   const defaultQr = '/uploads/eit-payment-qr.png';
   if (fs.existsSync(path.join(UPLOAD_DIR, 'eit-payment-qr.png'))) {
@@ -357,33 +539,16 @@ async function initDB(){
   await dbQuery(`ALTER TABLE practice_tests ADD COLUMN IF NOT EXISTS status_label TEXT DEFAULT 'Chưa hoàn thành'`);
   await dbQuery(`ALTER TABLE practice_tests ADD COLUMN IF NOT EXISTS button_label TEXT DEFAULT 'Kiểm tra'`);
   await dbQuery(`ALTER TABLE practice_tests ADD COLUMN IF NOT EXISTS cover_url TEXT DEFAULT ''`);
-  await dbQuery(`ALTER TABLE practice_tests DROP CONSTRAINT IF EXISTS practice_tests_skill_volume_test_no_key`);
-  // Keep the unified HSK 7–9 bank (four existing skills) AND the separate HSKK speaking banks.
-  // Do not let the legacy HSK7–9 cleanup remove the newly added HSKK tests.
-  await dbQuery(`DELETE FROM practice_tests WHERE NOT ((volume IN (7,8,9,79) AND lower(skill) IN ('listening','reading','writing','translation')) OR (volume IN (20,21,22,30,31,32) AND lower(skill)='speaking'))`);
-  await dbQuery(`WITH ranked AS (
-    SELECT id, ROW_NUMBER() OVER (PARTITION BY lower(skill) ORDER BY volume, test_no, created_at, id) AS new_no
-    FROM practice_tests WHERE volume IN (7,8,9,79) AND lower(skill) IN ('listening','reading','writing','translation')
-  ) UPDATE practice_tests p SET volume=79,skill=lower(p.skill),test_no=ranked.new_no::integer FROM ranked WHERE p.id=ranked.id`);
-  // Widen old PRO entitlement/order constraints to allow a fifth optional skill: HSKK speaking.
-  await dbQuery(`ALTER TABLE pro_entitlements DROP CONSTRAINT IF EXISTS pro_entitlements_skills_check`);
-  await dbQuery(`ALTER TABLE pro_entitlements ADD CONSTRAINT pro_entitlements_skills_check CHECK (skills BETWEEN 1 AND 5)`);
-  await dbQuery(`ALTER TABLE pro_orders DROP CONSTRAINT IF EXISTS pro_orders_skills_check`);
-  await dbQuery(`ALTER TABLE pro_orders ADD CONSTRAINT pro_orders_skills_check CHECK (skills BETWEEN 1 AND 5)`);
-  await dbQuery(`UPDATE practice_tests SET
-    title=regexp_replace(title,'HSK[[:space:]]*[789]([[:space:]]*[-–/][[:space:]]*[789])?','HSK 7–9','gi'),
-    series_label=regexp_replace(series_label,'HSK[[:space:]]*[789]([[:space:]]*[-–/][[:space:]]*[789])?','HSK 7–9','gi'),
-    card_subtitle=regexp_replace(card_subtitle,'HSK[[:space:]]*[789]([[:space:]]*[-–/][[:space:]]*[789])?','HSK 7–9','gi')
-    WHERE volume=79`);
-  await dbQuery(`ALTER TABLE practice_tests ADD CONSTRAINT practice_tests_skill_volume_test_no_key UNIQUE(skill,volume,test_no)`);
-
   await dbQuery(`CREATE INDEX IF NOT EXISTS practice_tests_skill_idx ON practice_tests(skill,volume,test_no)`);
   await dbQuery(`CREATE INDEX IF NOT EXISTS prediction_created_idx ON prediction_files(created_at DESC)`);
   await dbQuery(`CREATE INDEX IF NOT EXISTS submissions_user_idx ON submissions(user_id)`);
   await dbQuery(`CREATE INDEX IF NOT EXISTS submissions_submitted_idx ON submissions(submitted_at DESC)`);
   await seedUsers();
-  // HSK 7–9 build: do not seed legacy IELTS course cards into this site.
+  await seedCourses();
+  await seedStoreProducts();
   await seedPracticeDemos();
+  await seedHsk6Papers();
+  await seedHsk5Papers();
   await migrateLegacySubmissions();
 }
 
@@ -482,36 +647,17 @@ function isAllowedDoc(name){return /\.(docx|txt)$/i.test(name||'');}
 function isAllowedAudio(name){return /\.(mp3|wav|m4a|ogg)$/i.test(name||'');}
 function isAllowedPdf(name){return /\.pdf$/i.test(name||'');}
 
-
-const GOOGLE_CLIENT_ID=String(process.env.GOOGLE_CLIENT_ID||'').trim();
-function verifyGoogleIdToken(idToken){
-  return new Promise((resolve,reject)=>{
-    const https=require('https');
-    const req=https.get('https://oauth2.googleapis.com/tokeninfo?id_token='+encodeURIComponent(idToken),r=>{
-      let d='';r.on('data',c=>d+=c);r.on('end',()=>{try{const j=JSON.parse(d);if(r.statusCode!==200)return reject(new Error('Google từ chối token.'));resolve(j)}catch{reject(new Error('Phản hồi Google không hợp lệ.'))}});
-    });
-    req.setTimeout(8000,()=>{req.destroy(new Error('Google không phản hồi.'))});
-    req.on('error',reject);
-  });
-}
-const ALL_SKILLS=['listening','reading','writing','translation'];
-const PRO_SKILLS=[...ALL_SKILLS,'speaking'];
-const HSKK_VOLUMES=[20,21,22,30,31,32];
-const HSKK_VOLUME_MAP={'2.0':{beginner:20,intermediate:21,advanced:22},'3.0':{beginner:30,intermediate:31,advanced:32}};
+const ALL_SKILLS=['listening','reading','writing','speaking'];
 function normalizeSkills(list){
   if(!Array.isArray(list))return [];
-  return [...new Set(list.map(x=>String(x||'').trim().toLowerCase()).filter(x=>PRO_SKILLS.includes(x)))];
+  return [...new Set(list.map(x=>String(x||'').trim().toLowerCase()).filter(x=>ALL_SKILLS.includes(x)))];
 }
 async function grantCoursePro(user){
   if(!user?.id)return;
   const email=String(user.email||'').trim().toLowerCase();
   const has=await dbQuery(`SELECT 1 FROM course_enrollments WHERE user_id=$1 OR ($2<>'' AND lower(trim(email))=$2) LIMIT 1`,[user.id,email]);
   if(!has.rows.length)return;
-  // Course access continues to unlock the original four HSK 7–9 skills. Preserve an independently purchased/granted HSKK skill instead of overwriting it.
-  const existing=(await dbQuery(`SELECT skill_access,expires_at,status FROM pro_entitlements WHERE user_id=$1 LIMIT 1`,[user.id])).rows[0];
-  const keepsHskk=existing?.status==='active' && new Date(existing.expires_at)>new Date() && Array.isArray(existing.skill_access) && existing.skill_access.includes('speaking');
-  const access=keepsHskk?[...ALL_SKILLS,'speaking']:ALL_SKILLS.slice();
-  await dbQuery(`INSERT INTO pro_entitlements(id,user_id,skills,skill_access,source,status,starts_at,expires_at) VALUES($1,$2,$3,$4::jsonb,'course_enrollment','active',NOW(),NOW()+INTERVAL '30 days') ON CONFLICT(user_id) DO UPDATE SET skills=EXCLUDED.skills,skill_access=EXCLUDED.skill_access,status='active',expires_at=GREATEST(pro_entitlements.expires_at,NOW()+INTERVAL '30 days'),source='course_enrollment',updated_at=NOW()`,[crypto.randomUUID(),user.id,access.length,JSON.stringify(access)]);
+  await dbQuery(`INSERT INTO pro_entitlements(id,user_id,skills,skill_access,source,status,starts_at,expires_at) VALUES($1,$2,4,$3::jsonb,'course_enrollment','active',NOW(),NOW()+INTERVAL '30 days') ON CONFLICT(user_id) DO UPDATE SET skills=4,skill_access=$3::jsonb,status='active',expires_at=GREATEST(pro_entitlements.expires_at,NOW()+INTERVAL '30 days'),source='course_enrollment',updated_at=NOW()`,[crypto.randomUUID(),user.id,JSON.stringify(ALL_SKILLS)]);
 }
 async function getEntitlement(userId){
   if(!userId)return null;
@@ -528,24 +674,18 @@ async function hasCourseAccess(user){
   const r=await dbQuery(`SELECT 1 FROM course_enrollments WHERE user_id=$1 OR ($2<>'' AND lower(trim(email))=$2) LIMIT 1`,[user.id,email]);
   return !!r.rows.length;
 }
-// Quy tắc truy cập (áp dụng cho CẢ 4 kỹ năng, mọi tài khoản kể cả Google):
-//  1) Admin override theo từng đề (mở/khóa riêng) luôn được ưu tiên.
-//  2) Đề miễn phí: Test 1 của mỗi kỹ năng ở mỗi cấp HSK (test_no = 1).
-//  3) PRO: kỹ năng nằm trong skill_access của gói PRO còn hạn (hoặc khóa học).
-//  4) Còn lại bị khóa.
-function resolvePracticeAccess(test,ent,override){
+async function getPracticeAccess(user,test){
+  // HSK policy: any active candidate account can access every published Reading/Listening paper.
+  // No per-test grant, PRO entitlement, or volume-specific unlock is required for these two skills.
+  if(!user?.id)return {allowed:false,reason:'login'};
   const skill=String(test.skill||'').toLowerCase();
-  if(override)return {allowed:!!override.allowed,reason:'admin'};
-  if(Number(test.test_no)===1)return {allowed:true,reason:'free'};
+  if(skill==='reading'||skill==='listening')return {allowed:true,reason:'account'};
+  if((skill==='writing'||skill==='speaking') && Number(test.volume)===1) return {allowed:true,reason:'free'};
+  const override=(await dbQuery('SELECT allowed FROM practice_access WHERE user_id=$1 AND test_id=$2 LIMIT 1',[user.id,test.id])).rows[0];
+  if(override){return {allowed:!!override.allowed,reason:'admin'};}
+  const ent=await getEntitlement(user.id);
   if(ent?.skillAccess?.includes(skill))return {allowed:true,reason:'pro'};
   return {allowed:false,reason:'locked'};
-}
-async function getPracticeAccess(user,test){
-  if(!user?.id)return {allowed:false,reason:'login'};
-  try{await grantCoursePro(user);}catch{}
-  const override=(await dbQuery('SELECT allowed FROM practice_access WHERE user_id=$1 AND test_id=$2 LIMIT 1',[user.id,test.id])).rows[0];
-  const ent=await getEntitlement(user.id);
-  return resolvePracticeAccess(test,ent,override);
 }
 async function getUserAccessSummary(user){
   if(!user?.id)return {allowedTestIds:[],skillAccess:[],predictionAllowed:false,pro:null,course:false};
@@ -555,13 +695,56 @@ async function getUserAccessSummary(user){
   const explicit=(await dbQuery('SELECT test_id FROM practice_access WHERE user_id=$1 AND allowed=TRUE',[user.id])).rows.map(x=>x.test_id);
   return {allowedTestIds:explicit,skillAccess:ent?.skillAccess||[],predictionAllowed:!!ent||course,pro:ent?{skills:ent.skills,skillAccess:ent.skillAccess,expiresAt:ent.expiresAt,daysRemaining:ent.daysRemaining}:null,course};
 }
-// PRO packages are managed dynamically from the Admin panel.
-function planSkills(plan){ return normalizeSkills(Array.isArray(plan?.skill_access)?plan.skill_access:[]); }
+const PRO_PLANS={
+  reading:{label:'PRO Reading',skills:1,skillAccess:['reading'],amount:69000,durationDays:30},
+  listening:{label:'PRO Listening',skills:1,skillAccess:['listening'],amount:69000,durationDays:30},
+  writing:{label:'PRO Writing',skills:1,skillAccess:['writing'],amount:89000,durationDays:30},
+  speaking:{label:'PRO Speaking',skills:1,skillAccess:['speaking'],amount:89000,durationDays:30},
+  '4-month':{label:'PRO 4 Skills · 1 tháng',skills:4,skillAccess:['reading','listening','writing','speaking'],amount:329000,durationDays:30},
+  '4-2month':{label:'PRO 4 Skills · 6 tháng',skills:4,skillAccess:['reading','listening','writing','speaking'],amount:1799000,durationDays:180},
+  '4-year':{label:'PRO 4 Skills · 1 năm',skills:4,skillAccess:['reading','listening','writing','speaking'],amount:3599000,durationDays:365}
+};
+function getProPlan(plan){ return PRO_PLANS[String(plan||'').trim()]||null; }
 
 async function api(req,res,url){
   if(req.method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type, Authorization','Access-Control-Allow-Methods':'GET,POST,PATCH,DELETE,OPTIONS'});return res.end()}
+  if(url.pathname==='/api/webhooks/sepay' && req.method==='POST'){
+    const raw=await readRawBody(req);
+    const secret=String(process.env.SEPAY_WEBHOOK_SECRET||'');
+    const apiKey=String(process.env.SEPAY_API_KEY||'');
+    if(secret){
+      const timestamp=String(req.headers['x-sepay-timestamp']||'');
+      const signature=String(req.headers['x-sepay-signature']||'');
+      const seconds=Number(timestamp);
+      if(!Number.isFinite(seconds)||Math.abs(Math.floor(Date.now()/1000)-seconds)>300)return json(res,401,{success:false,message:'Webhook timestamp expired'});
+      const expected='sha256='+crypto.createHmac('sha256',secret).update(`${timestamp}.`).update(raw).digest('hex');
+      const a=Buffer.from(expected); const b=Buffer.from(signature);
+      if(a.length!==b.length||!crypto.timingSafeEqual(a,b))return json(res,401,{success:false,message:'Invalid webhook signature'});
+    }else if(apiKey){
+      const authorization=String(req.headers.authorization||'');
+      const expected='Apikey '+apiKey;
+      const a=Buffer.from(expected); const b=Buffer.from(authorization);
+      if(a.length!==b.length||!crypto.timingSafeEqual(a,b))return json(res,401,{success:false,message:'Invalid webhook API key'});
+    }else{
+      return json(res,503,{success:false,message:'Payment webhook is not configured. Set SEPAY_WEBHOOK_SECRET.'});
+    }
+    let event; try{event=JSON.parse(raw.toString('utf8'));}catch{return json(res,400,{success:false,message:'Invalid JSON'});}
+    const transferType=String(event.transferType||event.transfer_type||'').toLowerCase();
+    const content=String(event.content||event.description||'');
+    const amount=Math.round(Number(event.transferAmount??event.amount??0));
+    const txnId=String(event.id??event.referenceCode??'').trim();
+    if(transferType!=='in'||!txnId||!content||!Number.isFinite(amount)||amount<=0)return json(res,200,{success:true,ignored:true});
+    const settings=(await dbQuery('SELECT account_number FROM payment_settings WHERE id=1 LIMIT 1')).rows[0]||{};
+    if(settings.account_number && String(event.accountNumber||'').trim()!==String(settings.account_number).trim())return json(res,200,{success:true,ignored:true,reason:'account_mismatch'});
+    const order=(await dbQuery(`SELECT id,total_amount FROM store_orders WHERE status='pending' AND position(upper(transfer_code) in upper($1))>0 LIMIT 1`,[content])).rows[0];
+    if(!order)return json(res,200,{success:true,unmatched:true});
+    if(Number(order.total_amount)!==amount)return json(res,200,{success:true,amountMismatch:true});
+    const fulfilled=await fulfillStoreOrder(order.id,{provider:'sepay',id:txnId,amount,raw:event});
+    return json(res,200,{success:true,...fulfilled});
+  }
+
   if(url.pathname==='/api/health' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} return json(res,200,{ok:true,service:'HSK Exam API',database:!!pool}); }
-  if(url.pathname==='/api/ai/status' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} const keyConfigured=isGeminiConfigured(); return json(res,200,{ok:true,configured:keyConfigured,provider:'Google Gemini',model:GEMINI_MODEL,serverSideKey:keyConfigured,writesToDatabase:!!pool}); }
+  if(url.pathname==='/api/ai/status' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} const keyConfigured=!!String(process.env.DEEPSEEK_API_KEY||'').trim(); return json(res,200,{ok:true,configured:keyConfigured,model:DEEPSEEK_MODEL,serverSideKey:keyConfigured,writesToDatabase:!!pool}); }
 
   if(url.pathname==='/api/admin/login' && req.method==='POST'){
     const b=await body(req); if(b.password!==ADMIN_PASSWORD)return json(res,401,{ok:false,message:'Invalid password'});
@@ -571,7 +754,7 @@ async function api(req,res,url){
 
   if(url.pathname==='/api/admin/test-categories' && req.method==='GET'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
-    const rows=(await dbQuery(`SELECT c.id,c.name,c.created_at,COUNT(p.id)::int AS test_count FROM test_categories c LEFT JOIN practice_tests p ON p.category_id=c.id AND p.volume=79 AND lower(p.skill)=ANY(ARRAY['listening','reading','writing','translation']) GROUP BY c.id,c.name,c.created_at ORDER BY LOWER(c.name),c.created_at`)).rows;
+    const rows=(await dbQuery(`SELECT c.id,c.name,c.created_at,COUNT(p.id)::int AS test_count FROM test_categories c LEFT JOIN practice_tests p ON p.category_id=c.id GROUP BY c.id,c.name,c.created_at ORDER BY LOWER(c.name),c.created_at`)).rows;
     return json(res,200,{ok:true,categories:rows.map(c=>({id:c.id,name:c.name,created_at:c.created_at,test_count:Number(c.test_count||0)}))});
   }
   if(url.pathname==='/api/admin/test-categories' && req.method==='POST'){
@@ -608,7 +791,7 @@ async function api(req,res,url){
   }
 
   if(url.pathname==='/api/test-categories' && req.method==='GET'){
-    const rows=(await dbQuery(`SELECT c.id,c.name,COUNT(p.id)::int AS test_count FROM test_categories c LEFT JOIN practice_tests p ON p.category_id=c.id AND p.published=TRUE AND p.volume=79 AND lower(p.skill)=ANY(ARRAY['listening','reading','writing','translation']) GROUP BY c.id,c.name,c.created_at ORDER BY LOWER(c.name),c.created_at`)).rows;
+    const rows=(await dbQuery(`SELECT c.id,c.name,COUNT(p.id)::int AS test_count FROM test_categories c LEFT JOIN practice_tests p ON p.category_id=c.id AND p.published=TRUE GROUP BY c.id,c.name,c.created_at ORDER BY LOWER(c.name),c.created_at`)).rows;
     return json(res,200,{ok:true,categories:rows.map(c=>({id:c.id,name:c.name,test_count:Number(c.test_count||0)}))});
   }
 
@@ -635,201 +818,47 @@ async function api(req,res,url){
     finally{clearTimeout(timeout)}
   }
 
-  // HSKK is an additional speaking module. It uses separate volume codes and does not replace HSK 7–9 Reading/Writing/Translation.
-  if(url.pathname==='/api/hskk/practice' && req.method==='GET'){
-    const version=String(url.searchParams.get('version')||'').trim();
-    const level=String(url.searchParams.get('level')||'').trim();
-    let volumes=HSKK_VOLUMES;
-    if(version && level){const v=HSKK_VOLUME_MAP[version]?.[level];if(!v)return json(res,400,{ok:false,message:'Phiên bản hoặc cấp độ HSKK không hợp lệ.'});volumes=[v];}
-    else if(version==='2.0')volumes=[20,21,22];
-    else if(version==='3.0')volumes=[30,31,32];
-    else if(level && ['beginner','intermediate','advanced'].includes(level))volumes=[HSKK_VOLUME_MAP['2.0'][level],HSKK_VOLUME_MAP['3.0'][level]];
-    const rows=(await dbQuery(`SELECT id,skill,volume,test_no,title,question_type,duration_minutes,total_questions,audio_url,series_label,display_test_label,card_label,card_subtitle,attempts_count,status_label,button_label,cover_url,published,content FROM practice_tests WHERE published=TRUE AND lower(skill)='speaking' AND volume=ANY($1::int[]) ORDER BY volume,test_no`,[volumes])).rows;
-    const u=candidate(req),tests=[];
-    for(const t of rows){const a=await getPracticeAccess(u,t);tests.push({...t,content:{hskkVersion:t.content?.hskkVersion||'',hskkLevel:t.content?.hskkLevel||'',hskkLevelLabel:t.content?.hskkLevelLabel||''},allowed:a.allowed,lockReason:a.reason});}
-    return json(res,200,{ok:true,program:'HSKK',tests});
-  }
-  if(url.pathname.match(/^\/api\/hskk\/test\/[0-9a-f-]+$/i) && req.method==='GET'){
-    const id=url.pathname.split('/').pop();
-    const r=await dbQuery(`SELECT * FROM practice_tests WHERE id=$1 AND published=TRUE AND lower(skill)='speaking' AND volume=ANY($2::int[]) LIMIT 1`,[id,HSKK_VOLUMES]);
-    if(!r.rows.length)return json(res,404,{ok:false,message:'Không tìm thấy đề HSKK.'});
-    const x=r.rows[0],u=candidate(req);const access=await getPracticeAccess(u,x);
-    if(!access.allowed)return json(res,u?403:401,{ok:false,message:u?'Bài HSKK này đang bị khóa. Vui lòng liên hệ Admin hoặc đăng ký PRO HSKK.':'Vui lòng đăng nhập để làm bài HSKK.'});
-    return json(res,200,{ok:true,test:{id:x.id,skill:'speaking',volume:x.volume,testNo:x.test_no,title:x.title,questionType:x.question_type,durationMinutes:x.duration_minutes,totalQuestions:x.total_questions,content:x.content||{},seriesLabel:x.series_label,displayTestLabel:x.display_test_label,cardLabel:x.card_label,cardSubtitle:x.card_subtitle,accessReason:access.reason}});
-  }
-  if(url.pathname==='/api/hskk/submit' && req.method==='POST'){
-    const u=candidate(req);if(!u)return json(res,401,{ok:false,message:'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'});
-    const b=await body(req);const testId=String(b.testId||'');
-    const test=(await dbQuery(`SELECT id,skill,volume,test_no,title,content,published FROM practice_tests WHERE id=$1 AND published=TRUE AND lower(skill)='speaking' AND volume=ANY($2::int[]) LIMIT 1`,[testId,HSKK_VOLUMES])).rows[0];
-    if(!test)return json(res,404,{ok:false,message:'Không tìm thấy đề HSKK hợp lệ.'});
-    const access=await getPracticeAccess(u,test);if(!access.allowed)return json(res,403,{ok:false,message:'Bạn chưa được cấp quyền làm đề HSKK này.'});
-    const rec=Array.isArray(b.recordings)?b.recordings:(Array.isArray(b.answers?.recordings)?b.answers.recordings:[]);
-    if(!rec.length)return json(res,400,{ok:false,message:'Chưa có bản ghi âm nào. Hãy hoàn thành bài nói trước khi nộp.'});
-    const required=Number(test.total_questions||test.content?.questions?.length||0);
-    if(rec.length<required)return json(res,400,{ok:false,message:`Bài thi có ${required} câu nhưng mới nhận ${rec.length} bản ghi. Vui lòng làm đủ câu.`});
-    const sid=crypto.randomUUID(),version=String(test.content?.hskkVersion||'2.0'),level=String(test.content?.hskkLevel||'beginner');
-    const answers={recordings:rec,version,level};
-    await dbQuery(`INSERT INTO submissions(id,user_id,student_name,student_email,student_code,eit_code,dob,test_id,test_title,skill,answers,highlights,notes,total,score,auto_submitted,elapsed_seconds) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'speaking',$10::jsonb,'[]'::jsonb,'[]'::jsonb,$11,NULL,FALSE,$12)`,[sid,u.id,u.full_name,u.email||'',u.registration_id,u.eit_code,u.dob||null,test.id,test.title,JSON.stringify(answers),required,Number(b.elapsedSeconds||0)]);
-    try{
-      const tasks=Array.isArray(test.content?.questions)?test.content.questions:[];
-      const ai=await gradeHskkSpeaking(rec.map((x,i)=>({questionNumber:Number(x.questionNumber||i+1),part:Number(x.part||x.section||1),questionType:String(x.questionType||tasks[i]?.type||''),prompt:String(x.prompt||tasks[i]?.text||''),preparationSeconds:Number(x.preparationSeconds||0),responseSeconds:Number(x.responseSeconds||0),mime:String(x.mime||'audio/webm'),audio:String(x.audio||''),promptAudio:String(x.promptAudio||''),promptImage:String(x.promptImage||''),transcript:String(x.transcript||'')})),{version,level});
-      const score=Number(ai.overallScore||0);
-      await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,overall_band,result,status) VALUES($1,$2,$3,'speaking',$4,$5,$6::jsonb,'completed') ON CONFLICT(submission_id) DO UPDATE SET model=EXCLUDED.model,overall_band=EXCLUDED.overall_band,result=EXCLUDED.result,status='completed',error_message='',updated_at=NOW()`,[crypto.randomUUID(),sid,u.id,ai.model||GEMINI_MODEL,score,JSON.stringify(ai)]);
-      return json(res,201,{ok:true,id:sid,message:'Đã nộp bài và chấm HSKK thành công.',ai:{available:true,overallScore:score,model:ai.model||GEMINI_MODEL},resultUrl:'/hskk-result.html?id='+encodeURIComponent(sid)});
-    }catch(err){
-      console.error('HSKK grading failed:',err);
-      await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,status,error_message,result) VALUES($1,$2,$3,'speaking',$4,'failed',$5,'{}'::jsonb) ON CONFLICT(submission_id) DO UPDATE SET status='failed',error_message=EXCLUDED.error_message,updated_at=NOW()`,[crypto.randomUUID(),sid,u.id,GEMINI_MODEL,String(err.message||'HSKK grading failed')]);
-      return json(res,201,{ok:true,id:sid,message:'Bài HSKK đã được lưu nhưng AI chưa chấm thành công.',ai:{available:false,error:String(err.message||'AI grading failed')},resultUrl:'/hskk-result.html?id='+encodeURIComponent(sid)});
-    }
-  }
-
-  // Admin-only HSKK Studio API. The original HSK 7–9 builder remains unchanged.
-  if(url.pathname==='/api/admin/hskk/tests' && req.method==='GET'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
-    const rows=(await dbQuery(`SELECT id,skill,volume,test_no,title,duration_minutes,total_questions,content,published,updated_at FROM practice_tests WHERE lower(skill)='speaking' AND volume=ANY($1::int[]) ORDER BY volume,test_no`,[HSKK_VOLUMES])).rows;
-    return json(res,200,{ok:true,tests:rows});
-  }
-  if(url.pathname==='/api/admin/hskk/tests' && req.method==='POST'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
-    const b=await body(req),version=String(b.version||''),level=String(b.level||''),testNo=Math.max(1,Math.floor(Number(b.testNo||1)));
-    const volume=HSKK_VOLUME_MAP[version]?.[level];
-    if(!volume)return json(res,400,{ok:false,message:'Phiên bản và cấp độ HSKK không hợp lệ.'});
-    const questions=Array.isArray(b.questions)?b.questions:[];
-    const patterns={beginner:[['listen_repeat',15],['listen_answer',10],['answer_question',2]],intermediate:[['listen_repeat',10],['picture_description',2],['answer_question',2]],advanced:[['listen_restate',3],['read_aloud',1],['answer_question',2]]};
-    const requiredTypes=patterns[level]||[];const expected=requiredTypes.reduce((n,x)=>n+x[1],0);
-    if(questions.length!==expected)return json(res,400,{ok:false,message:`${level==='beginner'?'Sơ cấp':level==='intermediate'?'Trung cấp':'Cao cấp'} cần đúng ${expected} câu.`});
-    let expectedIndex=0;for(const [requiredType,count] of requiredTypes){for(let j=0;j<count;j++){if(String(questions[expectedIndex]?.type||'')!==requiredType)return json(res,400,{ok:false,message:`Cấu trúc câu ${expectedIndex+1} chưa đúng. ${version} · ${level} cần dạng ${requiredType}.`});expectedIndex++;}}
-    for(const q of questions){
-      const type=String(q.type||'');
-      if(['listen_repeat','listen_answer','listen_restate'].includes(type)&&!String(q.audioUrl||''))return json(res,400,{ok:false,message:`Câu ${q.number}: câu nghe cần có audio.`});
-      if(type==='picture_description'&&!String(q.imageUrl||''))return json(res,400,{ok:false,message:`Câu ${q.number}: câu mô tả tranh cần có hình ảnh.`});
-      if(['answer_question','read_aloud'].includes(type)&&!String(q.text||'').trim())return json(res,400,{ok:false,message:`Câu ${q.number}: cần nhập nội dung hiển thị.`});
-      if(Number(q.responseSeconds||0)<1||Number(q.responseSeconds||0)>3600)return json(res,400,{ok:false,message:`Câu ${q.number}: thời gian trả lời không hợp lệ.`});
-    }
-    const id=String(b.id||crypto.randomUUID()),title=String(b.title||`HSKK ${version} · ${level} · Test ${testNo}`).trim();
-    const content={program:'hskk',hskkVersion:version,hskkLevel:level,hskkLevelLabel:({beginner:'Sơ cấp',intermediate:'Trung cấp',advanced:'Cao cấp'})[level],hskkPreparationMinutes:Math.max(0,Math.min(60,Number(b.preparationMinutes||0))),questions};
-    await dbQuery(`INSERT INTO practice_tests(id,skill,volume,test_no,title,question_type,duration_minutes,total_questions,content,answer_key,explanations,audio_url,series_label,display_test_label,card_label,card_subtitle,published) VALUES($1,'speaking',$2,$3,$4,'HSKK',$5,$6,$7::jsonb,'{}'::jsonb,'{}'::jsonb,'',$8,$9,$10,$11,TRUE) ON CONFLICT(skill,volume,test_no) DO UPDATE SET title=EXCLUDED.title,question_type='HSKK',duration_minutes=EXCLUDED.duration_minutes,total_questions=EXCLUDED.total_questions,content=EXCLUDED.content,series_label=EXCLUDED.series_label,display_test_label=EXCLUDED.display_test_label,card_label=EXCLUDED.card_label,card_subtitle=EXCLUDED.card_subtitle,published=TRUE,updated_at=NOW()`,[id,volume,testNo,title,Number(b.durationMinutes||20),questions.length,JSON.stringify(content),`${version==='2.0'?'HSKK 2.0':'HSK Speaking 3.0'} · ${content.hskkLevelLabel}`,`Test ${testNo}`,`${version} · ${content.hskkLevelLabel}`,`${questions.length} câu · ghi âm từng câu`]);
-    const saved=(await dbQuery(`SELECT id FROM practice_tests WHERE skill='speaking' AND volume=$1 AND test_no=$2 LIMIT 1`,[volume,testNo])).rows[0];
-    return json(res,201,{ok:true,id:saved?.id||id,volume,testNo,totalQuestions:questions.length,message:'Đã lưu đề HSKK.'});
-  }
-  if(url.pathname.match(/^\/api\/admin\/hskk\/tests\/[0-9a-f-]+$/i) && req.method==='DELETE'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
-    const id=url.pathname.split('/').pop();const r=await dbQuery(`DELETE FROM practice_tests WHERE id=$1 AND lower(skill)='speaking' AND volume=ANY($2::int[]) RETURNING id`,[id,HSKK_VOLUMES]);
-    if(!r.rowCount)return json(res,404,{ok:false,message:'Không tìm thấy đề HSKK.'});
-    return json(res,200,{ok:true,message:'Đã xóa đề HSKK.'});
-  }
-
   if(url.pathname==='/api/practice' && req.method==='GET'){
     const skill=String(url.searchParams.get('skill')||'').toLowerCase(); const volumeParam=url.searchParams.get('volume'); const volume=volumeParam===null||volumeParam===''?null:Number(volumeParam);
-    const allowedSkills=['listening','reading','writing','translation'];
-    let sql='SELECT id,skill,volume,test_no,title,question_type,duration_minutes,total_questions,audio_url,source_file,published,updated_at,series_label,display_test_label,card_label,card_subtitle,attempts_count,status_label,button_label,cover_url,category_id,(SELECT name FROM test_categories WHERE id=practice_tests.category_id) AS category_name FROM practice_tests WHERE published=TRUE AND volume=79 AND lower(skill)=ANY($1::text[])'; const params=[allowedSkills];
-    if(skill && !allowedSkills.includes(skill))return json(res,400,{ok:false,message:'Kỹ năng không thuộc chương trình HSK 7–9.'}); if(skill){params.push(skill);sql+=` AND lower(skill)=$${params.length}`;} if(volume!==null && (!Number.isFinite(volume)||volume!==79))return json(res,200,{ok:true,tests:[]}); sql+=' ORDER BY skill,test_no';
+    let sql='SELECT id,skill,volume,test_no,title,question_type,duration_minutes,total_questions,audio_url,source_file,published,updated_at,series_label,display_test_label,card_label,card_subtitle,attempts_count,status_label,button_label,cover_url,category_id,(SELECT name FROM test_categories WHERE id=practice_tests.category_id) AS category_name FROM practice_tests WHERE published=TRUE'; const params=[];
+    if(skill){params.push(skill);sql+=` AND lower(skill)=$${params.length}`;} if(volume!==null && Number.isFinite(volume)){params.push(volume);sql+=` AND volume=$${params.length}`;} sql+=' ORDER BY skill,volume,test_no';
     const rows=(await dbQuery(sql,params)).rows; const u=candidate(req);
     const tests=[];
     for(const t of rows){const a=await getPracticeAccess(u,t);tests.push({...t,allowed:a.allowed,lockReason:a.reason});}
     return json(res,200,{ok:true,tests});
   }
   if(url.pathname==='/api/practice/catalog' && req.method==='GET'){
-    const rows=(await dbQuery(`SELECT lower(skill) AS skill,COUNT(*)::int AS test_count FROM practice_tests WHERE published=TRUE AND volume=79 AND lower(skill)=ANY($1::text[]) GROUP BY lower(skill) ORDER BY lower(skill)`,[['listening','reading','writing','translation']])).rows;
-    return json(res,200,{ok:true,program:'HSK 7–9',skills:rows});
+    const rows=(await dbQuery('SELECT skill,volume,COUNT(*)::int AS test_count FROM practice_tests WHERE published=TRUE GROUP BY skill,volume ORDER BY skill,volume')).rows;
+    return json(res,200,{ok:true,volumes:rows});
   }
-  if(url.pathname==='/api/mock79' && req.method==='GET'){
-    const row=(await dbQuery(`SELECT id,title,description,section_minutes FROM hsk79_mock_exams WHERE published=TRUE ORDER BY updated_at DESC LIMIT 1`)).rows[0];
-    return json(res,200,{ok:true,exam:row||null,configured:!!row});
+  if(url.pathname==='/api/mock-exams' && req.method==='GET'){
+    const rows=(await dbQuery('SELECT id,title,description,section_minutes,updated_at FROM hsk_mock_exams WHERE published=TRUE ORDER BY updated_at DESC')).rows;
+    return json(res,200,{ok:true,exams:rows});
   }
-  if(url.pathname.match(/^\/api\/mock79\/[0-9a-f-]+$/i) && req.method==='GET'){
+  if(url.pathname.match(/^\/api\/mock-exams\/[0-9a-f-]+$/i) && req.method==='GET'){
     const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Vui lòng đăng nhập để tham gia thi thử.'});
     const id=url.pathname.split('/').pop();
-    const config=(await dbQuery('SELECT * FROM hsk79_mock_exams WHERE id=$1 AND published=TRUE LIMIT 1',[id])).rows[0];
-    if(!config)return json(res,404,{ok:false,message:'Chưa có cấu hình thi thử tổng hợp HSK 7–9.'});
-    const picks=[['listening',config.listening_test_id],['reading',config.reading_test_id],['writing',config.writing_test_id],['translation',config.translation_test_id]];
+    const config=(await dbQuery('SELECT * FROM hsk_mock_exams WHERE id=$1 AND published=TRUE LIMIT 1',[id])).rows[0];
+    if(!config)return json(res,404,{ok:false,message:'Bộ đề thi thử không tồn tại hoặc chưa được xuất bản.'});
+    const picks=[['listening',config.listening_test_id],['reading',config.reading_test_id],['writing',config.writing_test_id],['speaking',config.hskk_test_id]];
     const tests={};
-    for(const [skill,testId] of picks){
-      const test=(await dbQuery('SELECT * FROM practice_tests WHERE id=$1 AND volume=79 AND published=TRUE AND lower(skill)=$2 LIMIT 1',[testId,skill])).rows[0];
-      if(!test)return json(res,409,{ok:false,message:`Admin cần chọn và xuất bản một đề ${skill.toUpperCase()} trong bộ thi thử.`});
+    const secretQuestionFields=new Set(['answer','answerkey','answer_key','correctanswer','correct_answer','correctoption','correct_option','explanation','explanations','solution']);
+    const sanitizeExamContent=value=>Array.isArray(value)?value.map(sanitizeExamContent):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).filter(([k])=>!secretQuestionFields.has(k.toLowerCase())).map(([k,v])=>[k,sanitizeExamContent(v)])):value;
+    for(const [key,testId] of picks){
+      const test=(await dbQuery('SELECT * FROM practice_tests WHERE id=$1 AND published=TRUE LIMIT 1',[testId])).rows[0];
+      if(!test)return json(res,409,{ok:false,message:`Admin chưa publish đề ${key.toUpperCase()} được gắn trong bộ thi thử.`});
       const access=await getPracticeAccess(u,test);
-      if(!access.allowed)return json(res,403,{ok:false,message:`Tài khoản chưa có quyền làm phần ${skill.toUpperCase()} của bài thi thử tổng hợp.`});
-      tests[skill]={id:test.id,skill:test.skill,title:test.title,questionType:test.question_type,durationMinutes:test.duration_minutes,totalQuestions:test.total_questions,content:sanitizePracticeContent(test.content||{}),audioUrl:test.audio_url||''};
+      if(!access.allowed)return json(res,403,{ok:false,message:`Bạn chưa được cấp quyền cho phần ${key.toUpperCase()}.`});
+      tests[key]={id:test.id,skill:test.skill,volume:test.volume,testNo:test.test_no,title:test.title,questionType:test.question_type,durationMinutes:test.duration_minutes,totalQuestions:test.total_questions,content:sanitizeExamContent(test.content||{}),audioUrl:test.audio_url,displayTestLabel:test.display_test_label||'',seriesLabel:test.series_label||''};
     }
     return json(res,200,{ok:true,exam:{id:config.id,title:config.title,description:config.description||'',sectionMinutes:config.section_minutes||{},tests}});
   }
-  if(url.pathname==='/api/mock79/submit' && req.method==='POST'){
-    const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'});
-    const b=await body(req),examId=String(b.examId||'');
-    const config=(await dbQuery('SELECT * FROM hsk79_mock_exams WHERE id=$1 AND published=TRUE LIMIT 1',[examId])).rows[0];
-    if(!config)return json(res,404,{ok:false,message:'Không tìm thấy bộ đề thi thử.'});
-    const answers=b.answers&&typeof b.answers==='object'?b.answers:{};
-    const tests={};
-    for(const [skill,field] of Object.entries({listening:'listening_test_id',reading:'reading_test_id',writing:'writing_test_id',translation:'translation_test_id'})){
-      const row=(await dbQuery('SELECT * FROM practice_tests WHERE id=$1 AND volume=79 AND published=TRUE AND lower(skill)=$2 LIMIT 1',[config[field],skill])).rows[0];
-      if(!row)return json(res,409,{ok:false,message:`Thiếu đề ${skill.toUpperCase()} trong bộ thi thử.`});
-      const access=await getPracticeAccess(u,row); if(!access.allowed)return json(res,403,{ok:false,message:`Bạn chưa có quyền làm phần ${skill.toUpperCase()}.`});
-      tests[skill]=row;
-    }
-    const skillScores={};
-    try{
-      skillScores.listening=gradeObjectiveTest(tests.listening,answers.listening||{});
-      skillScores.reading=gradeObjectiveTest(tests.reading,answers.reading||{});
-      const wTasks=Array.isArray(tests.writing.content?.questions)?tests.writing.content.questions:[];
-      const tTasks=Array.isArray(tests.translation.content?.questions)?tests.translation.content.questions:[];
-      const [writingReview,translationReview]=await Promise.all([
-        gradeHskWriting({tasks:wTasks,answers:answers.writing||{},testTitle:tests.writing.title,volume:'7–9'}),
-        gradeHskTranslation({tasks:tTasks,answers:answers.translation||{},testTitle:tests.translation.title,volume:'7–9'})
-      ]);
-      skillScores.writing={score:Number(writingReview.overallScore||0),review:writingReview};
-      skillScores.translation={score:Number(translationReview.overallScore||0),review:translationReview};
-    }catch(err){
-      console.error('Unified mock grading failed:',err);
-      return json(res,502,{ok:false,message:`Chưa thể chấm đủ bốn kỹ năng nên chưa thể quy đổi mức HSK. ${String(err?.message||'Vui lòng kiểm tra đáp án và cấu hình Gemini rồi nộp lại.')}`});
-    }
-    const overall=Math.round((['listening','reading','writing','translation'].reduce((sum,k)=>sum+Number(skillScores[k].score||0),0)/4)*100)/100;
-    const settings=(await dbQuery('SELECT hsk7_min,hsk8_min,hsk9_min FROM hsk79_mock_settings WHERE id=1')).rows[0]||{hsk7_min:60,hsk8_min:75,hsk9_min:88};
-    const h7=Number(settings.hsk7_min),h8=Number(settings.hsk8_min),h9=Number(settings.hsk9_min);
-    const estimated=overall>=h9?'HSK 9':overall>=h8?'HSK 8':overall>=h7?'HSK 7':'Chưa đạt ngưỡng HSK 7';
-    const id=crypto.randomUUID();
-    const result={scores:skillScores,overallScore:overall,estimatedLevel:estimated,thresholds:{hsk7:h7,hsk8:h8,hsk9:h9},disclaimer:'Đây là mức ước tính nội bộ dựa trên điểm trung bình bốn kỹ năng của website, không phải chứng chỉ hay kết quả phân loại chính thức của CTI.'};
-    await dbQuery(`INSERT INTO hsk79_mock_attempts(id,user_id,mock_exam_id,student_name,answers,scores,overall_score,estimated_level) VALUES($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8)`,[id,u.id,examId,String(u.full_name||''),JSON.stringify(answers),JSON.stringify(result),overall,estimated]);
-    return json(res,201,{ok:true,id,result});
-  }
-  if(url.pathname.match(/^\/api\/mock79\/attempt\/[0-9a-f-]+$/i) && req.method==='GET'){
-    const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Vui lòng đăng nhập.'});
-    const id=url.pathname.split('/').pop();
-    const row=(await dbQuery('SELECT id,student_name,scores,overall_score,estimated_level,submitted_at FROM hsk79_mock_attempts WHERE id=$1 AND user_id=$2 LIMIT 1',[id,u.id])).rows[0];
-    if(!row)return json(res,404,{ok:false,message:'Không tìm thấy kết quả thi thử.'});
-    return json(res,200,{ok:true,attempt:row,result:row.scores||{}});
-  }
-  if(url.pathname.startsWith('/api/admin/mock79') && req.method==='GET'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
-    const exam=(await dbQuery('SELECT * FROM hsk79_mock_exams ORDER BY updated_at DESC LIMIT 1')).rows[0]||null;
-    const settings=(await dbQuery('SELECT hsk7_min,hsk8_min,hsk9_min FROM hsk79_mock_settings WHERE id=1')).rows[0];
-    const attempts=(await dbQuery(`SELECT a.id,a.student_name,a.overall_score,a.estimated_level,a.submitted_at,e.title AS exam_title FROM hsk79_mock_attempts a LEFT JOIN hsk79_mock_exams e ON e.id=a.mock_exam_id ORDER BY a.submitted_at DESC LIMIT 100`)).rows;
-    return json(res,200,{ok:true,exam,settings,attempts});
-  }
-  if(url.pathname==='/api/admin/mock79' && req.method==='POST'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
-    const b=await body(req),testIds=b.testIds||{};
-    const picks={listening:String(testIds.listening||''),reading:String(testIds.reading||''),writing:String(testIds.writing||''),translation:String(testIds.translation||'')};
-    if(Object.values(picks).some(x=>!x))return json(res,400,{ok:false,message:'Hãy chọn đủ đề Listening, Reading, Writing và Translation.'});
-    for(const [skill,testId] of Object.entries(picks)){
-      const row=(await dbQuery('SELECT id,skill,volume,published FROM practice_tests WHERE id=$1 LIMIT 1',[testId])).rows[0];
-      if(!row||row.published!==true||Number(row.volume)!==79||String(row.skill).toLowerCase()!==skill)return json(res,400,{ok:false,message:`Đề ${skill.toUpperCase()} phải thuộc kho HSK 7–9 chung và đã xuất bản.`});
-    }
-    const minutes={}; for(const skill of Object.keys(picks)){const n=Number(b.sectionMinutes?.[skill]||({listening:45,reading:70,writing:90,translation:100}[skill]));if(!Number.isFinite(n)||n<1||n>240)return json(res,400,{ok:false,message:`Thời gian ${skill} không hợp lệ.`});minutes[skill]=Math.round(n)}
-    const thresholds=b.thresholds||{}; const h7=Number(thresholds.hsk7??60),h8=Number(thresholds.hsk8??75),h9=Number(thresholds.hsk9??88);
-    if(!(Number.isFinite(h7)&&Number.isFinite(h8)&&Number.isFinite(h9)&&h7>=0&&h8>h7&&h9>h8&&h9<=100))return json(res,400,{ok:false,message:'Ngưỡng điểm cần theo thứ tự HSK7 < HSK8 < HSK9 và không vượt quá 100.'});
-    const id=String(b.id||crypto.randomUUID()),title=String(b.title||'Thi thử tổng hợp HSK 7–9').trim();
-    const exam=(await dbQuery(`INSERT INTO hsk79_mock_exams(id,title,description,listening_test_id,reading_test_id,writing_test_id,translation_test_id,section_minutes,published) VALUES($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9) ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title,description=EXCLUDED.description,listening_test_id=EXCLUDED.listening_test_id,reading_test_id=EXCLUDED.reading_test_id,writing_test_id=EXCLUDED.writing_test_id,translation_test_id=EXCLUDED.translation_test_id,section_minutes=EXCLUDED.section_minutes,published=EXCLUDED.published,updated_at=NOW() RETURNING *`,[id,title,String(b.description||''),picks.listening,picks.reading,picks.writing,picks.translation,JSON.stringify(minutes),b.published!==false])).rows[0];
-    await dbQuery(`UPDATE hsk79_mock_exams SET published=FALSE WHERE id<>$1`,[id]);
-    await dbQuery(`UPDATE hsk79_mock_settings SET hsk7_min=$1,hsk8_min=$2,hsk9_min=$3,updated_at=NOW() WHERE id=1`,[h7,h8,h9]);
-    return json(res,200,{ok:true,exam,settings:{hsk7_min:h7,hsk8_min:h8,hsk9_min:h9}});
-  }
-
   if(url.pathname.startsWith('/api/practice/') && req.method==='GET'){
-    const id=url.pathname.split('/').pop(); const r=await dbQuery(`SELECT * FROM practice_tests WHERE id=$1 AND published=TRUE AND volume=79 AND lower(skill)=ANY($2::text[])`,[id,['listening','reading','writing','translation']]);
-    if(!r.rows.length)return json(res,404,{ok:false,message:'Không tìm thấy đề HSK 7–9.'}); const x=r.rows[0]; const u=candidate(req);
+    const id=url.pathname.split('/').pop(); const r=await dbQuery('SELECT * FROM practice_tests WHERE id=$1 AND published=TRUE',[id]);
+    if(!r.rows.length)return json(res,404,{ok:false,message:'Practice test not found'}); const x=r.rows[0]; const u=candidate(req);
     const access=await getPracticeAccess(u,x);
     if(!access.allowed)return json(res,u?403:401,{ok:false,message:u?'Bài này đang bị khóa. Vui lòng mua/gia hạn PRO hoặc liên hệ Admin để được mở quyền.':'Vui lòng đăng nhập để làm bài.'});
-    return json(res,200,{ok:true,test:{id:x.id,skill:x.skill,volume:x.volume,testNo:x.test_no,title:x.title,questionType:x.question_type,durationMinutes:x.duration_minutes,totalQuestions:x.total_questions,content:sanitizePracticeContent(x.content||{}),audioUrl:x.audio_url,sourceFile:x.source_file,seriesLabel:x.series_label,displayTestLabel:x.display_test_label,cardLabel:x.card_label,cardSubtitle:x.card_subtitle,attemptsCount:x.attempts_count,statusLabel:x.status_label,buttonLabel:x.button_label,coverUrl:x.cover_url,accessReason:access.reason}});
+    return json(res,200,{ok:true,test:{id:x.id,skill:x.skill,volume:x.volume,testNo:x.test_no,title:x.title,questionType:x.question_type,durationMinutes:x.duration_minutes,totalQuestions:x.total_questions,content:x.content,answerKey:x.answer_key,explanations:x.explanations,audioUrl:x.audio_url,sourceFile:x.source_file,seriesLabel:x.series_label,displayTestLabel:x.display_test_label,cardLabel:x.card_label,cardSubtitle:x.card_subtitle,attemptsCount:x.attempts_count,statusLabel:x.status_label,buttonLabel:x.button_label,coverUrl:x.cover_url,accessReason:access.reason}});
   }
   if(url.pathname==='/api/me/access' && req.method==='GET'){
     const u=candidate(req); if(!u)return json(res,200,{ok:true,loggedIn:false,allowedTestIds:[],skillAccess:[],predictionAllowed:false,pro:null,course:false});
@@ -843,8 +872,88 @@ async function api(req,res,url){
   if(url.pathname==='/api/courses' && req.method==='GET'){
     const rows=(await dbQuery('SELECT * FROM course_posts WHERE published=TRUE ORDER BY created_at ASC')).rows; return json(res,200,{ok:true,courses:rows});
   }
+  if(url.pathname==='/api/store/catalog' && req.method==='GET'){
+    const rows=(await dbQuery(`SELECT id,slug,product_type,title,subtitle,description,features,price,duration_days,skill_access,cover_url,vat_rate
+      FROM store_products WHERE published=TRUE ORDER BY CASE WHEN product_type='pro' THEN 0 ELSE 1 END,created_at DESC`)).rows;
+    const vat=(await dbQuery('SELECT vat_rate FROM payment_settings WHERE id=1 LIMIT 1')).rows[0];
+    return json(res,200,{ok:true,defaultVatRate:Number(vat?.vat_rate??8),products:rows.map(x=>({id:x.id,slug:x.slug,type:x.product_type,title:x.title,subtitle:x.subtitle,description:x.description,features:Array.isArray(x.features)?x.features:[],price:Number(x.price),durationDays:Number(x.duration_days||0),skillAccess:Array.isArray(x.skill_access)?x.skill_access:[],coverUrl:x.cover_url||'',vatRate:x.vat_rate===null?null:Number(x.vat_rate)}))});
+  }
+  if(url.pathname==='/api/store/orders' && req.method==='POST'){
+    const user=candidate(req); if(!user)return json(res,401,{ok:false,message:'Vui lòng đăng nhập trước khi thanh toán.'});
+    const b=await body(req); const requested=Array.isArray(b.items)?b.items:[];
+    if(!requested.length||requested.length>20)return json(res,400,{ok:false,message:'Giỏ hàng trống hoặc có quá nhiều mặt hàng.'});
+    const quantities=new Map();
+    for(const item of requested){const id=String(item.productId||'').trim();const qty=Math.max(1,Math.min(10,Math.floor(Number(item.quantity||1))));if(!/^[0-9a-f-]{36}$/i.test(id))return json(res,400,{ok:false,message:'Sản phẩm trong giỏ hàng không hợp lệ.'});quantities.set(id,(quantities.get(id)||0)+qty);}
+    const client=await pool.connect(); let orderId='',orderCode='',transferCode='',summary=[]; let subtotal=0,vatAmount=0,total=0;
+    try{
+      await client.query('BEGIN');
+      const productIds=[...quantities.keys()];
+      const products=(await client.query(`SELECT * FROM store_products WHERE id=ANY($1::uuid[]) AND published=TRUE FOR SHARE`,[productIds])).rows;
+      if(products.length!==productIds.length)throw new Error('Một hoặc nhiều sản phẩm đã ngừng bán. Hãy tải lại giỏ hàng.');
+      const settings=(await client.query('SELECT * FROM payment_settings WHERE id=1 LIMIT 1')).rows[0]||{vat_rate:8};
+      const globalVat=Number(settings.vat_rate??8);
+      const items=[];
+      for(const product of products){
+        const quantity=quantities.get(product.id)||1;
+        if(product.product_type==='document'&&quantity!==1)throw new Error('Mỗi tài liệu chỉ cần mua một lần.');
+        if(product.product_type==='document'&&!product.file_key)throw new Error(`Tài liệu “${product.title}” chưa có file tải xuống.`);
+        const unit=Number(product.price||0),lineSubtotal=unit*quantity;
+        const rate=product.vat_rate===null||product.vat_rate===undefined?globalVat:Number(product.vat_rate);
+        if(!Number.isFinite(rate)||rate<0||rate>100)throw new Error('Thuế suất VAT của sản phẩm không hợp lệ.');
+        const tax=Math.round(lineSubtotal*rate/100);
+        subtotal+=lineSubtotal;vatAmount+=tax;
+        items.push({product,quantity,unit,lineSubtotal,rate,tax});
+        summary.push({title:product.title,rate,tax});
+      }
+      total=subtotal+vatAmount;
+      orderId=crypto.randomUUID();
+      const random=crypto.randomBytes(5).toString('hex').toUpperCase();
+      orderCode=`RT9-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${random.slice(0,4)}`;
+      transferCode=`RT9${random}`;
+      await client.query(`INSERT INTO store_orders(id,user_id,order_code,transfer_code,status,customer_name,customer_email,subtotal,vat_amount,total_amount,vat_breakdown)
+        VALUES($1,$2,$3,$4,'pending',$5,$6,$7,$8,$9,$10::jsonb)`,[orderId,user.id,orderCode,transferCode,user.full_name||'',user.email||'',subtotal,vatAmount,total,JSON.stringify(summary)]);
+      for(const item of items){
+        await client.query(`INSERT INTO store_order_items(id,order_id,product_id,product_type,product_title,quantity,unit_price,line_subtotal,vat_rate,vat_amount,duration_days,skill_access)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb)`,[crypto.randomUUID(),orderId,item.product.id,item.product.product_type,item.product.title,item.quantity,item.unit,item.lineSubtotal,item.rate,item.tax,Number(item.product.duration_days||0),JSON.stringify(Array.isArray(item.product.skill_access)?item.product.skill_access:[])]);
+      }
+      await client.query('COMMIT');
+    }catch(err){try{await client.query('ROLLBACK')}catch{};return json(res,400,{ok:false,message:err.message||'Không thể tạo đơn hàng.'});}
+    finally{client.release();}
+    const settings=(await dbQuery('SELECT payment_title,qr_url,bank_code,bank_name,account_name,account_number,transfer_note,instructions,vat_rate FROM payment_settings WHERE id=1 LIMIT 1')).rows[0]||{};
+    const qrUrl=makeVietQrUrl(settings,total,transferCode);
+    const orderItems=(await dbQuery('SELECT product_title,product_type,quantity,unit_price,line_subtotal,vat_rate,vat_amount FROM store_order_items WHERE order_id=$1',[orderId])).rows;
+    return json(res,201,{ok:true,order:{id:orderId,orderCode,transferCode,status:'pending',subtotal,vatAmount,totalAmount:total,items:orderItems},payment:{title:settings.payment_title||'ROAD TO HSK 9 · THANH TOÁN',qrUrl,qrIsDynamic:!!settings.bank_code&&!!settings.account_number,bankCode:settings.bank_code||'',bankName:settings.bank_name||'',accountName:settings.account_name||'',accountNumber:settings.account_number||'',instructions:settings.instructions||'Quét QR và nhập đúng nội dung chuyển khoản.'}});
+  }
+  if(url.pathname.match(/^\/api\/store\/orders\/[0-9a-f-]+$/i) && req.method==='GET'){
+    const user=candidate(req); if(!user)return json(res,401,{ok:false,message:'Vui lòng đăng nhập lại.'});
+    const id=url.pathname.split('/').pop(); const order=(await dbQuery('SELECT * FROM store_orders WHERE id=$1 AND user_id=$2 LIMIT 1',[id,user.id])).rows[0];
+    if(!order)return json(res,404,{ok:false,message:'Không tìm thấy đơn hàng.'});
+    const items=(await dbQuery('SELECT product_title,product_type,quantity,unit_price,line_subtotal,vat_rate,vat_amount,product_id FROM store_order_items WHERE order_id=$1 ORDER BY created_at',[id])).rows;
+    const docs=order.status==='paid'?items.filter(x=>x.product_type==='document'&&x.product_id).map(x=>({title:x.product_title,downloadUrl:`/api/store/documents/${x.product_id}`})):[];
+    return json(res,200,{ok:true,order:{id:order.id,orderCode:order.order_code,transferCode:order.transfer_code,status:order.status,subtotal:Number(order.subtotal),vatAmount:Number(order.vat_amount),totalAmount:Number(order.total_amount),createdAt:order.created_at,paidAt:order.paid_at,items,documents:docs}});
+  }
+  if(url.pathname==='/api/store/my-documents' && req.method==='GET'){
+    const user=candidate(req); if(!user)return json(res,401,{ok:false,message:'Vui lòng đăng nhập để xem tài liệu đã mua.'});
+    const rows=(await dbQuery(`SELECT p.id,p.title,p.subtitle,p.description,p.features,p.cover_url,p.file_name,a.granted_at
+      FROM document_access a JOIN store_products p ON p.id=a.product_id WHERE a.user_id=$1 ORDER BY a.granted_at DESC`,[user.id])).rows;
+    return json(res,200,{ok:true,documents:rows.map(x=>({id:x.id,title:x.title,subtitle:x.subtitle,description:x.description,features:Array.isArray(x.features)?x.features:[],coverUrl:x.cover_url||'',fileName:x.file_name||'',grantedAt:x.granted_at,downloadUrl:`/api/store/documents/${x.id}`}))});
+  }
+  if(url.pathname.match(/^\/api\/store\/documents\/[0-9a-f-]+$/i) && req.method==='GET'){
+    const user=candidate(req); if(!user)return json(res,401,{ok:false,message:'Vui lòng đăng nhập để tải tài liệu.'});
+    const id=url.pathname.split('/').pop();
+    const row=(await dbQuery(`SELECT p.file_key,p.file_name FROM store_products p JOIN document_access a ON a.product_id=p.id WHERE p.id=$1 AND a.user_id=$2 LIMIT 1`,[id,user.id])).rows[0];
+    if(!row?.file_key)return json(res,403,{ok:false,message:'Tài liệu chưa được mở khóa trong tài khoản này.'});
+    const safeKey=path.basename(row.file_key); const file=path.join(PRIVATE_DOC_DIR,safeKey);
+    fs.stat(file,(err,st)=>{if(err||!st.isFile())return json(res,404,{ok:false,message:'File tài liệu không còn tồn tại.'});
+      const name=String(row.file_name||'tai-lieu.pdf').replace(/[\r\n"\\]/g,'_');
+      res.writeHead(200,{'Content-Type':contentType(file),'Content-Length':st.size,'Content-Disposition':`attachment; filename*=UTF-8''${encodeURIComponent(name)}`,'Cache-Control':'private, no-store'});
+      fs.createReadStream(file).on('error',()=>res.destroy()).pipe(res);
+    });
+    return;
+  }
+
   if(url.pathname==='/api/payment-settings' && req.method==='GET'){
-    const r=await dbQuery('SELECT payment_title,qr_url,bank_name,account_name,account_number,transfer_note,instructions,updated_at FROM payment_settings WHERE id=1 LIMIT 1');
+    const r=await dbQuery('SELECT payment_title,qr_url,bank_code,bank_name,account_name,account_number,transfer_note,instructions,vat_rate,updated_at FROM payment_settings WHERE id=1 LIMIT 1');
     return json(res,200,{ok:true,settings:r.rows[0]||{}});
   }
   if(url.pathname==='/api/course-enrollments' && req.method==='POST'){
@@ -869,7 +978,7 @@ async function api(req,res,url){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
     const b=await body(req); const id=String(b.id||'').trim(); const audioUrl=String(b.audioUrl||'').trim();
     if(!id||!audioUrl)return json(res,400,{ok:false,message:'Thiếu mã đề hoặc đường dẫn audio.'});
-    const r=await dbQuery(`UPDATE practice_tests SET audio_url=$1,updated_at=NOW() WHERE id=$2 AND volume=79 AND lower(skill)=ANY(ARRAY['listening','reading','writing','translation']) RETURNING id,audio_url`,[audioUrl,id]);
+    const r=await dbQuery('UPDATE practice_tests SET audio_url=$1,updated_at=NOW() WHERE id=$2 RETURNING id,audio_url',[audioUrl,id]);
     if(!r.rows.length)return json(res,404,{ok:false,message:'Không tìm thấy đề thi.'});
     return json(res,200,{ok:true,message:'Đã lưu audio mà không thay đổi câu hỏi.',audioUrl:r.rows[0].audio_url});
   }
@@ -877,15 +986,15 @@ async function api(req,res,url){
   if(url.pathname.startsWith('/api/admin/practice/') && req.method==='GET'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
     const id=decodeURIComponent(url.pathname.split('/').pop());
-    const r=await dbQuery(`SELECT id,skill,volume,test_no,title,question_type,duration_minutes,total_questions,content,answer_key,explanations,audio_url,source_file,source_url,series_label,display_test_label,card_label,card_subtitle,attempts_count,status_label,button_label,cover_url,category_id,(SELECT name FROM test_categories WHERE id=practice_tests.category_id) AS category_name,published FROM practice_tests WHERE id=$1 AND volume=79 AND lower(skill)=ANY(ARRAY['listening','reading','writing','translation'])`,[id]);
-    if(!r.rows[0])return json(res,404,{ok:false,message:'Không tìm thấy đề HSK 7–9.'});
+    const r=await dbQuery('SELECT id,skill,volume,test_no,title,question_type,duration_minutes,total_questions,content,answer_key,explanations,audio_url,source_file,source_url,series_label,display_test_label,card_label,card_subtitle,attempts_count,status_label,button_label,cover_url,category_id,(SELECT name FROM test_categories WHERE id=practice_tests.category_id) AS category_name,published FROM practice_tests WHERE id=$1',[id]);
+    if(!r.rows[0])return json(res,404,{ok:false,message:'Practice test not found.'});
     return json(res,200,{ok:true,test:r.rows[0]});
   }
   if(url.pathname.startsWith('/api/admin/practice/') && req.method==='DELETE'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
     const id=decodeURIComponent(url.pathname.split('/').pop());
-    const r=await dbQuery(`DELETE FROM practice_tests WHERE id=$1 AND volume=79 AND lower(skill)=ANY(ARRAY['listening','reading','writing','translation'])`,[id]);
-    if(!r.rowCount)return json(res,404,{ok:false,message:'Không tìm thấy đề HSK 7–9.'});
+    const r=await dbQuery('DELETE FROM practice_tests WHERE id=$1',[id]);
+    if(!r.rowCount)return json(res,404,{ok:false,message:'Practice test not found.'});
     return json(res,200,{ok:true,message:'Practice test deleted.'});
   }
   if(url.pathname==='/api/admin/asset/upload' && req.method==='POST'){
@@ -903,18 +1012,19 @@ async function api(req,res,url){
     const answers=(b.answerKey && typeof b.answerKey==='object')?b.answerKey:{};
     const explanations=(b.explanations && typeof b.explanations==='object')?b.explanations:{};
     const content=(b.content && typeof b.content==='object')?b.content:null;
-    await dbQuery(`UPDATE practice_tests SET answer_key=$1::jsonb, explanations=$2::jsonb, content=COALESCE($3::jsonb,content), updated_at=NOW() WHERE id=$4 AND volume=79 AND lower(skill)=ANY(ARRAY['listening','reading','writing','translation'])`,[JSON.stringify(answers),JSON.stringify(explanations),content?JSON.stringify(content):null,id]);
+    await dbQuery('UPDATE practice_tests SET answer_key=$1::jsonb, explanations=$2::jsonb, content=COALESCE($3::jsonb,content), updated_at=NOW() WHERE id=$4',[JSON.stringify(answers),JSON.stringify(explanations),content?JSON.stringify(content):null,id]);
     return json(res,200,{ok:true,message:'Answer key and explanations saved.',answerCount:Object.keys(answers).filter(k=>String(answers[k]??'').trim()!=='').length});
   }
   if(url.pathname==='/api/admin/practice/import' && req.method==='POST'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
-    const {fields,files}=await parseMultipart(req); const skill=String(fields.skill||'').toLowerCase(); const volume=79; const testNo=Number(fields.testNo||0); if(!['listening','reading','writing','translation'].includes(skill)||testNo<=0)return json(res,400,{ok:false,message:'Chỉ nhập kho HSK 7–9 chung với Listening, Reading, Writing hoặc Translation.'});
+    const {fields,files}=await parseMultipart(req); const skill=String(fields.skill||'').toLowerCase(); const volume=Number(fields.volume||0); const testNo=Number(fields.testNo||0);
+    if(!['listening','reading','writing','speaking'].includes(skill)||testNo<=0)return json(res,400,{ok:false,message:'Skill và Test number là bắt buộc. Volume có thể bỏ trống cho đề custom.'});
     const doc=files.find(f=>f.field==='document'); const audio=files.find(f=>f.field==='audio');
     if(!doc)return json(res,400,{ok:false,message:'Hãy tải file Word (.docx) hoặc TXT.'});
     if(!isAllowedDoc(doc.original))return json(res,400,{ok:false,message:'Tài liệu phải là DOCX hoặc TXT.'});
     let text=''; if(/\.docx$/i.test(doc.original)) text=parseDocxText(doc.path); else text=fs.readFileSync(doc.path,'utf8');
     let parsed=parseImportedText(text);
-    if(!parsed.questions.length && ['writing','translation'].includes(skill)){
+    if(!parsed.questions.length && ['writing','speaking'].includes(skill)){
       const lines=text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
       const generic=[]; let current=null;
       for(const line of lines){
@@ -938,9 +1048,9 @@ async function api(req,res,url){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
     const b=await body(req);
     const skill=String(b.skill||'').toLowerCase();
-    const volume=79;
+    const volume=Number.isFinite(Number(b.volume))?Number(b.volume):0;
     const testNo=Number(b.testNo||0);
-    if(!['listening','reading','writing','translation'].includes(skill)||testNo<=0)return json(res,400,{ok:false,message:'Chỉ nhận nội dung HSK 7–9 chung với bốn kỹ năng hợp lệ.'});
+    if(!['listening','reading','writing','speaking'].includes(skill)||testNo<=0)return json(res,400,{ok:false,message:'Skill và Test number là bắt buộc. Volume có thể bỏ trống cho đề custom.'});
     const id=b.id||crypto.randomUUID();
     const q=`INSERT INTO practice_tests(id,skill,volume,test_no,title,question_type,duration_minutes,total_questions,content,answer_key,explanations,audio_url,source_file,source_url,series_label,display_test_label,card_label,card_subtitle,attempts_count,status_label,button_label,cover_url,category_id,published)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb,$11::jsonb,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,TRUE)
@@ -977,11 +1087,93 @@ async function api(req,res,url){
     const qr=files.find(f=>f.field==='qr');
     const current=(await dbQuery('SELECT qr_url FROM payment_settings WHERE id=1 LIMIT 1')).rows[0]||{};
     const qrUrl=qr?.url||current.qr_url||'';
-    await dbQuery(`INSERT INTO payment_settings(id,payment_title,qr_url,bank_name,account_name,account_number,transfer_note,instructions)
-      VALUES(1,$1,$2,$3,$4,$5,$6,$7)
-      ON CONFLICT(id) DO UPDATE SET payment_title=EXCLUDED.payment_title,qr_url=EXCLUDED.qr_url,bank_name=EXCLUDED.bank_name,account_name=EXCLUDED.account_name,account_number=EXCLUDED.account_number,transfer_note=EXCLUDED.transfer_note,instructions=EXCLUDED.instructions,updated_at=NOW()`,
-      [String(fields.paymentTitle||'THANH TOÁN KHÓA HỌC EIT').trim(),qrUrl,String(fields.bankName||'').trim(),String(fields.accountName||'').trim(),String(fields.accountNumber||'').trim(),String(fields.transferNote||'EIT COURSE').trim(),String(fields.instructions||'').trim()]);
-    return json(res,200,{ok:true,qrUrl});
+    const vatRaw=String(fields.vatRate??'8').trim();
+    const vatRate=vatRaw===''?8:Number(vatRaw);
+    if(!Number.isFinite(vatRate)||vatRate<0||vatRate>100)return json(res,400,{ok:false,message:'VAT phải nằm trong khoảng 0–100%.'});
+    await dbQuery(`INSERT INTO payment_settings(id,payment_title,qr_url,bank_code,bank_name,account_name,account_number,transfer_note,instructions,vat_rate)
+      VALUES(1,$1,$2,$3,$4,$5,$6,$7,$8,$9)
+      ON CONFLICT(id) DO UPDATE SET payment_title=EXCLUDED.payment_title,qr_url=EXCLUDED.qr_url,bank_code=EXCLUDED.bank_code,bank_name=EXCLUDED.bank_name,account_name=EXCLUDED.account_name,account_number=EXCLUDED.account_number,transfer_note=EXCLUDED.transfer_note,instructions=EXCLUDED.instructions,vat_rate=EXCLUDED.vat_rate,updated_at=NOW()`,
+      [String(fields.paymentTitle||'ROAD TO HSK 9 · THANH TOÁN').trim(),qrUrl,String(fields.bankCode||'').trim(),String(fields.bankName||'').trim(),String(fields.accountName||'').trim(),String(fields.accountNumber||'').trim(),String(fields.transferNote||'ROAD TO HSK 9').trim(),String(fields.instructions||'').trim(),vatRate]);
+    return json(res,200,{ok:true,qrUrl,vatRate});
+  }
+
+  if(url.pathname==='/api/admin/store/products' && req.method==='GET'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const rows=(await dbQuery(`SELECT id,slug,product_type,title,subtitle,description,features,price,duration_days,skill_access,cover_url,file_name,vat_rate,published,created_at,updated_at FROM store_products ORDER BY created_at DESC`)).rows;
+    return json(res,200,{ok:true,products:rows});
+  }
+  if(url.pathname==='/api/admin/store/products' && req.method==='POST'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const {fields,files}=await parseMultipart(req);
+    const id=String(fields.id||'').trim()||crypto.randomUUID();
+    const type=String(fields.productType||'pro').trim().toLowerCase();
+    const title=String(fields.title||'').trim();
+    if(!['pro','document'].includes(type)||!title)return json(res,400,{ok:false,message:'Vui lòng nhập tên và loại sản phẩm hợp lệ.'});
+    const slug=String(fields.slug||title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')).trim().toLowerCase();
+    if(!slug||slug.length>120)return json(res,400,{ok:false,message:'Đường dẫn sản phẩm không hợp lệ.'});
+    const price=Math.round(Number(fields.price||0));
+    if(!Number.isFinite(price)||price<0||price>1000000000)return json(res,400,{ok:false,message:'Giá sản phẩm không hợp lệ.'});
+    const durationDays=type==='pro'?Math.max(1,Math.min(3650,Math.floor(Number(fields.durationDays||30)))):0;
+    const rawSkills=String(fields.skillAccess||'listening,reading,writing,speaking').split(',').map(x=>x.trim().toLowerCase());
+    const skills=type==='pro'?normalizeSkills(rawSkills):[];
+    if(type==='pro'&&!skills.length)return json(res,400,{ok:false,message:'Gói PRO cần chọn ít nhất một kỹ năng.'});
+    const vatText=String(fields.vatRate??'').trim();
+    const vatRate=vatText===''?null:Number(vatText);
+    if(vatRate!==null&&(!Number.isFinite(vatRate)||vatRate<0||vatRate>100))return json(res,400,{ok:false,message:'VAT phải từ 0 đến 100%; để trống để dùng mức mặc định.'});
+    const features=String(fields.features||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean).slice(0,30);
+    const current=(await dbQuery('SELECT cover_url,file_key,file_name FROM store_products WHERE id=$1 LIMIT 1',[id])).rows[0]||{};
+    const cover=files.find(f=>f.field==='coverFile');
+    const document=files.find(f=>f.field==='documentFile');
+    const coverUrl=cover?.url||current.cover_url||'';
+    let fileKey=current.file_key||'',fileName=current.file_name||'';
+    if(document){
+      if(!/\.(pdf|docx|pptx|xlsx|zip|txt)$/i.test(document.original))return json(res,400,{ok:false,message:'Tệp tài liệu chỉ hỗ trợ PDF, DOCX, PPTX, XLSX, ZIP hoặc TXT.'});
+      fileKey=`${crypto.randomUUID()}${path.extname(document.original).toLowerCase()}`;
+      const target=path.join(PRIVATE_DOC_DIR,fileKey);
+      fs.renameSync(document.path,target);
+      fileName=String(document.original).replace(/[\r\n]/g,'_').slice(0,180);
+    }
+    if(type==='document'&&!fileKey)return json(res,400,{ok:false,message:'Tài liệu cần có file tải xuống. Hãy upload file trước khi lưu.'});
+    if(type==='pro'){fileKey='';fileName='';}
+    const published=String(fields.published??'true')!=='false';
+    try{
+      await dbQuery(`INSERT INTO store_products(id,slug,product_type,title,subtitle,description,features,price,duration_days,skill_access,cover_url,file_key,file_name,vat_rate,published)
+        VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10::jsonb,$11,$12,$13,$14,$15)
+        ON CONFLICT(id) DO UPDATE SET slug=EXCLUDED.slug,product_type=EXCLUDED.product_type,title=EXCLUDED.title,subtitle=EXCLUDED.subtitle,description=EXCLUDED.description,features=EXCLUDED.features,price=EXCLUDED.price,duration_days=EXCLUDED.duration_days,skill_access=EXCLUDED.skill_access,cover_url=EXCLUDED.cover_url,file_key=EXCLUDED.file_key,file_name=EXCLUDED.file_name,vat_rate=EXCLUDED.vat_rate,published=EXCLUDED.published,updated_at=NOW()`,
+        [id,slug,type,title,String(fields.subtitle||''),String(fields.description||''),JSON.stringify(features),price,durationDays,JSON.stringify(skills),coverUrl,fileKey,fileName,vatRate,published]);
+    }catch(err){if(err.code==='23505')return json(res,409,{ok:false,message:'Đường dẫn (slug) đã tồn tại. Hãy chọn slug khác.'});throw err;}
+    return json(res,200,{ok:true,id,message:'Đã lưu sản phẩm/tài liệu.'});
+  }
+  if(url.pathname.match(/^\/api\/admin\/store\/products\/[0-9a-f-]+$/i) && req.method==='PATCH'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const id=url.pathname.split('/').pop(); const b=await body(req);
+    const r=await dbQuery('UPDATE store_products SET published=$2,updated_at=NOW() WHERE id=$1 RETURNING id,published',[id,!!b.published]);
+    if(!r.rowCount)return json(res,404,{ok:false,message:'Không tìm thấy sản phẩm.'});
+    return json(res,200,{ok:true,product:r.rows[0]});
+  }
+  if(url.pathname.match(/^\/api\/admin\/store\/products\/[0-9a-f-]+$/i) && req.method==='DELETE'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const id=url.pathname.split('/').pop(); const r=await dbQuery('UPDATE store_products SET published=FALSE,updated_at=NOW() WHERE id=$1 RETURNING id',[id]);
+    if(!r.rowCount)return json(res,404,{ok:false,message:'Không tìm thấy sản phẩm.'});
+    return json(res,200,{ok:true,message:'Đã ẩn sản phẩm khỏi cửa hàng.'});
+  }
+  if(url.pathname==='/api/admin/store/orders' && req.method==='GET'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const orders=(await dbQuery(`SELECT o.*,u.full_name,u.email FROM store_orders o JOIN users u ON u.id=o.user_id ORDER BY o.created_at DESC LIMIT 300`)).rows;
+    const ids=orders.map(o=>o.id); let items=[];
+    if(ids.length)items=(await dbQuery(`SELECT order_id,product_title,product_type,quantity,unit_price,line_subtotal,vat_rate,vat_amount FROM store_order_items WHERE order_id=ANY($1::uuid[]) ORDER BY created_at`,[ids])).rows;
+    const grouped=new Map(); for(const item of items){if(!grouped.has(item.order_id))grouped.set(item.order_id,[]);grouped.get(item.order_id).push(item);}
+    return json(res,200,{ok:true,orders:orders.map(o=>({id:o.id,orderCode:o.order_code,transferCode:o.transfer_code,status:o.status,customerName:o.full_name||o.customer_name,customerEmail:o.email||o.customer_email,subtotal:Number(o.subtotal),vatAmount:Number(o.vat_amount),totalAmount:Number(o.total_amount),createdAt:o.created_at,paidAt:o.paid_at,transactionId:o.provider_transaction_id,items:grouped.get(o.id)||[]}))});
+  }
+  if(url.pathname.match(/^\/api\/admin\/store\/orders\/[0-9a-f-]+\/mark-paid$/i) && req.method==='POST'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const id=url.pathname.split('/')[5]; const b=await body(req);
+    const order=(await dbQuery('SELECT id,total_amount,status FROM store_orders WHERE id=$1 LIMIT 1',[id])).rows[0];
+    if(!order)return json(res,404,{ok:false,message:'Không tìm thấy đơn hàng.'});
+    if(order.status==='paid')return json(res,200,{ok:true,message:'Đơn hàng đã thanh toán trước đó.'});
+    const note=String(b.note||'Đối soát thủ công bởi Admin').slice(0,300);
+    const result=await fulfillStoreOrder(id,{provider:'admin-manual',id:`manual-${id}`,amount:Number(order.total_amount),raw:{note}});
+    return json(res,200,{ok:true,...result,message:'Đã xác nhận đối soát và cấp quyền.'});
   }
   if(url.pathname==='/api/admin/course-enrollments' && req.method==='GET'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
@@ -998,15 +1190,12 @@ async function api(req,res,url){
     if(status==='approved'){
       const user=(order.user_id?(await dbQuery('SELECT id FROM users WHERE id=$1',[order.user_id])).rows[0]:null) || (await dbQuery(`SELECT id FROM users WHERE lower(trim(email))=$1 ORDER BY created_at DESC LIMIT 1`,[String(order.email||'').trim().toLowerCase()])).rows[0];
       if(user){
-        const requestedSkills=Number(order.skills||0);
-        const requestedAccess=normalizeSkills(Array.isArray(order.skill_access)?order.skill_access:[]);
-        const durationDays=Math.max(1,Number(order.duration_days||30));
-        if(!requestedSkills||requestedAccess.length!==requestedSkills)return json(res,400,{ok:false,message:`Không xác định được kỹ năng của đơn PRO ${order.id}.`});
-        // Treat a new skill package as an additive purchase: adding HSKK must not revoke the original four HSK skills, and vice versa.
-        const existing=(await dbQuery(`SELECT skill_access,status,expires_at FROM pro_entitlements WHERE user_id=$1 LIMIT 1`,[user.id])).rows[0];
-        const existingActive=existing?.status==='active' && new Date(existing.expires_at)>new Date();
-        const mergedAccess=normalizeSkills([...(existingActive&&Array.isArray(existing.skill_access)?existing.skill_access:[]),...requestedAccess]);
-        await dbQuery(`INSERT INTO pro_entitlements(id,user_id,skills,skill_access,source,status,starts_at,expires_at) VALUES($1,$2,$3,$4::jsonb,'purchase','active',NOW(),NOW()+make_interval(days=>$5)) ON CONFLICT(user_id) DO UPDATE SET skills=EXCLUDED.skills,skill_access=EXCLUDED.skill_access,status='active',expires_at=GREATEST(pro_entitlements.expires_at,NOW()+make_interval(days=>$5)),source='purchase',updated_at=NOW()`,[crypto.randomUUID(),user.id,mergedAccess.length,JSON.stringify(mergedAccess),durationDays]);
+        const plan=getProPlan(order.plan);
+        const skills=Number(plan?.skills||order.skills||0);
+        const skillAccess=plan?.skillAccess?.length?plan.skillAccess:normalizeSkills(b.skillAccess);
+        const durationDays=Math.max(1,Number(plan?.durationDays||order.duration_days||30));
+        if(!skills||skillAccess.length!==skills)return json(res,400,{ok:false,message:`Không xác định được kỹ năng của đơn PRO ${order.id}.`});
+        await dbQuery(`INSERT INTO pro_entitlements(id,user_id,skills,skill_access,source,status,starts_at,expires_at) VALUES($1,$2,$3,$4::jsonb,'purchase','active',NOW(),NOW()+make_interval(days=>$5)) ON CONFLICT(user_id) DO UPDATE SET skills=EXCLUDED.skills,skill_access=EXCLUDED.skill_access,status='active',expires_at=GREATEST(pro_entitlements.expires_at,NOW()+make_interval(days=>$5)),source='purchase',updated_at=NOW()`,[crypto.randomUUID(),user.id,skills,JSON.stringify(skillAccess),durationDays]);
       }
     }
     return json(res,200,{ok:true,message:status==='approved'?'Đã duyệt PRO.':status==='rejected'?'Đã từ chối đơn PRO.':'Đã cập nhật đơn PRO.'});
@@ -1017,38 +1206,46 @@ async function api(req,res,url){
     return json(res,200,{ok:true,orders:rows.map(x=>({id:x.id,userId:x.user_id||'',studentName:x.student_name,email:x.email,phone:x.phone||'',skills:Number(x.skills),amount:Number(x.amount),status:x.status,plan:x.plan||'',durationDays:Number(x.duration_days||30),skillAccess:Array.isArray(x.skill_access)?x.skill_access:[],createdAt:x.created_at}))});
   }
   if(url.pathname==='/api/admin/content' && req.method==='GET'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'}); const tests=(await dbQuery(`SELECT id,skill,volume,test_no,title,question_type,total_questions,audio_url,source_file,source_url,series_label,display_test_label,card_label,card_subtitle,attempts_count,status_label,button_label,cover_url,category_id,(SELECT name FROM test_categories WHERE id=practice_tests.category_id) AS category_name,published,updated_at FROM practice_tests WHERE volume=79 AND lower(skill)=ANY(ARRAY['listening','reading','writing','translation']) ORDER BY skill,volume,test_no`)).rows; const predictions=(await dbQuery('SELECT * FROM prediction_files ORDER BY created_at DESC')).rows; const courses=(await dbQuery('SELECT * FROM course_posts ORDER BY created_at ASC')).rows; return json(res,200,{ok:true,tests,predictions,courses});
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'}); const tests=(await dbQuery('SELECT id,skill,volume,test_no,title,question_type,total_questions,audio_url,source_file,source_url,series_label,display_test_label,card_label,card_subtitle,attempts_count,status_label,button_label,cover_url,category_id,(SELECT name FROM test_categories WHERE id=practice_tests.category_id) AS category_name,published,updated_at FROM practice_tests ORDER BY skill,volume,test_no')).rows; const predictions=(await dbQuery('SELECT * FROM prediction_files ORDER BY created_at DESC')).rows; const courses=(await dbQuery('SELECT * FROM course_posts ORDER BY created_at ASC')).rows; return json(res,200,{ok:true,tests,predictions,courses});
   }
-  if(url.pathname==='/api/config' && req.method==='GET'){
-    return json(res,200,{ok:true,googleClientId:GOOGLE_CLIENT_ID});
+  if(url.pathname==='/api/admin/mock-exams' && req.method==='GET'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const exams=(await dbQuery('SELECT * FROM hsk_mock_exams ORDER BY updated_at DESC')).rows;
+    const attempts=(await dbQuery(`SELECT a.id,a.student_name,a.candidate_code,a.answers,a.recording_url,a.submitted_at,e.title AS exam_title FROM hsk_mock_attempts a LEFT JOIN hsk_mock_exams e ON e.id=a.mock_exam_id ORDER BY a.submitted_at DESC LIMIT 100`)).rows;
+    return json(res,200,{ok:true,exams,attempts});
   }
-  if(url.pathname==='/api/candidate/google' && req.method==='POST'){
-    if(!GOOGLE_CLIENT_ID)return json(res,503,{ok:false,message:'Đăng nhập Google chưa được cấu hình (thiếu GOOGLE_CLIENT_ID).'});
-    const b=await body(req); const credential=String(b.credential||'');
-    if(!credential)return json(res,400,{ok:false,message:'Thiếu thông tin đăng nhập Google.'});
-    try{
-      const g=await verifyGoogleIdToken(credential);
-      if(g.aud!==GOOGLE_CLIENT_ID)return json(res,401,{ok:false,message:'Token Google không thuộc ứng dụng này.'});
-      if(String(g.email_verified)!=='true')return json(res,401,{ok:false,message:'Email Google chưa được xác minh.'});
-      const sub=String(g.sub||''); const email=String(g.email||'').trim().toLowerCase(); const name=String(g.name||email.split('@')[0]||'Học viên Google'); const avatar=String(g.picture||'');
-      if(!sub||!email)return json(res,401,{ok:false,message:'Không đọc được thông tin tài khoản Google.'});
-      let u=(await dbQuery(`SELECT * FROM users WHERE google_sub=$1 LIMIT 1`,[sub])).rows[0];
-      if(!u){
-        // Tạo tài khoản mới bằng Google: KHÔNG có PRO, chỉ dùng được đề miễn phí.
-        const id=crypto.randomUUID(); const eit='GG-'+crypto.randomBytes(5).toString('hex').toUpperCase();
-        u=(await dbQuery(`INSERT INTO users(id,full_name,dob,registration_id,eit_code,email,password_hash,active,auth_provider,google_sub,google_email_verified,avatar_url) VALUES($1,$2,NULL,$3,$3,$4,NULL,TRUE,'google',$5,TRUE,$6) RETURNING *`,[id,name,eit,email,sub,avatar])).rows[0];
-      }else{
-        if(!u.active)return json(res,403,{ok:false,message:'Tài khoản đã bị khóa. Vui lòng liên hệ Admin.'});
-        await dbQuery(`UPDATE users SET avatar_url=$2,google_email_verified=TRUE,updated_at=NOW() WHERE id=$1`,[u.id,avatar||u.avatar_url||'']);
-      }
-      await grantCoursePro(u);
-      const t=crypto.randomBytes(32).toString('hex'); CANDIDATE_TOKENS.set(t,{expiresAt:Date.now()+12*60*60*1000,user:u});
-      return json(res,200,{ok:true,token:t,user:{id:u.id,fullname:u.full_name,username:u.registration_id||u.eit_code,dob:u.dob,registrationid:u.registration_id,eitcode:u.eit_code,email:u.email||'',avatarUrl:avatar,provider:'google'}});
-    }catch(err){
-      console.error('Google login error:',err);
-      return json(res,401,{ok:false,message:err.message||'Đăng nhập Google thất bại.'});
+  if(url.pathname==='/api/admin/mock-exams' && req.method==='POST'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const b=await body(req), id=String(b.id||crypto.randomUUID());
+    const title=String(b.title||'HSK 6 · Full Mock Exam').trim();
+    const ids={listening:String(b.listeningTestId||''),reading:String(b.readingTestId||''),writing:String(b.writingTestId||''),hskk:String(b.hskkTestId||'')};
+    if(!title||Object.values(ids).some(x=>!x))return json(res,400,{ok:false,message:'Vui lòng nhập tên và chọn đủ 4 đề Listening, Reading, Writing, HSKK.'});
+    const expected={listening:'listening',reading:'reading',writing:'writing',hskk:'speaking'};
+    for(const [key,testId] of Object.entries(ids)){
+      const row=(await dbQuery('SELECT skill,volume,published FROM practice_tests WHERE id=$1 LIMIT 1',[testId])).rows[0];
+      if(!row||row.published!==true||Number(row.volume)!==6||String(row.skill).toLowerCase()!==expected[key])return json(res,400,{ok:false,message:`Đề ${key.toUpperCase()} phải là đề HSK 6 đã được lưu trong kho đề.`});
     }
+    const minutes={};
+    for(const key of ['listening','reading','writing','hskk']){const n=Number(b.sectionMinutes?.[key]??({listening:35,reading:50,writing:45,hskk:25}[key]));if(!Number.isFinite(n)||n<1||n>240)return json(res,400,{ok:false,message:`Thời gian ${key.toUpperCase()} không hợp lệ.`});minutes[key]=Math.round(n)}
+    const r=await dbQuery(`INSERT INTO hsk_mock_exams(id,title,description,listening_test_id,reading_test_id,writing_test_id,hskk_test_id,section_minutes,published)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9)
+      ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title,description=EXCLUDED.description,listening_test_id=EXCLUDED.listening_test_id,reading_test_id=EXCLUDED.reading_test_id,writing_test_id=EXCLUDED.writing_test_id,hskk_test_id=EXCLUDED.hskk_test_id,section_minutes=EXCLUDED.section_minutes,published=EXCLUDED.published,updated_at=NOW()
+      RETURNING id,title,published,updated_at`,[id,title,String(b.description||''),ids.listening,ids.reading,ids.writing,ids.hskk,JSON.stringify(minutes),b.published!==false]);
+    return json(res,200,{ok:true,exam:r.rows[0],message:'Đã lưu cấu hình thi thử HSK 6.'});
   }
+  if(url.pathname.match(/^\/api\/admin\/mock-exams\/[0-9a-f-]+$/i) && req.method==='DELETE'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const id=url.pathname.split('/').pop();
+    const r=await dbQuery('DELETE FROM hsk_mock_exams WHERE id=$1',[id]);
+    if(!r.rowCount)return json(res,404,{ok:false,message:'Không tìm thấy bộ đề thi thử.'});
+    return json(res,200,{ok:true});
+  }
+  if(url.pathname==='/api/admin/mock-exams/attempts' && req.method==='GET'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
+    const attempts=(await dbQuery(`SELECT a.id,a.student_name,a.candidate_code,a.answers,a.recording_url,a.submitted_at,e.title AS exam_title FROM hsk_mock_attempts a LEFT JOIN hsk_mock_exams e ON e.id=a.mock_exam_id ORDER BY a.submitted_at DESC LIMIT 200`)).rows;
+    return json(res,200,{ok:true,attempts});
+  }
+
   if(url.pathname==='/api/candidate/login' && req.method==='POST'){
     const b=await body(req);
     const username=String(b.username||b.registrationid||b.eitcode||'').trim().toUpperCase();
@@ -1073,17 +1270,13 @@ async function api(req,res,url){
     const id=url.pathname.split('/').pop();
     const row=(await dbQuery(`SELECT r.*,s.user_id,s.test_title,s.skill,s.submitted_at FROM ai_skill_reviews r JOIN submissions s ON s.id=r.submission_id WHERE r.submission_id=$1`,[id])).rows[0];
     if(!row || String(row.user_id)!==String(u.id)) return json(res,404,{ok:false,message:'AI review not found.'});
+    let ent=null; try{await grantCoursePro(u); ent=await getEntitlement(u.id)}catch{}
+    const isMockTest=['WRITING-TEST-1','SPEAKING-TEST-1'].includes(String(row.test_id||''));
+    const detailAllowed=isMockTest || (String(row.skill).toLowerCase()==='writing'?isProWriting(ent):isProSpeaking(ent));
     const result=typeof row.result==='object'?row.result:{};
-    let detailAllowed=['writing','translation'].includes(String(row.skill||'').toLowerCase());
-    if(String(row.skill||'').toLowerCase()==='speaking'){
-      const ent=await getEntitlement(u.id);
-      detailAllowed=isProSpeaking(ent);
-    }
-    let review=result;
-    if(String(row.skill||'').toLowerCase()==='speaking' && result.examMode==='hskk' && !detailAllowed){
-      review={overallScore:Number(result.overallScore??row.overall_band??0),examMode:'hskk',hskkVersion:result.hskkVersion||'2.0',hskkLevel:result.hskkLevel||'beginner',hskkLevelLabel:result.hskkLevelLabel||'HSKK',examinerSummary:result.examinerSummary||'',criteria:result.criteria||{},questionFeedback:(result.questionFeedback||[]).slice(0,4).map(x=>({questionNumber:x.questionNumber,questionType:x.questionType,score:x.score,feedback:x.feedback,improvements:(x.improvements||[]).slice(0,2)})),priorityFixes:(result.priorityFixes||[]).slice(0,3),practicePlan:(result.practicePlan||[]).slice(0,3)};
-    }
-    const safe={ok:true,skill:row.skill,testId:row.test_id,submissionId:row.submission_id,model:row.model||GEMINI_MODEL,status:row.status,errorMessage:row.status==='failed'?String(row.error_message||''):'' ,overallScore:row.overall_band==null?null:Number(row.overall_band),overallBand:row.overall_band==null?null:Number(row.overall_band),examMode:result.examMode||'',hskkVersion:result.hskkVersion||'',hskkLevel:result.hskkLevel||'',hskkLevelLabel:result.hskkLevelLabel||'',detailAllowed,review};
+    let summary={overallBand:row.overall_band==null?null:Number(row.overall_band)};
+    if(String(row.skill).toLowerCase()==='writing'){summary={...summary,task1:{criteria:result.task1?.criteria||{},band:result.task1?.band??null,summary:result.task1?.summary||'',improvements:(result.task1?.improvements||[]).slice(0,3)},task2:{criteria:result.task2?.criteria||{},band:result.task2?.band??null,summary:result.task2?.summary||'',improvements:(result.task2?.improvements||[]).slice(0,3)},examiner_summary:result.examiner_summary||'',priority_fixes:(result.priority_fixes||[]).slice(0,3)};} else if(String(row.skill).toLowerCase()==='speaking'){summary={...summary,criteria:result.criteria||{},part_feedback:(result.part_feedback||[]).map(x=>({part:x.part,summary:x.summary||'',improvements:(x.improvements||[]).slice(0,2)})),examiner_summary:result.examiner_summary||'',priority_fixes:(result.priority_fixes||[]).slice(0,3)};}
+    const safe={ok:true,skill:row.skill,testId:row.test_id,submissionId:row.submission_id,model:row.model||DEEPSEEK_MODEL,status:row.status,errorMessage:row.status==='failed'?String(row.error_message||''):'' ,overallBand:row.overall_band==null?null:Number(row.overall_band),detailAllowed,review:detailAllowed?result:summary};
     return json(res,200,safe);
   }
 
@@ -1094,118 +1287,53 @@ async function api(req,res,url){
     return json(res,200,{ok:true,review:{submissionId:row.submission_id,studentName:row.student_name,studentEmail:row.student_email,skill:row.skill,model:row.model,status:row.status,errorMessage:row.error_message||'',overallBand:row.overall_band==null?null:Number(row.overall_band),result:row.result&&typeof row.result==='object'?row.result:{}}});
   }
 
+  if(url.pathname==='/api/mock-exams/submit' && req.method==='POST'){
+    const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'});
+    const {fields,files}=await parseMultipart(req);
+    const examId=String(fields.examId||'');
+    const exam=(await dbQuery('SELECT id FROM hsk_mock_exams WHERE id=$1 AND published=TRUE LIMIT 1',[examId])).rows[0];
+    if(!exam)return json(res,404,{ok:false,message:'Không tìm thấy bộ thi thử.'});
+    let answers={};try{answers=JSON.parse(fields.answers||'{}')}catch{return json(res,400,{ok:false,message:'Dữ liệu câu trả lời không hợp lệ.'})}
+    const recording=files.find(f=>f.field==='hskkRecording');
+    if(recording&&!/\.(webm|mp3|wav|m4a|ogg)$/i.test(recording.original))return json(res,400,{ok:false,message:'Định dạng ghi âm không được hỗ trợ.'});
+    const id=crypto.randomUUID();
+    await dbQuery(`INSERT INTO hsk_mock_attempts(id,user_id,mock_exam_id,student_name,candidate_code,answers,recording_url) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7)`,[id,u.id,examId,String(fields.studentName||u.full_name||''),String(fields.candidateCode||u.registration_id||u.eit_code||''),JSON.stringify(answers),recording?.url||'']);
+    return json(res,201,{ok:true,id,recordingUrl:recording?.url||'',message:'Đã nộp bài thi thử HSK 6.'});
+  }
+
   if(url.pathname==='/api/submit' && req.method==='POST'){
     const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Candidate session expired. Please log in again.'});
     const b=await body(req); if(!b.testId || !b.answers)return json(res,400,{ok:false,message:'Missing testId or answers'});
-    const testRow=(await dbQuery('SELECT id,skill,volume,test_no,title,content,answer_key,explanations,published FROM practice_tests WHERE id=$1 LIMIT 1',[String(b.testId)])).rows[0];
-    const skill=String(testRow?.skill||'').toLowerCase(),volume=Number(testRow?.volume||0);
-    const isHsk79=testRow?.published===true && volume===79 && ['listening','reading','writing','translation'].includes(skill);
-    const isHskk=testRow?.published===true && skill==='speaking' && HSKK_VOLUMES.includes(volume);
-    if(!testRow || (!isHsk79&&!isHskk))return json(res,404,{ok:false,message:'Không tìm thấy bài HSK7–9 hoặc HSKK hợp lệ.'});
-    if(String(b.skill||'').toLowerCase()!==skill)return json(res,400,{ok:false,message:'Kỹ năng gửi lên không khớp với đề thi.'});
-    const access=await getPracticeAccess(u,testRow); if(!access.allowed)return json(res,403,{ok:false,message:'Bạn chưa được cấp quyền làm đề này.'});
     const sid=crypto.randomUUID();
     await dbQuery(`INSERT INTO submissions(id,user_id,student_name,student_email,student_code,eit_code,dob,test_id,test_title,skill,answers,highlights,notes,total,score,auto_submitted,elapsed_seconds)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,$12::jsonb,$13::jsonb,$14,NULL,$15,$16)`,[
-      sid,u.id,u.full_name,u.email||'',u.registration_id,u.eit_code,u.dob||null,String(b.testId),String(testRow.title||''),skill,JSON.stringify(b.answers),JSON.stringify(b.highlights||[]),JSON.stringify(b.notes||[]),b.total==null?Number(testRow.total_questions||40):Number(b.total),!!b.autoSubmitted,Number(b.elapsedSeconds||0)]);
+      sid,u.id,u.full_name,u.email||'',u.registration_id,u.eit_code,u.dob||null,String(b.testId),String(b.testTitle||''),String(b.skill||''),JSON.stringify(b.answers),JSON.stringify(b.highlights||[]),JSON.stringify(b.notes||[]),b.total==null?40:Number(b.total),!!b.autoSubmitted,Number(b.elapsedSeconds||0)]);
     let ai=null; let aiError='';
     try{
-      if(skill==='writing' || skill==='translation'){
-        const tasks=Array.isArray(testRow?.content?.questions)?testRow.content.questions:[];
-        ai=skill==='writing'
-          ? await gradeHskWriting({tasks,answers:b.answers||{},testTitle:String(b.testTitle||''),volume})
-          : await gradeHskTranslation({tasks,answers:b.answers||{},testTitle:String(b.testTitle||''),volume});
-        const score=Number(ai.overallScore||0); const rid=crypto.randomUUID();
-        await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,overall_band,result,status) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,'completed') ON CONFLICT(submission_id) DO UPDATE SET skill=EXCLUDED.skill,model=EXCLUDED.model,overall_band=EXCLUDED.overall_band,result=EXCLUDED.result,status='completed',error_message='',updated_at=NOW()`,[rid,sid,u.id,skill,GEMINI_MODEL,score,JSON.stringify(ai)]);
-      } else if(skill==='speaking' && isHskk){
+      const skill=String(b.skill||'').toLowerCase();
+      if(skill==='writing' && !b.hsk5Mode){
+        const a=b.answers||{};
+        const task1Answer=String(a[1]??a['1']??''); const task2Answer=String(a[2]??a['2']??'');
+        const wordCount=v=>{const x=v.trim();return x?x.split(/\s+/).length:0};
+        ai=await gradeWriting({task1Prompt:String(b.task1Prompt||''),task1Answer,task1Words:wordCount(task1Answer),task2Prompt:String(b.task2Prompt||''),task2Answer,task2Words:wordCount(task2Answer),taskImages:b.taskImages||{}});
+        const rid=crypto.randomUUID();
+        await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,overall_band,result,status) VALUES($1,$2,$3,'writing',$4,$5,$6::jsonb,'completed') ON CONFLICT(submission_id) DO UPDATE SET overall_band=EXCLUDED.overall_band,result=EXCLUDED.result,status='completed',error_message='',updated_at=NOW()`,[rid,sid,u.id,DEEPSEEK_MODEL,ai.overallBand,JSON.stringify(ai)]);
+      } else if(skill==='speaking'){
         const rec=Array.isArray(b.answers?.recordings)?b.answers.recordings:[];
-        if(!rec.length)throw new Error('Chưa có bản ghi âm HSKK.');
-        ai=await gradeHskkSpeaking(rec.map((x,i)=>({questionNumber:Number(x.questionNumber||i+1),part:Number(x.part||1),questionType:String(x.questionType||''),prompt:String(x.prompt||''),preparationSeconds:Number(x.preparationSeconds||0),responseSeconds:Number(x.responseSeconds||0),mime:String(x.mime||'audio/webm'),audio:String(x.audio||''),promptAudio:String(x.promptAudio||''),promptImage:String(x.promptImage||''),transcript:String(x.transcript||'')})),{version:String(testRow.content?.hskkVersion||'2.0'),level:String(testRow.content?.hskkLevel||'beginner')});
-        const score=Number(ai.overallScore||0),rid=crypto.randomUUID();
-        await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,overall_band,result,status) VALUES($1,$2,$3,'speaking',$4,$5,$6::jsonb,'completed') ON CONFLICT(submission_id) DO UPDATE SET model=EXCLUDED.model,overall_band=EXCLUDED.overall_band,result=EXCLUDED.result,status='completed',error_message='',updated_at=NOW()`,[rid,sid,u.id,ai.model||GEMINI_MODEL,score,JSON.stringify(ai)]);
+        if(rec.length){
+          ai=await gradeSpeaking(rec.map(x=>({part:Number(x.part)||1,question:String(x.question||''),mime:String(x.mime||'audio/webm'),audio:String(x.audio||''),transcript:String(x.transcript||'')})));
+          const rid=crypto.randomUUID();
+          await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,overall_band,result,status) VALUES($1,$2,$3,'speaking',$4,$5,$6::jsonb,'completed') ON CONFLICT(submission_id) DO UPDATE SET overall_band=EXCLUDED.overall_band,result=EXCLUDED.result,status='completed',error_message='',updated_at=NOW()`,[rid,sid,u.id,DEEPSEEK_MODEL,ai.overallBand,JSON.stringify(ai)]);
+        }
       }
     }catch(err){
       console.error('AI grading failed:',err); aiError=String(err?.message||'AI grading failed');
       const skill=String(b.skill||'').toLowerCase();
-      if(skill==='writing'||skill==='translation'||(skill==='speaking'&&isHskk)) await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,status,error_message,result) VALUES($1,$2,$3,$4,$5,'failed',$6,'{}'::jsonb) ON CONFLICT(submission_id) DO UPDATE SET status='failed',error_message=EXCLUDED.error_message,updated_at=NOW()`,[crypto.randomUUID(),sid,u.id,skill,(['writing','translation'].includes(skill)?GEMINI_MODEL:DEEPSEEK_MODEL),String(err.message||'AI grading failed')]);
+      if(skill==='writing'||skill==='speaking') await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,status,error_message,result) VALUES($1,$2,$3,$4,$5,'failed',$6,'{}'::jsonb) ON CONFLICT(submission_id) DO UPDATE SET status='failed',error_message=EXCLUDED.error_message,updated_at=NOW()`,[crypto.randomUUID(),sid,u.id,skill,DEEPSEEK_MODEL,String(err.message||'AI grading failed')]);
     }
-    return json(res,201,{ok:true,id:sid,message:'Your answers have been submitted.',review:(skill==='reading'||skill==='listening')?{answerKey:testRow.answer_key||{},explanations:testRow.explanations||{}}:undefined,ai:ai?{available:true,overallScore:ai.overallScore??ai.overallBand,overallBand:ai.overallBand??null,model:ai.model||GEMINI_MODEL}:{available:false,model:GEMINI_MODEL,error:aiError||'AI grading failed'}});
+    return json(res,201,{ok:true,id:sid,message:'Your answers have been submitted.',ai:ai?{available:true,overallBand:ai.overallBand,model:DEEPSEEK_MODEL}:{available:false,model:DEEPSEEK_MODEL,error:aiError||'AI grading failed'}});
   }
 
-  if(url.pathname==='/api/pro/plans' && req.method==='GET'){
-    const rows=(await dbQuery(`SELECT id,name,description,price,duration_days,skill_access FROM pro_plans WHERE active=TRUE ORDER BY price,duration_days,name`)).rows;
-    return json(res,200,{ok:true,plans:rows.map(x=>({id:x.id,name:x.name,description:x.description||'',price:Number(x.price||0),durationDays:Number(x.duration_days||30),skillAccess:normalizeSkills(Array.isArray(x.skill_access)?x.skill_access:[])}))});
-  }
-  if(url.pathname==='/api/materials' && req.method==='GET'){
-    const rows=(await dbQuery(`SELECT id,title,description,level,skill,price,cover_url,file_url FROM study_materials WHERE active=TRUE ORDER BY created_at DESC`)).rows;
-    return json(res,200,{ok:true,materials:rows.map(x=>({...x,price:Number(x.price||0)}))});
-  }
-  if(url.pathname==='/api/material-orders' && req.method==='POST'){
-    const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Vui lòng đăng nhập để mua tài liệu.'});
-    const b=await body(req); const requested=Array.isArray(b.items)?b.items:[]; if(!requested.length)return json(res,400,{ok:false,message:'Giỏ hàng đang trống.'});
-    const quantities=new Map(); for(const it of requested){const id=String(it.id||'');const qty=Math.max(1,Math.min(20,Number(it.quantity||1)));if(id)quantities.set(id,(quantities.get(id)||0)+qty);}
-    const items=[];let amount=0;
-    for(const [id,quantity] of quantities){const row=(await dbQuery('SELECT id,title,price FROM study_materials WHERE id=$1 AND active=TRUE LIMIT 1',[id])).rows[0];if(!row)continue;const price=Number(row.price||0);items.push({id:row.id,title:row.title,price,quantity});amount+=price*quantity;}
-    if(!items.length)return json(res,400,{ok:false,message:'Không còn tài liệu nào trong giỏ hàng.'});
-    const id=crypto.randomUUID();await dbQuery(`INSERT INTO material_orders(id,user_id,student_name,email,items,amount,status) VALUES($1,$2,$3,$4,$5::jsonb,$6,'pending')`,[id,u.id,u.full_name,u.email||'',JSON.stringify(items),amount]);
-    return json(res,201,{ok:true,id,amount,items,message:'Đã tạo đơn mua tài liệu. Vui lòng hoàn tất thanh toán theo thông tin hiện trên trang.'});
-  }
-  if(url.pathname==='/api/material-orders/mine' && req.method==='GET'){
-    const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Vui lòng đăng nhập để xem đơn hàng.'});
-    const rows=(await dbQuery('SELECT id,items,amount,status,created_at,updated_at FROM material_orders WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50',[u.id])).rows;
-    const orders=[];
-    for(const row of rows){
-      const source=Array.isArray(row.items)?row.items:[];
-      const ready=['fulfilled'].includes(String(row.status||''));
-      const items=[];
-      for(const item of source){
-        let downloadUrl='';
-        if(ready && item.id){
-          const material=(await dbQuery('SELECT file_url FROM study_materials WHERE id=$1 LIMIT 1',[String(item.id)])).rows[0];
-          const candidateUrl=String(material?.file_url||'').trim();
-          if(candidateUrl.startsWith('/uploads/') || /^https:\/\//i.test(candidateUrl)) downloadUrl=candidateUrl;
-        }
-        items.push({...item,downloadUrl});
-      }
-      orders.push({id:row.id,items,amount:Number(row.amount||0),status:row.status,createdAt:row.created_at,updatedAt:row.updated_at});
-    }
-    return json(res,200,{ok:true,orders});
-  }
-  if(url.pathname==='/api/admin/pro-plans' && req.method==='GET'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
-    const rows=(await dbQuery('SELECT * FROM pro_plans ORDER BY created_at DESC')).rows;
-    return json(res,200,{ok:true,plans:rows.map(x=>({...x,price:Number(x.price||0),duration_days:Number(x.duration_days||30),skill_access:normalizeSkills(Array.isArray(x.skill_access)?x.skill_access:[])}))});
-  }
-  if(url.pathname==='/api/admin/pro-plans' && req.method==='POST'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
-    const b=await body(req), id=String(b.id||'').trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'-').slice(0,60), name=String(b.name||'').trim(), skills=normalizeSkills(b.skillAccess);
-    const price=Math.max(0,Math.round(Number(b.price||0))), days=Math.max(1,Math.min(3650,Math.round(Number(b.durationDays||30))));
-    if(!id||!name||!skills.length||price<=0)return json(res,400,{ok:false,message:'Nhập mã gói, tên, giá và ít nhất một kỹ năng.'});
-    await dbQuery(`INSERT INTO pro_plans(id,name,description,price,duration_days,skill_access,active) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7) ON CONFLICT(id) DO UPDATE SET name=EXCLUDED.name,description=EXCLUDED.description,price=EXCLUDED.price,duration_days=EXCLUDED.duration_days,skill_access=EXCLUDED.skill_access,active=EXCLUDED.active,updated_at=NOW()`,[id,name,String(b.description||''),price,days,JSON.stringify(skills),b.active!==false]);
-    return json(res,200,{ok:true,message:'Đã lưu gói PRO.'});
-  }
-  if(url.pathname.match(/^\/api\/admin\/pro-plans\/[^/]+$/) && ['PATCH','DELETE'].includes(req.method)){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});const id=decodeURIComponent(url.pathname.split('/').pop());
-    if(req.method==='DELETE'){await dbQuery('DELETE FROM pro_plans WHERE id=$1',[id]);return json(res,200,{ok:true});}
-    const b=await body(req),skills=normalizeSkills(b.skillAccess);const price=Math.max(0,Math.round(Number(b.price||0))),days=Math.max(1,Math.min(3650,Math.round(Number(b.durationDays||30))));
-    await dbQuery(`UPDATE pro_plans SET name=$1,description=$2,price=$3,duration_days=$4,skill_access=$5::jsonb,active=$6,updated_at=NOW() WHERE id=$7`,[String(b.name||'').trim(),String(b.description||''),price,days,JSON.stringify(skills),b.active!==false,id]);return json(res,200,{ok:true});
-  }
-  if(url.pathname==='/api/admin/materials' && req.method==='GET'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});const rows=(await dbQuery('SELECT * FROM study_materials ORDER BY created_at DESC')).rows;return json(res,200,{ok:true,materials:rows.map(x=>({...x,price:Number(x.price||0)}))});
-  }
-  if(url.pathname==='/api/admin/materials' && req.method==='POST'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});const b=await body(req),title=String(b.title||'').trim(),price=Math.max(0,Math.round(Number(b.price||0)));if(!title||price<=0)return json(res,400,{ok:false,message:'Tên và giá tài liệu là bắt buộc.'});
-    const id=b.id||crypto.randomUUID();await dbQuery(`INSERT INTO study_materials(id,title,description,level,skill,price,cover_url,file_url,active) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title,description=EXCLUDED.description,level=EXCLUDED.level,skill=EXCLUDED.skill,price=EXCLUDED.price,cover_url=EXCLUDED.cover_url,file_url=EXCLUDED.file_url,active=EXCLUDED.active,updated_at=NOW()`,[id,title,String(b.description||''),'HSK 7–9',String(b.skill||''),price,String(b.coverUrl||''),String(b.fileUrl||''),b.active!==false]);return json(res,200,{ok:true,id,message:'Đã lưu tài liệu.'});
-  }
-  if(url.pathname.match(/^\/api\/admin\/materials\/[^/]+$/) && req.method==='DELETE'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});const id=decodeURIComponent(url.pathname.split('/').pop());await dbQuery('DELETE FROM study_materials WHERE id=$1',[id]);return json(res,200,{ok:true});
-  }
-  if(url.pathname==='/api/admin/material-orders' && req.method==='GET'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});const rows=(await dbQuery('SELECT * FROM material_orders ORDER BY created_at DESC')).rows;return json(res,200,{ok:true,orders:rows.map(x=>({...x,amount:Number(x.amount||0)}))});
-  }
-  if(url.pathname.match(/^\/api\/admin\/material-orders\/[^/]+$/) && req.method==='PATCH'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});const id=decodeURIComponent(url.pathname.split('/').pop()),b=await body(req),status=String(b.status||'pending');if(!['pending','paid','fulfilled','rejected'].includes(status))return json(res,400,{ok:false,message:'Trạng thái không hợp lệ.'});await dbQuery('UPDATE material_orders SET status=$1,updated_at=NOW() WHERE id=$2',[status,id]);return json(res,200,{ok:true});
-  }
   if(url.pathname==='/api/me/pro' && req.method==='GET'){
     const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Candidate session expired. Please log in again.'});
     await grantCoursePro(u); const ent=await getEntitlement(u.id);
@@ -1213,7 +1341,7 @@ async function api(req,res,url){
     return json(res,200,{ok:true,pro:{active:true,skills:ent.skills,skillAccess:ent.skillAccess,expiresAt:ent.expiresAt,daysRemaining:ent.daysRemaining}});
   }
   if(url.pathname==='/api/pro/purchase-public' && req.method==='POST'){
-    const b=await body(req); const plan=String(b.plan||'').trim(); const row=(await dbQuery('SELECT * FROM pro_plans WHERE id=$1 AND active=TRUE LIMIT 1',[plan])).rows[0]; if(!row)return json(res,400,{ok:false,message:'Gói PRO không còn khả dụng.'}); const skillAccess=planSkills(row); const cfg={skills:skillAccess.length,skillAccess,amount:Number(row.price||0),durationDays:Number(row.duration_days||30)}; if(!cfg.skills||cfg.amount<=0)return json(res,400,{ok:false,message:'Gói PRO chưa được cấu hình hợp lệ.'});
+    const b=await body(req); const plan=String(b.plan||'').trim(); const cfg=getProPlan(plan); if(!cfg)return json(res,400,{ok:false,message:'Gói PRO không hợp lệ.'});
     const c=candidate(req); const fullName=String(b.fullName||c?.full_name||'').trim(); const email=String(b.email||c?.email||'').trim().toLowerCase(); const phone=String(b.phone||'').trim();
     if(!fullName||!email)return json(res,400,{ok:false,message:'Vui lòng nhập họ tên và email để tạo đơn PRO.'});
     let userId=c?.id||null;
@@ -1223,39 +1351,33 @@ async function api(req,res,url){
   }
   if(url.pathname==='/api/pro/purchase' && req.method==='POST'){
     const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Please log in before purchasing PRO.'});
-    const b=await body(req); const plan=String(b.plan||'').trim(); const row=(await dbQuery('SELECT * FROM pro_plans WHERE id=$1 AND active=TRUE LIMIT 1',[plan])).rows[0]; if(!row)return json(res,400,{ok:false,message:'Gói PRO không còn khả dụng.'}); const skillAccess=planSkills(row); const cfg={skills:skillAccess.length,skillAccess,amount:Number(row.price||0),durationDays:Number(row.duration_days||30)}; if(!cfg.skills||cfg.amount<=0)return json(res,400,{ok:false,message:'Gói PRO chưa được cấu hình hợp lệ.'});
+    const b=await body(req); const plan=String(b.plan||'').trim(); const cfg=getProPlan(plan); if(!cfg)return json(res,400,{ok:false,message:'Invalid PRO plan.'});
     const r=await dbQuery(`INSERT INTO pro_orders(id,user_id,student_name,email,skills,amount,status,phone,plan,duration_days,skill_access) VALUES($1,$2,$3,$4,$5,$6,'pending','',$7,$8,$9::jsonb) RETURNING id,created_at`,[crypto.randomUUID(),u.id,u.full_name,u.email||'',cfg.skills,cfg.amount,plan,cfg.durationDays,JSON.stringify(cfg.skillAccess)]);
     return json(res,201,{ok:true,id:r.rows[0].id,amount:cfg.amount,plan,durationDays:cfg.durationDays,message:'PRO purchase request created.'});
   }
   if(url.pathname==='/api/results' && req.method==='GET'){
     const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Candidate session expired. Please log in again.'});
-    const rows=(await dbQuery(`SELECT r.listening,r.reading,r.writing,r.speaking,r.translation,r.overall,r.message,r.feedback,r.feedback_published,
+    const rows=(await dbQuery(`SELECT r.listening,r.reading,r.writing,r.speaking,r.overall,r.message,r.feedback,r.feedback_published,
       (SELECT COUNT(*) FROM submissions s2 WHERE s2.user_id=r.user_id)::int AS test_session_count
       FROM results r WHERE r.user_id=$1 AND r.published=TRUE ORDER BY r.updated_at DESC LIMIT 1`,[u.id])).rows;
     if(!rows.length)return json(res,200,{ok:true,published:false});
-    const r=rows[0]; return json(res,200,{ok:true,published:true,result:{listening:r.listening==null?null:Number(r.listening),reading:r.reading==null?null:Number(r.reading),writing:r.writing==null?null:Number(r.writing),speaking:r.speaking==null?null:Number(r.speaking),translation:r.translation==null?null:Number(r.translation),overall:r.overall==null?null:Number(r.overall),message:r.message||'',feedback:(r.feedback_published&&r.feedback&&typeof r.feedback==='object')?r.feedback:{},feedbackPublished:!!r.feedback_published,testSessionCount:r.test_session_count}});
+    const r=rows[0]; return json(res,200,{ok:true,published:true,result:{listening:r.listening==null?null:Number(r.listening),reading:r.reading==null?null:Number(r.reading),writing:r.writing==null?null:Number(r.writing),speaking:r.speaking==null?null:Number(r.speaking),overall:r.overall==null?null:Number(r.overall),message:r.message||'',feedback:(r.feedback_published&&r.feedback&&typeof r.feedback==='object')?r.feedback:{},feedbackPublished:!!r.feedback_published,testSessionCount:r.test_session_count}});
   }
 
   if(url.pathname==='/api/admin/google-users' && req.method==='GET'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
     const rows=(await dbQuery(`SELECT u.id,u.full_name,u.email,u.active,u.avatar_url,u.google_sub,u.google_email_verified,u.created_at,
-      pe.skills,pe.skill_access,pe.status,pe.expires_at,pe.source FROM users u LEFT JOIN pro_entitlements pe ON pe.user_id=u.id AND pe.status='active' AND pe.expires_at>NOW() WHERE u.auth_provider='google' ORDER BY u.created_at DESC`)).rows;
+      pe.skills,pe.skill_access,pe.status,pe.expires_at,pe.source FROM users u LEFT JOIN pro_entitlements pe ON pe.user_id=u.id WHERE u.auth_provider='google' ORDER BY u.created_at DESC`)).rows;
     return json(res,200,{ok:true,users:rows.map(x=>({id:x.id,name:x.full_name,email:x.email,active:x.active,avatarUrl:x.avatar_url||'',googleVerified:!!x.google_email_verified,createdAt:x.created_at,pro:x.skills?{skills:Number(x.skills),skillAccess:normalizeSkills(Array.isArray(x.skill_access)?x.skill_access:[]),status:x.status,expiresAt:x.expires_at,source:x.source}:null}))});
-  }
-  if(url.pathname.match(/^\/api\/admin\/users\/[^/]+\/pro$/) && req.method==='DELETE'){
-    if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
-    const id=url.pathname.split('/').slice(-2,-1)[0];
-    await dbQuery(`DELETE FROM pro_entitlements WHERE user_id=$1`,[id]);
-    return json(res,200,{ok:true,message:'Đã thu hồi PRO của tài khoản.'});
   }
   if(url.pathname.match(/^\/api\/admin\/users\/[^/]+\/pro$/) && req.method==='POST'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
     const id=url.pathname.split('/').slice(-2,-1)[0]; const b=await body(req); const skills=Number(b.skills||0); const days=Math.max(1,Math.min(3650,Number(b.days||30)));
     const u=(await dbQuery(`SELECT id,full_name,email FROM users WHERE id=$1 LIMIT 1`,[id])).rows[0]; if(!u)return json(res,404,{ok:false,message:'Tài khoản không tồn tại.'});
     let skillAccess=normalizeSkills(b.skillAccess); if(!skillAccess.length && skills===4)skillAccess=ALL_SKILLS.slice();
-    if(![1,2,3,4,5].includes(skills))return json(res,400,{ok:false,message:'Gói PRO không hợp lệ. Chọn từ 1 đến 5 kỹ năng.'});
+    if(![2,3,4].includes(skills))return json(res,400,{ok:false,message:'Gói PRO không hợp lệ. Chọn 2, 3 hoặc 4 skills.'});
     if(skillAccess.length!==skills)return json(res,400,{ok:false,message:`Gói ${skills} skills phải có đúng ${skills} kỹ năng được bật.`});
-    await dbQuery(`INSERT INTO pro_entitlements(id,user_id,skills,skill_access,source,status,starts_at,expires_at) VALUES($1,$2,$3,$4::jsonb,'admin_grant','active',NOW(),NOW()+make_interval(days=>$5)) ON CONFLICT(user_id) DO UPDATE SET skills=EXCLUDED.skills,skill_access=EXCLUDED.skill_access,status='active',expires_at=CASE WHEN $6::boolean THEN NOW()+make_interval(days=>$5) ELSE GREATEST(pro_entitlements.expires_at,NOW()+make_interval(days=>$5)) END,source='admin_grant',updated_at=NOW()`,[crypto.randomUUID(),u.id,skills,JSON.stringify(skillAccess),days,!!b.replace]);
+    await dbQuery(`INSERT INTO pro_entitlements(id,user_id,skills,skill_access,source,status,starts_at,expires_at) VALUES($1,$2,$3,$4::jsonb,'admin_grant','active',NOW(),NOW()+make_interval(days=>$5)) ON CONFLICT(user_id) DO UPDATE SET skills=EXCLUDED.skills,skill_access=EXCLUDED.skill_access,status='active',expires_at=GREATEST(pro_entitlements.expires_at,NOW()+make_interval(days=>$5)),source='admin_grant',updated_at=NOW()`,[crypto.randomUUID(),u.id,skills,JSON.stringify(skillAccess),days]);
     return json(res,200,{ok:true,message:`Đã mở PRO ${skills} skills trong ${days} ngày.`,skillAccess});
   }
   if(url.pathname.match(/^\/api\/admin\/users\/[^/]+\/course$/) && req.method==='POST'){
@@ -1265,27 +1387,24 @@ async function api(req,res,url){
     const u=(await dbQuery(`SELECT id,full_name,email,dob FROM users WHERE id=$1 AND auth_provider='google' LIMIT 1`,[id])).rows[0]; if(!u)return json(res,404,{ok:false,message:'Google account không tồn tại.'});
     const c=(await dbQuery(`SELECT id,title FROM course_posts WHERE slug=$1 AND published=TRUE LIMIT 1`,[slug])).rows[0]; if(!c)return json(res,404,{ok:false,message:'Khóa học không tồn tại.'});
     await dbQuery(`INSERT INTO course_enrollments(id,course_id,user_id,course_title,student_name,dob,current_band,phone,email,voucher,status) VALUES($1,$2,$3,$4,$5,$6,NULL,'',$7,'','approved')`,[crypto.randomUUID(),c.id,u.id,c.title,u.full_name,u.dob,u.email]);
-    const existing=(await dbQuery(`SELECT skill_access,status,expires_at FROM pro_entitlements WHERE user_id=$1 LIMIT 1`,[u.id])).rows[0];
-    const existingActive=existing?.status==='active' && new Date(existing.expires_at)>new Date();
-    const mergedAccess=normalizeSkills([...ALL_SKILLS,...(existingActive&&Array.isArray(existing.skill_access)?existing.skill_access.filter(x=>x==='speaking'):[])]);
-    await dbQuery(`INSERT INTO pro_entitlements(id,user_id,skills,skill_access,source,status,starts_at,expires_at) VALUES($1,$2,$3,$4::jsonb,'course_enrollment','active',NOW(),NOW()+INTERVAL '30 days') ON CONFLICT(user_id) DO UPDATE SET skills=EXCLUDED.skills,skill_access=EXCLUDED.skill_access,status='active',expires_at=GREATEST(pro_entitlements.expires_at,NOW()+INTERVAL '30 days'),source='course_enrollment',updated_at=NOW()`,[crypto.randomUUID(),u.id,mergedAccess.length,JSON.stringify(mergedAccess)]);
-    return json(res,200,{ok:true,message:'Đã gán khóa học và cấp PRO 4 kỹ năng HSK; quyền HSKK đang còn hạn được giữ nguyên.'});
+    await dbQuery(`INSERT INTO pro_entitlements(id,user_id,skills,skill_access,source,status,starts_at,expires_at) VALUES($1,$2,4,$3::jsonb,'course_enrollment','active',NOW(),NOW()+INTERVAL '30 days') ON CONFLICT(user_id) DO UPDATE SET skills=4,skill_access=$3::jsonb,status='active',expires_at=GREATEST(pro_entitlements.expires_at,NOW()+INTERVAL '30 days'),updated_at=NOW()`,[crypto.randomUUID(),u.id,JSON.stringify(ALL_SKILLS)]);
+    return json(res,200,{ok:true,message:'Đã gán khóa học và cấp PRO 4 skills cho Google account.'});
   }
 
   if(url.pathname.match(/^\/api\/admin\/users\/[^/]+\/test-access$/) && req.method==='GET'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
     const id=url.pathname.split('/').slice(-2,-1)[0];
     const u=(await dbQuery('SELECT id,full_name,email,auth_provider FROM users WHERE id=$1 LIMIT 1',[id])).rows[0]; if(!u)return json(res,404,{ok:false,message:'User not found'});
-    const tests=(await dbQuery("SELECT id,skill,volume,test_no,title,series_label,display_test_label,card_label,published FROM practice_tests WHERE (volume=79 AND lower(skill)=ANY($1::text[])) OR (volume=ANY($2::int[]) AND lower(skill)='speaking') ORDER BY skill,volume,test_no",[['listening','reading','writing','translation'],HSKK_VOLUMES])).rows;
+    const tests=(await dbQuery('SELECT id,skill,volume,test_no,title,series_label,display_test_label,card_label,published FROM practice_tests ORDER BY skill,volume,test_no')).rows;
     const overrides=new Map((await dbQuery('SELECT test_id,allowed,source FROM practice_access WHERE user_id=$1',[id])).rows.map(x=>[x.test_id,x]));
-    const ent=await getEntitlement(id); const result=tests.map(t=>{const o=overrides.get(t.id); const a=resolvePracticeAccess(t,ent,o); return {...t,allowed:a.allowed,override:o?!!o.allowed:null,source:a.reason}});
+    const ent=await getEntitlement(id); const result=tests.map(t=>{const o=overrides.get(t.id); const skill=String(t.skill||'').toLowerCase(); const accountWide=skill==='reading'||skill==='listening'; const free=Number(t.volume)===1; const pro=!!ent?.skillAccess?.includes(skill); const allowed=accountWide?true:(o?!!o.allowed:(free||pro)); const source=accountWide?'account':(o?'admin':(free?'free':(pro?'pro':'locked'))); return {...t,allowed,override:o?!!o.allowed:null,source}});
     return json(res,200,{ok:true,user:u,tests:result,pro:ent?{skills:ent.skills,skillAccess:ent.skillAccess,expiresAt:ent.expiresAt,daysRemaining:ent.daysRemaining}:null});
   }
   if(url.pathname.match(/^\/api\/admin\/users\/[^/]+\/test-access$/) && req.method==='POST'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
     const id=url.pathname.split('/').slice(-2,-1)[0]; const b=await body(req); const testId=String(b.testId||''); const allowed=!!b.allowed;
     if(!testId)return json(res,400,{ok:false,message:'Thiếu testId.'});
-    const test=(await dbQuery("SELECT id FROM practice_tests WHERE id=$1 AND ((volume=79 AND lower(skill)=ANY($2::text[])) OR (volume=ANY($3::int[]) AND lower(skill)='speaking')) LIMIT 1",[testId,['listening','reading','writing','translation'],HSKK_VOLUMES])).rows[0]; if(!test)return json(res,404,{ok:false,message:'Chỉ có thể cấp quyền cho đề HSK7–9 hoặc HSKK.'});
+    const test=(await dbQuery('SELECT id FROM practice_tests WHERE id=$1 LIMIT 1',[testId])).rows[0]; if(!test)return json(res,404,{ok:false,message:'Practice test không tồn tại.'});
     if(b.clear){ await dbQuery('DELETE FROM practice_access WHERE user_id=$1 AND test_id=$2',[id,testId]); return json(res,200,{ok:true,message:'Đã khôi phục quyền mặc định.'}); }
     await dbQuery(`INSERT INTO practice_access(id,user_id,test_id,allowed,source) VALUES($1,$2,$3,$4,'admin') ON CONFLICT(user_id,test_id) DO UPDATE SET allowed=EXCLUDED.allowed,source='admin',updated_at=NOW()`,[crypto.randomUUID(),id,testId,allowed]);
     return json(res,200,{ok:true,message:allowed?'Đã mở quyền bài thi riêng.':'Đã khóa quyền bài thi riêng.'});
@@ -1293,8 +1412,8 @@ async function api(req,res,url){
   if(url.pathname==='/api/users' && req.method==='GET'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
     const q=String(url.searchParams.get('q')||'').trim().toLowerCase();
-    const rows=(await dbQuery(`SELECT u.id,u.full_name,u.dob,u.registration_id,u.eit_code,u.email,u.active,u.created_at,u.auth_provider,u.google_sub,u.google_email_verified,u.avatar_url,pe.skills AS pro_skills,pe.skill_access AS pro_skill_access,pe.expires_at AS pro_expires_at FROM users u LEFT JOIN pro_entitlements pe ON pe.user_id=u.id AND pe.status='active' AND pe.expires_at>NOW() WHERE $1='' OR lower(u.full_name) LIKE '%'||$1||'%' OR lower(u.registration_id) LIKE '%'||$1||'%' OR lower(u.eit_code) LIKE '%'||$1||'%' OR lower(u.email) LIKE '%'||$1||'%' ORDER BY u.created_at DESC`,[q])).rows;
-    return json(res,200,{ok:true,users:rows.map(x=>({...x,pro:x.pro_skills?{skills:Number(x.pro_skills),skillAccess:normalizeSkills(Array.isArray(x.pro_skill_access)?x.pro_skill_access:[]),expiresAt:x.pro_expires_at}:null}))});
+    const rows=(await dbQuery(`SELECT id,full_name,dob,registration_id,eit_code,email,active,created_at,auth_provider,google_sub,google_email_verified,avatar_url FROM users WHERE $1='' OR lower(full_name) LIKE '%'||$1||'%' OR lower(registration_id) LIKE '%'||$1||'%' OR lower(eit_code) LIKE '%'||$1||'%' OR lower(email) LIKE '%'||$1||'%' ORDER BY created_at DESC`,[q])).rows;
+    return json(res,200,{ok:true,users:rows});
   }
   if(url.pathname==='/api/users' && req.method==='POST'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'}); const b=await body(req);
@@ -1333,12 +1452,12 @@ async function api(req,res,url){
   }
   if(url.pathname.startsWith('/api/submissions/') && req.method==='GET'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'}); const id=url.pathname.split('/').pop();
-    const r=await dbQuery(`SELECT s.*,r.listening,r.reading,r.writing,r.speaking,r.translation,r.overall,r.message,r.published,r.feedback,r.feedback_published,(SELECT jsonb_build_object('skill',ar.skill,'model',ar.model,'status',ar.status,'overallBand',ar.overall_band,'result',ar.result,'errorMessage',ar.error_message) FROM ai_skill_reviews ar WHERE ar.submission_id=s.id LIMIT 1) AS ai_review FROM submissions s LEFT JOIN results r ON r.submission_id=s.id WHERE s.id=$1`,[id]); if(!r.rows.length)return json(res,404,{ok:false,message:'Not found'}); const x=r.rows[0];
-    return json(res,200,{ok:true,submission:{id:x.id,studentName:x.student_name,studentEmail:x.student_email,studentCode:x.student_code,eitCode:x.eit_code,dob:x.dob,testId:x.test_id,testTitle:x.test_title,skill:x.skill,answers:x.answers,highlights:x.highlights,notes:x.notes,total:x.total,score:x.score,elapsedSeconds:x.elapsed_seconds,submittedAt:x.submitted_at,result:{listening:x.listening==null?null:Number(x.listening),reading:x.reading==null?null:Number(x.reading),writing:x.writing==null?null:Number(x.writing),speaking:x.speaking==null?null:Number(x.speaking),translation:x.translation==null?null:Number(x.translation),overall:x.overall==null?null:Number(x.overall),message:x.message||'',feedback:x.feedback&&typeof x.feedback==='object'?x.feedback:{},feedbackPublished:!!x.feedback_published},resultPublished:!!x.published,aiReview:x.ai_review||null}});
+    const r=await dbQuery(`SELECT s.*,r.listening,r.reading,r.writing,r.speaking,r.overall,r.message,r.published,r.feedback,r.feedback_published,(SELECT jsonb_build_object('skill',ar.skill,'model',ar.model,'status',ar.status,'overallBand',ar.overall_band,'result',ar.result,'errorMessage',ar.error_message) FROM ai_skill_reviews ar WHERE ar.submission_id=s.id LIMIT 1) AS ai_review FROM submissions s LEFT JOIN results r ON r.submission_id=s.id WHERE s.id=$1`,[id]); if(!r.rows.length)return json(res,404,{ok:false,message:'Not found'}); const x=r.rows[0];
+    return json(res,200,{ok:true,submission:{id:x.id,studentName:x.student_name,studentEmail:x.student_email,studentCode:x.student_code,eitCode:x.eit_code,dob:x.dob,testId:x.test_id,testTitle:x.test_title,skill:x.skill,answers:x.answers,highlights:x.highlights,notes:x.notes,total:x.total,score:x.score,elapsedSeconds:x.elapsed_seconds,submittedAt:x.submitted_at,result:{listening:x.listening==null?null:Number(x.listening),reading:x.reading==null?null:Number(x.reading),writing:x.writing==null?null:Number(x.writing),speaking:x.speaking==null?null:Number(x.speaking),overall:x.overall==null?null:Number(x.overall),message:x.message||'',feedback:x.feedback&&typeof x.feedback==='object'?x.feedback:{},feedbackPublished:!!x.feedback_published},resultPublished:!!x.published,aiReview:x.ai_review||null}});
   }
   if(url.pathname.startsWith('/api/submissions/') && req.method==='PATCH'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'}); const id=url.pathname.split('/').pop(); const b=await body(req); const exists=await dbQuery('SELECT user_id FROM submissions WHERE id=$1',[id]); if(!exists.rows.length)return json(res,404,{ok:false,message:'Not found'}); const n=v=>v===null||v===undefined||v===''?null:Number(v);
-    await dbQuery(`INSERT INTO results(id,submission_id,user_id,listening,reading,writing,speaking,translation,overall,message,published,feedback,feedback_published) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13) ON CONFLICT(submission_id) DO UPDATE SET listening=EXCLUDED.listening,reading=EXCLUDED.reading,writing=EXCLUDED.writing,speaking=EXCLUDED.speaking,translation=EXCLUDED.translation,overall=EXCLUDED.overall,message=EXCLUDED.message,published=EXCLUDED.published,feedback=EXCLUDED.feedback,feedback_published=EXCLUDED.feedback_published,updated_at=NOW()`,[crypto.randomUUID(),id,exists.rows[0].user_id,n(b.listening),n(b.reading),n(b.writing),n(b.speaking),n(b.translation),n(b.overall),String(b.message||''),!!b.resultPublished,JSON.stringify(b.feedback&&typeof b.feedback==='object'?b.feedback:{}),!!b.feedbackPublished]);
+    await dbQuery(`INSERT INTO results(id,submission_id,user_id,listening,reading,writing,speaking,overall,message,published,feedback,feedback_published) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,$12) ON CONFLICT(submission_id) DO UPDATE SET listening=EXCLUDED.listening,reading=EXCLUDED.reading,writing=EXCLUDED.writing,speaking=EXCLUDED.speaking,overall=EXCLUDED.overall,message=EXCLUDED.message,published=EXCLUDED.published,feedback=EXCLUDED.feedback,feedback_published=EXCLUDED.feedback_published,updated_at=NOW()`,[crypto.randomUUID(),id,exists.rows[0].user_id,n(b.listening),n(b.reading),n(b.writing),n(b.speaking),n(b.overall),String(b.message||''),!!b.resultPublished,JSON.stringify(b.feedback&&typeof b.feedback==='object'?b.feedback:{}),!!b.feedbackPublished]);
     return json(res,200,{ok:true});
   }
   if(url.pathname.startsWith('/api/submissions/') && req.method==='DELETE'){
@@ -1347,7 +1466,7 @@ async function api(req,res,url){
   return json(res,404,{ok:false,message:'API route not found'});
 }
 
-function contentType(file){return {'.html':'text/html; charset=utf-8','.js':'application/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.txt':'text/plain; charset=utf-8','.mp3':'audio/mpeg','.wav':'audio/wav','.m4a':'audio/mp4','.webm':'audio/webm','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.pdf':'application/pdf','.docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','.ogg':'audio/ogg'}[path.extname(file).toLowerCase()]||'application/octet-stream'}
+function contentType(file){return {'.html':'text/html; charset=utf-8','.js':'application/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.txt':'text/plain; charset=utf-8','.mp3':'audio/mpeg','.wav':'audio/wav','.m4a':'audio/mp4','.webm':'audio/webm','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.pdf':'application/pdf','.docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','.pptx':'application/vnd.openxmlformats-officedocument.presentationml.presentation','.xlsx':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','.zip':'application/zip','.ogg':'audio/ogg'}[path.extname(file).toLowerCase()]||'application/octet-stream'}
 function sendStaticFile(req,res,file,st){
   const baseHeaders={'Content-Type':contentType(file),'Cache-Control':'no-cache','Accept-Ranges':'bytes'};
   if(req.method==='HEAD'){
@@ -1386,10 +1505,11 @@ function sendStaticFile(req,res,file,st){
 function staticFile(req,res,url){
   let pathname;
   try{pathname=decodeURIComponent(url.pathname)}catch{return json(res,400,{message:'Invalid URL path'});}
-  const retiredScreens=new Set(['/practice.html','/hsk-exam.html','/exam-speaking.html','/speaking-result.html','/exam-writing.html','/writing-result.html','/exam-listening.html','/exam-reading.html','/hsk-exam.html','/courses.html','/prediction.html','/test-centre.html','/writing.html','/speaking.html','/result.html','/payment.html','/test.html','/pure-test.html','/debug-highlight.html','/test-highlight.html','/test-highlight-full.html','/audio-smoke.html']);
-  if(retiredScreens.has(pathname)){res.writeHead(302,{Location:'/index.html','Cache-Control':'no-store'});return res.end();}
   if(pathname==='/') pathname='/index.html';
+  if(pathname.startsWith('/.private-documents/') || pathname==='/\.private-documents') return json(res,404,{message:'File not found'});
   let file=path.normalize(path.join(ROOT,pathname));
+  const privateDir=path.resolve(PRIVATE_DOC_DIR);
+  if(file===privateDir||file.startsWith(privateDir+path.sep)) return json(res,404,{message:'File not found'});
   if(!file.startsWith(ROOT+path.sep)&&file!==ROOT) return json(res,403,{message:'Forbidden'});
   fs.stat(file,(err,st)=>{
     if(!err && st.isDirectory()){

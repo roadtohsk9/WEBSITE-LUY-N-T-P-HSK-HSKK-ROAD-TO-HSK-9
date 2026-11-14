@@ -301,3 +301,26 @@ html,body{width:100%;height:100%;overflow:hidden}
 .btn:hover,.nav-q:hover,.nav-section:hover{transform:translateY(-1px)}
 .q-card,.q-group-live,.listening-group{animation:eitCardIn .28s ease both}
 .inline-answer:focus,.match-select:focus{box-shadow:0 0 0 4px rgba(220,38,38,.08)}
+
+/* HSK6 reading typography: align both edges for an even paragraph edge. */
+.passage-text, .passage-text p, .passage, .passage p, .reading-passage, .reading-passage p, .reading-content, .reading-content p { text-align: justify; text-justify: inter-word; }
+.passage-text p, .passage p, .reading-passage p, .reading-content p { text-align-last: left; }
+
+/* HSK5 full-paper import: Writing contains Q91-100, including short and picture writing. */
+.hsk5-writing-shell{height:calc(100vh - 64px)!important}
+.hsk5-writing-scroll{flex:1;min-height:0;overflow:auto;padding:24px 20px 120px;background:#f6faff}
+.hsk5-writing-list{max-width:1000px;margin:0 auto;display:grid;gap:16px}
+.hsk5-writing-intro,.hsk5-writing-card{background:#fff;border:1px solid #dbe7f5;border-radius:14px;padding:22px;box-shadow:0 3px 14px rgba(31,84,140,.045)}
+.hsk5-writing-intro h1{font-size:23px;line-height:1.4;margin:0 0 8px;color:#1d4e89}
+.hsk5-writing-intro p,.hsk5-writing-help{color:#475569;line-height:1.65;margin:0}
+.hsk5-writing-kicker{font-size:12px;letter-spacing:.06em;font-weight:900;color:#2563a6;margin-bottom:8px}
+.hsk5-writing-card h2{font-size:16px;line-height:1.65;margin:0 0 12px;color:#1f2937}
+.hsk5-word-bank{background:#eef6ff;border:1px solid #d4e6fb;border-radius:10px;padding:14px 16px;color:#233f61;line-height:1.9;font-size:17px;white-space:pre-wrap;margin:12px 0}
+.hsk5-sentence-input{width:100%;padding:13px 14px;border:1px solid #cbd5e1;border-radius:9px;outline:none;font-size:16px;font-family:inherit;background:#fff}
+.hsk5-sentence-input:focus,.hsk5-short-write:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(96,165,250,.16)}
+.hsk5-vocab-list{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 16px}
+.hsk5-vocab-list span{display:inline-flex;align-items:center;background:#e8f3ff;border:1px solid #cfe5ff;border-radius:999px;padding:6px 11px;color:#1d4e89;font-weight:700}
+.hsk5-short-write{display:block;width:100%;min-height:210px;resize:vertical;padding:14px;border:1px solid #cbd5e1;border-radius:10px;font-family:inherit;font-size:16px;line-height:1.8;color:#1f2937;outline:none;background:#fff}
+.hsk5-char-count{text-align:right;color:#64748b;font-size:12px;margin-top:7px}
+.hsk5-picture-prompt{display:block;max-width:min(100%,280px);max-height:380px;object-fit:contain;object-position:top left;border:1px solid #e2e8f0;border-radius:10px;margin:12px 0 16px;background:#fff}
+@media(max-width:640px){.hsk5-writing-scroll{padding:14px 10px 100px}.hsk5-writing-intro,.hsk5-writing-card{padding:16px}.hsk5-writing-intro h1{font-size:20px}}

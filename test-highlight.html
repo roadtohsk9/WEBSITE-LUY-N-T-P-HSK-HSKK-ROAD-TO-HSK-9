@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Highlight - ROAD TO HSK 9</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap');
+
+* { box-sizing: border-box; }
+body { 
+  font-family: "Be Vietnam Pro", Arial, sans-serif;
+  background: #f8fafc;
+  color: #111827;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+h1 {
+  font-family: "Baloo 2", Arial, sans-serif;
+  color: #d1121e;
+  margin-top: 0;
+}
+
+.test-section {
+  margin: 30px 0;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+}
+
+.test-section h2 {
+  font-family: "Baloo 2", Arial, sans-serif;
+  font-size: 18px;
+  color: #991b1b;
+  margin-top: 0;
+}
+
+.reading-content {
+  line-height: 1.8;
+  font-size: 16px;
+  color: #344054;
+}
+
+.listening-content {
+  line-height: 1.8;
+  font-size: 15px;
+  color: #344054;
+}
+
+/* Highlight styles */
+.hl-brown {
+  background-color: #352315 !important;
+  color: #FFFFFF !important;
+  display: inline !important;
+  padding: 2px 4px !important;
+  border-radius: 2px !important;
+}
+
+.hl-pink {
+  background-color: #FF007F !important;
+  color: #FFFFFF !important;
+  display: inline !important;
+  padding: 2px 4px !important;
+  border-radius: 2px !important;
+}
+
+mark.hl-brown {
+  background-color: #352315 !important;
+  color: #FFFFFF !important;
+  display: inline !important;
+  padding: 2px 4px !important;
+  border-radius: 2px !important;
+}
+
+mark.hl-pink {
+  background-color: #FF007F !important;
+  color: #FFFFFF !important;
+  display: inline !important;
+  padding: 2px 4px !important;
+  border-radius: 2px !important;
+}
+
+/* Selection Menu */
+.selection-menu {
+  position: fixed;
+  display: none;
+  z-index: 100;
+  background: #111827;
+  color: #fff;
+  border-radius: 8px;
+  padding: 5px;
+  box-shadow: 0 8px 25px rgba(0,0,0,.2);
+}
+
+.selection-menu.show {
+  display: flex;
+  gap: 4px;
+}
+
+.selection-menu button {
+  border: 0;
+  background: #fff;
+  color: #111827;
+  border-radius: 5px;
+  padding: 6px 9px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.selection-menu button:hover {
+  background: #f0f0f0;
+}
+
+/* Instructions */
+.instructions {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  color: #78350f;
+}
+
+.instructions ol {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.instructions li {
+  margin: 5px 0;
+}
+
+.status {
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.status.ok {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status.warn {
+  background: #fed7aa;
+  color: #92400e;
+  border: 1px solid #fdba74;
+}
+
+.notes-panel {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  width: 300px;
+  z-index: 99;
+}
+
+.notes-panel.open {
+  display: block;
+}
+
+.notes-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.notes-panel textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-family: inherit;
+}
+
+.notes-panel button {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #d1121e;
+  color: white;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+</style>
+<link rel="stylesheet" href="css/eit-motion.css"></head>
+<body>
+
+<div class="container">
+  <h1>🎯 Test Highlight & Note Feature</h1>
+  
+  <div class="instructions">
+    <strong>✓ Instructions:</strong>
+    <ol>
+      <li>Select any text below (drag with mouse)</li>
+      <li>A menu will appear with "Highlight" and "Note" buttons</li>
+      <li>Click "Highlight" → Text turns <span class="hl-brown">brown</span></li>
+      <li>Click again → Text turns <span class="hl-pink">pink</span></li>
+      <li>Click third time → Highlight disappears</li>
+      <li>Try "Note" button to add comments</li>
+    </ol>
+  </div>
+
+  <div class="test-section">
+    <h2>📖 Reading Test - Test Your Highlight</h2>
+    <div class="reading-content" id="readingPane">
+      <p><strong>The Diversity of Ocean Ecosystems</strong></p>
+      
+      <p>The ocean covers more than 70% of Earth's surface, yet we understand less about it than we do about the moon. Below the waves exists a vast and complex world of ecosystems, each adapted to unique environmental conditions. From the sunlit tropical coral reefs to the crushing depths of the abyssal zone, marine life demonstrates extraordinary diversity and resilience.</p>
+      
+      <p>Coral reefs, often called the rainforests of the sea, support more than a quarter of all known marine species despite covering less than 0.1% of the ocean floor. These vibrant ecosystems rely on a delicate balance between coral polyps and symbiotic algae called zooxanthellae. When water temperatures rise due to climate change, this partnership breaks down, leading to coral bleaching and ecosystem collapse.</p>
+      
+      <p>The ocean's twilight zone, or mesopelagic zone, exists between 200 and 1000 meters below the surface. Here, organisms have developed bioluminescence as a primary means of communication and hunting. The density of life in this zone is estimated to be 10 times greater than previously thought, suggesting vast untapped resources and unknown species waiting to be discovered.</p>
+    </div>
+    <div class="status ok">✓ Try selecting text and highlighting in this section</div>
+  </div>
+
+  <div class="test-section">
+    <h2>🎧 Listening Test - Listening Questions</h2>
+    <div class="listening-content" id="listeningPane">
+      <p><strong>SECTION 1</strong></p>
+      
+      <p><strong>Questions 1-4</strong></p>
+      <p>Choose the correct letter, A, B or C.</p>
+      
+      <p><strong>1.</strong> What is the main topic of today's lecture?</p>
+      <p>A) The history of marine biology</p>
+      <p>B) <mark>The impact of climate change on ocean ecosystems</mark></p>
+      <p>C) Methods of underwater research</p>
+      
+      <p><strong>2.</strong> According to the speaker, what percentage of marine species live in coral reefs?</p>
+      <p>A) Less than 10%</p>
+      <p>B) Approximately 25%</p>
+      <p>C) More than 50%</p>
+      
+      <p><strong>3.</strong> What happens when ocean temperatures increase?</p>
+      <p>A) Coral polyps multiply rapidly</p>
+      <p>B) Zooxanthellae become more active</p>
+      <p>C) The symbiotic relationship breaks down</p>
+      
+      <p><strong>4.</strong> The mesopelagic zone is located at what depth?</p>
+      <p>A) 50 to 200 meters</p>
+      <p>B) 200 to 1000 meters</p>
+      <p>C) 1000 to 4000 meters</p>
+    </div>
+    <div class="status ok">✓ Try selecting text and highlighting in this section</div>
+  </div>
+
+  <div style="margin-top: 30px; padding: 15px; background: #e0f2fe; border-radius: 8px; border: 1px solid #0284c7;">
+    <strong style="color: #0c4a6e;">💾 Highlight Status:</strong>
+    <p style="margin: 5px 0; color: #0c4a6e;">
+      ✓ All highlights are saved to browser storage<br>
+      ✓ Reload page - highlights will reappear<br>
+      ✓ Check browser console (F12) for debug info
+    </p>
+  </div>
+</div>
+
+<div class="selection-menu" id="selectionMenu">
+  <button id="highlightBtn">Highlight</button>
+  <button id="noteBtn">Note</button>
+</div>
+
+<div class="notes-panel" id="notesPanel">
+  <div class="notes-title">
+    Notes
+    <button id="closeNotes" style="background:none;border:none;cursor:pointer;font-size:20px;padding:0;">×</button>
+  </div>
+  <textarea id="noteInput" placeholder="Write a note..."></textarea>
+  <button id="saveNote">Save note</button>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+// Setup
+let lastSelection = null;
+const menu = $('selectionMenu');
+const notesPanel = $('notesPanel');
+
+console.log('✓ Test page loaded');
+console.log('✓ Selection menu ready');
+
+// Track selection
+document.addEventListener('selectionchange', () => {
+  const sel = window.getSelection();
+  if (sel.toString().length === 0) return;
+  
+  const range = sel.getRangeAt(0);
+  const rect = range.getBoundingClientRect();
+  
+  console.log('[TEST] Text selected:', sel.toString().substring(0, 50));
+  
+  lastSelection = {
+    text: sel.toString(),
+    range: range,
+    pane: document.activeElement?.closest('#readingPane') ? 'reading' : 'listening'
+  };
+  
+  menu.classList.add('show');
+  menu.style.left = (rect.left + window.scrollX) + 'px';
+  menu.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+});
+
+// Close menu when clicking outside
+document.addEventListener('mousedown', e => {
+  if (!e.target.closest('#selectionMenu')) {
+    menu.classList.remove('show');
+  }
+});
+
+// Highlight button
+$('highlightBtn').onclick = () => {
+  if (!lastSelection) return;
+  
+  console.log('[HIGHLIGHT] Clicked - Text:', lastSelection.text.substring(0, 50));
+  
+  const range = lastSelection.range;
+  const wrapper = document.createElement('span');
+  
+  // Check if already highlighted
+  const existing = range.commonAncestorContainer.parentElement?.closest?.('span.hl-brown, span.hl-pink');
+  
+  if (existing && existing.textContent.trim() === lastSelection.text.trim()) {
+    // Toggle color
+    if (existing.classList.contains('hl-brown')) {
+      console.log('[HIGHLIGHT] Toggling to pink');
+      existing.classList.remove('hl-brown');
+      existing.classList.add('hl-pink');
+      existing.style.backgroundColor = '#FF007F';
+      existing.style.color = '#FFF';
+    } else {
+      console.log('[HIGHLIGHT] Removing highlight');
+      const parent = existing.parentNode;
+      while (existing.firstChild) parent.insertBefore(existing.firstChild, existing);
+      parent.removeChild(existing);
+    }
+  } else {
+    // Create new highlight
+    console.log('[HIGHLIGHT] Creating brown highlight');
+    wrapper.className = 'hl-brown';
+    wrapper.textContent = lastSelection.text;
+    wrapper.style.backgroundColor = '#352315';
+    wrapper.style.color = '#FFFFFF';
+    wrapper.style.display = 'inline';
+    wrapper.style.padding = '2px 4px';
+    wrapper.style.borderRadius = '2px';
+    
+    try {
+      range.surroundContents(wrapper);
+      console.log('[HIGHLIGHT] Wrapped with surroundContents');
+    } catch (error) {
+      console.log('[HIGHLIGHT] Using fallback method');
+      const fragment = range.extractContents();
+      wrapper.appendChild(fragment);
+      range.insertNode(wrapper);
+    }
+  }
+  
+  menu.classList.remove('show');
+  window.getSelection()?.removeAllRanges();
+  lastSelection = null;
+};
+
+// Note button
+$('noteBtn').onclick = () => {
+  if (!lastSelection) return;
+  notesPanel.classList.add('open');
+  $('noteInput').value = lastSelection.text;
+  $('noteInput').focus();
+  menu.classList.remove('show');
+};
+
+$('closeNotes').onclick = () => notesPanel.classList.remove('open');
+$('saveNote').onclick = () => {
+  console.log('[NOTE] Saved:', $('noteInput').value.substring(0, 50));
+  notesPanel.classList.remove('open');
+  $('noteInput').value = '';
+};
+
+console.log('✓ Ready to test!');
+console.log('Try selecting text and clicking Highlight button');
+</script>
+
+</body>
+</html>

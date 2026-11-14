@@ -25,24 +25,23 @@
     radial-gradient(40% 35% at 18% 14%,rgba(59,130,246,.11),transparent 70%),
     radial-gradient(34% 30% at 86% 12%,rgba(56,189,248,.09),transparent 70%),
     radial-gradient(46% 40% at 72% 92%,rgba(99,102,241,.07),transparent 72%);
-  animation:rmAurora 38s ease-in-out infinite alternate;
-  will-change:transform;contain:strict;
+  animation:rmAurora 26s ease-in-out infinite alternate;
+  will-change:transform;
 }
 
 /* ---------- Chuyển trang mượt ---------- */
-html{scroll-behavior:smooth;scroll-padding-top:84px}
-body{transition:opacity .28s var(--rm-ease-soft);animation:rmEnter .55s var(--rm-ease) both}
+body{transition:opacity .32s var(--rm-ease)}
 body.rm-leaving{opacity:0!important}
-@keyframes rmEnter{from{opacity:0}to{opacity:1}}
 
 /* ---------- Hiện nội dung khi cuộn tới ---------- */
 .rm-ready .rm-reveal:not(.rm-in){
-  opacity:0;transform:translate3d(0,18px,0);will-change:opacity,transform;
+  opacity:0;transform:translate3d(0,24px,0);filter:blur(6px);
 }
 .rm-reveal{
   transition:
-    opacity .65s var(--rm-ease-soft) var(--rm-d,0ms),
-    transform .8s var(--rm-ease) var(--rm-d,0ms);
+    opacity .9s var(--rm-ease) var(--rm-d,0ms),
+    transform .9s var(--rm-ease) var(--rm-d,0ms),
+    filter .7s var(--rm-ease) var(--rm-d,0ms);
 }
 
 /* ---------- Tiêu đề: hiện từng từ ---------- */
@@ -56,12 +55,11 @@ body.rm-leaving{opacity:0!important}
 @media (hover:hover) and (pointer:fine){
   .rm-mag{
     translate:var(--rm-mx,0px) var(--rm-my,0px);
-    transition:translate .6s var(--rm-ease),transform .35s var(--rm-ease),box-shadow .3s ease,background-color .3s ease,color .3s ease,border-color .3s ease;
+    transition:translate .5s var(--rm-ease),transform .3s var(--rm-ease),box-shadow .3s ease,background-color .3s ease,color .3s ease,border-color .3s ease;
   }
 }
 
 /* ---------- Thẻ: ánh sáng theo con trỏ ---------- */
-.rm-paused .rm-aurora{animation-play-state:paused}
 .rm-spot{isolation:isolate}
 .rm-spot::before{
   content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;
@@ -97,13 +95,3 @@ body.rm-leaving{opacity:0!important}
   .rm-ready .rm-reveal:not(.rm-in),.rm-ready .rm-word>span{opacity:1!important;transform:none!important;filter:none!important}
   .rm-mag{translate:none!important}
 }
-
-
-/* ---------- Thành phần dùng chung: chuyển động nhỏ, mượt ---------- */
-.tab,.btn-red,.btn-outline,.btn-light,.history-item,.word-card,.level,.skill,.test{
-  transition:transform .28s var(--rm-ease),box-shadow .28s var(--rm-ease-soft),background-color .22s ease,border-color .22s ease,color .22s ease
-}
-@media (hover:hover) and (pointer:fine){
-  .word-card:hover,.test:hover,.level:hover,.skill:hover{transform:translate3d(0,-3px,0);box-shadow:0 14px 32px rgba(30,64,175,.12)}
-}
-.tab:active,.btn-red:active,.btn-outline:active,.btn-light:active{transform:scale(.97)}

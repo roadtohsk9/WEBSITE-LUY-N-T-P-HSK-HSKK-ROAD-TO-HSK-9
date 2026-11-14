@@ -54,37 +54,6 @@ if(location.pathname.endsWith('/login.html')){
   });
 }
 
-
-// Đăng nhập / tạo tài khoản bằng Google (tài khoản mới không có PRO).
-if(location.pathname.endsWith('/login.html')){
-  (async function initGoogleLogin(){
-    const section=document.getElementById('googleSection'); if(!section)return;
-    let clientId='';
-    try{const r=await fetch('/api/config',{cache:'no-store'});const d=await r.json();clientId=d.googleClientId||'';}catch{}
-    if(!clientId)return; // chưa cấu hình GOOGLE_CLIENT_ID → ẩn nút Google
-    section.hidden=false;
-    const errBox=document.getElementById('googleError');
-    async function onCredential(resp){
-      errBox.textContent='';
-      try{
-        const r=await fetch('/api/candidate/google',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({credential:resp.credential})});
-        const x=await readApiResponse(r);
-        if(!r.ok||!x.ok)throw Error(x.message||'Đăng nhập Google thất bại.');
-        localStorage.setItem('currentUser',JSON.stringify({...x.user,token:x.token}));
-        const redirect=localStorage.getItem('loginRedirect')||'index.html';
-        localStorage.removeItem('loginRedirect');
-        location.href=redirect;
-      }catch(ex){errBox.textContent=ex.message||'Đăng nhập Google thất bại.';}
-    }
-    function render(){
-      if(!window.google?.accounts?.id){setTimeout(render,200);return;}
-      google.accounts.id.initialize({client_id:clientId,callback:onCredential});
-      google.accounts.id.renderButton(document.getElementById('googleBtn'),{theme:'outline',size:'large',shape:'pill',text:'continue_with',width:320,locale:'vi'});
-    }
-    render();
-  })();
-}
-
 // Test Centre requires an EIT-issued student account.
 if(location.pathname.endsWith('/test-centre.html')){
   if(!user()?.token){goToLogin('test-centre.html');}

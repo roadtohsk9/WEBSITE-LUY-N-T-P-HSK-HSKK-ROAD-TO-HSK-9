@@ -13,19 +13,15 @@
   bar.className = 'rm-scroll';
   bar.setAttribute('aria-hidden', 'true');
   body.appendChild(bar);
-  let scrollQueued = false, maxScroll = 0;
-  const measure = () => { maxScroll = root.scrollHeight - window.innerHeight; };
+  let scrollQueued = false;
   const updateScroll = () => {
     scrollQueued = false;
-    bar.style.setProperty('--rm-p', maxScroll > 0 ? Math.min(1, window.scrollY / maxScroll).toFixed(4) : '0');
+    const max = root.scrollHeight - window.innerHeight;
+    bar.style.setProperty('--rm-p', max > 0 ? Math.min(1, window.scrollY / max).toFixed(4) : '0');
   };
   window.addEventListener('scroll', () => { if (!scrollQueued) { scrollQueued = true; requestAnimationFrame(updateScroll); } }, { passive: true });
-  const remeasure = () => { measure(); updateScroll(); };
-  window.addEventListener('resize', remeasure, { passive: true });
-  window.addEventListener('load', remeasure);
-  if ('ResizeObserver' in window) new ResizeObserver(remeasure).observe(body);
-  remeasure();
-  document.addEventListener('visibilitychange', () => root.classList.toggle('rm-paused', document.hidden));
+  window.addEventListener('resize', updateScroll, { passive: true });
+  updateScroll();
 
   if (reduce) return; // Từ đây trở đi chỉ là hiệu ứng.
   root.classList.add('rm-ready');
@@ -46,7 +42,7 @@
     if (url.origin !== location.origin || url.pathname === location.pathname && url.search === location.search) return;
     e.preventDefault();
     body.classList.add('rm-leaving');
-    setTimeout(() => { location.href = url.href; }, 200);
+    setTimeout(() => { location.href = url.href; }, 230);
   });
   window.addEventListener('pageshow', e => { if (e.persisted) body.classList.remove('rm-leaving'); });
 
@@ -105,7 +101,7 @@
           cleanupAfter(en.target);
           io.unobserve(en.target);
         });
-      }, { threshold: 0.08, rootMargin: '0px 0px -4% 0px' })
+      }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' })
     : null;
 
   function cleanupAfter(el) {
@@ -115,7 +111,7 @@
       el.removeEventListener('transitionend', done);
     };
     el.addEventListener('transitionend', e => { if (e.propertyName === 'opacity') done(); });
-    setTimeout(done, 1300);
+    setTimeout(done, 1600);
   }
 
   function prepare(el) {
@@ -142,7 +138,7 @@
       const parent = el.parentElement || body;
       const n = counts.get(parent) || 0;
       counts.set(parent, n + 1);
-      if (el.matches(TARGETS) && !NO_REVEAL) el.style.setProperty('--rm-d', Math.min(n, 5) * 60 + 'ms');
+      if (el.matches(TARGETS) && !NO_REVEAL) el.style.setProperty('--rm-d', Math.min(n, 6) * 80 + 'ms');
       prepare(el);
     }) : null;
   }
@@ -152,30 +148,17 @@
 
   // Nội dung render bằng JS sau khi tải trang
   let pending = false;
-  const added = new Set();
-  new MutationObserver(list => {
-    list.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1 && !n.classList.contains('rm-scroll') && !n.classList.contains('rm-aurora')) added.add(n); }));
-    if (pending || !added.size) return;
+  new MutationObserver(() => {
+    if (pending) return;
     pending = true;
-    requestAnimationFrame(() => {
-      pending = false;
-      const nodes = [...added]; added.clear();
-      nodes.forEach(n => { if (n.isConnected) { if (n.matches(TARGETS + ',' + SPOT + ',' + MAG + ',' + LINKS)) prepare(n); scan(n); } });
-    });
+    requestAnimationFrame(() => { pending = false; scan(document); });
   }).observe(body, { childList: true, subtree: true });
 
   /* ---------- Nút kéo nhẹ & ánh sáng thẻ theo con trỏ ---------- */
   if (fine) {
     let magEl = null;
     const reset = el => { if (el) { el.style.setProperty('--rm-mx', '0px'); el.style.setProperty('--rm-my', '0px'); } };
-    let moveEvt = null, moveQueued = false;
     document.addEventListener('pointermove', e => {
-      moveEvt = e;
-      if (moveQueued) return;
-      moveQueued = true;
-      requestAnimationFrame(() => { moveQueued = false; onMove(moveEvt); });
-    }, { passive: true });
-    function onMove(e) {
       const mag = e.target.closest && e.target.closest('.rm-mag');
       if (magEl && magEl !== mag) { reset(magEl); magEl = null; }
       if (mag && !mag.disabled) {
@@ -192,7 +175,7 @@
         spot.style.setProperty('--rm-sx', (e.clientX - r.left) + 'px');
         spot.style.setProperty('--rm-sy', (e.clientY - r.top) + 'px');
       }
-    }
+    }, { passive: true });
     document.addEventListener('pointerleave', () => { reset(magEl); magEl = null; }, true);
   }
 })();

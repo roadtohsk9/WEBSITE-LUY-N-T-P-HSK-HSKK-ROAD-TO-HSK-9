@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROAD TO HSK 9 · HSK 6 Phòng thi thử</title>
+<link rel="icon" href="/logo.png">
+<link rel="stylesheet" href="css/hsk6-mock.css">
+<link rel="stylesheet" href="css/road-motion.css">
+</head>
+<body data-rm="no-reveal">
+<header class="exam-header">
+  <a class="brand" href="/"><span class="brand-mark">9</span><span>ROAD TO HSK 9<small>HSK 6 · MOCK EXAM</small></span></a>
+  <div class="header-status"><span id="headerStage">CHƯA BẮT ĐẦU</span><strong id="headerTimer">--:--</strong></div>
+</header>
+<main class="exam-shell">
+  <section class="panel setup-panel" id="setupPanel">
+    <div class="eyebrow">EXAM CANDIDATE PORTAL</div>
+    <h1>HSK 6 · Full Mock Exam</h1>
+    <p class="lead">Đăng nhập bằng tài khoản học viên đã được cấp. Bài thi gồm 3 phần HSK 6 (Listening, Reading, Writing), sau đó là phần HSKK Cao cấp ở cuối. Bạn chỉ được chuyển sang phần kế tiếp khi thời gian phần hiện tại kết thúc.</p>
+    <div class="setup-grid">
+      <div class="setup-main">
+        <div class="field"><label for="examSelect">Bộ đề thi</label><select id="examSelect" class="control"><option value="">Đang tải danh sách bộ đề…</option></select><p id="selectedExamDescription" class="exam-description">Chọn bộ đề thi thử đã được Admin xuất bản.</p></div>
+        <div class="candidate-box">
+          <div class="candidate-box-head"><span class="step-index">01</span><div><b>Thông tin thí sinh</b><small>Đăng nhập bằng tài khoản học viên được Admin cấp.</small></div></div>
+          <div class="field"><label for="candidateName">Họ và tên</label><input id="candidateName" class="control" autocomplete="name" required></div>
+          <div class="field"><label for="candidateCode">Số báo danh / Username</label><input id="candidateCode" class="control" autocomplete="username" required></div>
+          <div class="candidate-login" id="loginIdentity"></div>
+          <a class="text-link" href="/login.html">Đổi tài khoản đăng nhập</a>
+        </div>
+      </div>
+      <aside class="setup-settings">
+        <div class="candidate-box-head"><span class="step-index">02</span><div><b>Cài đặt phòng thi</b><small>Điều chỉnh trước khi bắt đầu.</small></div></div>
+        <div class="setting-row"><div><b>Âm lượng</b><small>Âm thanh đề nghe và HSKK</small></div><output id="volumeValue">80%</output></div>
+        <input id="volumeControl" class="range" type="range" min="0" max="100" value="80" aria-label="Âm lượng">
+        <div class="setting-row" style="margin-top:22px"><div><b>Cỡ chữ</b><small>Điều chỉnh nội dung bài thi</small></div><output id="fontValue">18 px</output></div>
+        <div class="font-controls"><button type="button" id="fontDown" aria-label="Giảm cỡ chữ">A−</button><button type="button" id="fontUp" aria-label="Tăng cỡ chữ">A+</button><button type="button" id="fontReset">Mặc định</button></div>
+        <div class="exam-overview" id="examOverview"><b>Thứ tự các phần thi</b><ol><li>Listening · 听力</li><li>Reading · 阅读</li><li>Writing · 写作</li><li>HSKK Cao cấp · 高级口语</li></ol></div>
+      </aside>
+    </div>
+    <div class="setup-warning"><b>Lưu ý trước khi thi</b><ul><li>Kiểm tra tai nghe và kết nối âm thanh trước khi bắt đầu.</li><li>Cho phép trình duyệt sử dụng microphone khi đến phần HSKK Cao cấp.</li><li>Không tải lại hoặc đóng trang trong khi thi. Đồng hồ mỗi phần chạy độc lập.</li><li>Khi hết giờ, hệ thống khóa phần hiện tại và tự chuyển sang phần tiếp theo.</li></ul></div>
+    <label class="ready-check"><input type="checkbox" id="readyCheck"><span>Tôi đã kiểm tra thông tin thí sinh, âm thanh và sẵn sàng bắt đầu bài thi.</span></label>
+    <div class="setup-actions"><div id="setupMessage" class="status-message" role="status"></div><button class="primary-btn" id="startMock" disabled>BẮT ĐẦU BÀI THI <span>→</span></button></div>
+  </section>
+
+  <section id="examPanel" class="hidden">
+    <div class="stage-strip" id="stageStrip"></div>
+    <div class="exam-toolbar">
+      <div><div class="eyebrow" id="stageEyebrow">PART 1 / 4</div><h1 id="stageTitle">Listening · 听力</h1><p id="stageDescription">Đọc kỹ hướng dẫn trước khi làm bài.</p></div>
+      <div class="stage-clock"><span>THỜI GIAN CÒN LẠI</span><strong id="stageTimer">--:--</strong></div>
+    </div>
+    <div class="exam-layout">
+      <section class="paper-panel">
+        <div id="stagePaper" class="paper-content"></div>
+        <div id="recordingPanel" class="recording-panel hidden">
+          <div><span class="recording-indicator" id="recordingIndicator"></span><b>Ghi âm phần thi HSKK Cao cấp</b><p id="recordingStatus">Bấm “Bắt đầu ghi âm” và trả lời vào microphone. Có thể nghe lại bản ghi trước khi hết giờ.</p></div>
+          <div class="recording-actions"><button type="button" id="recordStart" class="record-btn">● Bắt đầu ghi âm</button><button type="button" id="recordStop" class="stop-btn" disabled>■ Dừng ghi âm</button></div>
+          <audio id="recordingPreview" class="recording-preview hidden" controls></audio>
+        </div>
+        <div class="locked-notice hidden" id="lockedNotice">Đã hết thời gian phần thi. Hệ thống đang chuyển sang phần tiếp theo…</div>
+      </section>
+      <aside class="exam-side">
+        <div class="side-card"><span class="side-label">THÍ SINH</span><b id="sideCandidate">—</b><small id="sideCode">—</small><hr><span class="side-label">TIẾN ĐỘ</span><b id="sideProgress">Phần 1 / 4</b><div class="progress-track"><i id="overallProgress"></i></div><span id="answeredCount" class="answered-count">0 câu đã trả lời</span></div>
+        <div class="side-card settings-mini"><b>Cài đặt nhanh</b><label for="examVolume">Âm lượng</label><input id="examVolume" class="range" type="range" min="0" max="100" value="80"><label>Cỡ chữ</label><div class="font-controls"><button type="button" id="examFontDown">A−</button><button type="button" id="examFontUp">A+</button></div><p>Không thể chuyển phần thi trước khi hết giờ.</p></div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="finishPanel" class="panel finish-panel hidden">
+    <div class="finish-icon">✓</div><div class="eyebrow">EXAM SUBMITTED</div><h1>Đã hoàn thành bài thi thử</h1><p id="finishMessage" class="lead">Bài làm của bạn đã được ghi nhận.</p><div id="finishSummary" class="finish-summary"></div><button type="button" id="retrySubmit" class="primary-btn inline-btn hidden">THỬ GỬI LẠI BÀI THI</button><a class="primary-btn inline-btn" href="/">VỀ TRANG CHỦ</a><a class="text-link" href="/personalization.html">Mở kho cá nhân</a>
+  </section>
+</main>
+<script src="js/hsk6-mock.js"></script>
+<script src="js/road-motion.js" defer></script>
+</body>
+</html>

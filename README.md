@@ -1,89 +1,28 @@
-# HSK STUDIO · HSK 7–9
+# HSK Exam Practice — HSK 3–6
 
-Website luyện tập cho **một chương trình HSK 7–9 thống nhất**. Không có lựa chọn kho đề riêng HSK 7, HSK 8 hoặc HSK 9. Học viên luyện tập trong cùng một hệ thống; chỉ sau khi hoàn thành và chấm **bài thi thử tổng hợp** thì website mới đối chiếu điểm với các ngưỡng do Admin thiết lập để đưa ra mức ước tính HSK 7, HSK 8 hoặc HSK 9.
-
-Website giữ nguyên bốn kỹ năng HSK 7–9: **Listening, Reading, Writing và Translation**. Ngoài ra, bổ sung **HSKK Speaking** thành một mô-đun độc lập (HSKK 2.0 và HSK Speaking 3.0, mỗi cấp Sơ/Trung/Cao cấp), không thay thế Writing HSK hoặc bốn kỹ năng hiện có.
-
-## Chức năng học viên
-
-- Thanh điều hướng: Làm đề, Luyện đề, Cá nhân hóa, Từ vựng, Take notes và Flashcard.
-- Kho đề và luyện theo kỹ năng trong **một kho HSK 7–9 chung**; không có bộ lọc/selector HSK 7, 8, 9 riêng.
-- Listening/Reading: làm bài, nộp bài, xem đáp án và giải thích trong giao diện hai khung, có thanh kéo điều chỉnh kích thước.
-- Writing/Translation: gửi bài để Google Gemini chấm, nhận điểm, phản hồi theo tiêu chí và đề xuất cải thiện.
-- HSKK (bổ sung, không thay thế các phần cũ): mô-đun luyện nói riêng, có sáu cấu hình HSKK 2.0/HSK Speaking 3.0 × Sơ/Trung/Cao cấp; microphone tự ghi âm sau khi audio câu hỏi kết thúc, đếm ngược thời gian trả lời và tự chuyển câu; Gemini nhận cả audio gốc, hình đề (nếu có) và bản ghi học viên để chấm phát âm, thanh điệu, độ lưu loát, ngữ pháp, từ vựng và mức độ hoàn thành yêu cầu.
-- Thi thử tổng hợp: một bài thi gồm Listening, Reading, Writing và Translation. Hệ thống chỉ quy đổi mức HSK sau khi chấm đủ bốn phần; trong khi luyện tập thông thường không hiển thị mức HSK.
-- Sổ tay nổi có thể mở/đóng, lưu ghi chú và từ vựng; có thể tùy chỉnh font tiếng Trung và tiếng Việt.
-- PRO và cửa hàng tài liệu lấy gói/sản phẩm từ Admin, không khóa danh sách cứng trong frontend.
+Nền tảng luyện thi HSK 3–6 với kho đề Reading/Listening và bộ quản trị mở rộng thêm Writing + HSKK Cao cấp để tạo ca thi thử HSK 6 đầy đủ. Học viên đăng nhập bằng tài khoản/mật khẩu do Admin cấp. Trang thi thử `/hsk6-mock.html` mô phỏng bốn chặng Listening → Reading → Writing → HSKK Cao cấp; Admin tải đề/audio và ghép bộ đề trong tab “Thi thử HSK 6”. Cá nhân hóa có thanh điều hướng thu gọn/mở rộng. Xem `README_HSK6_HSKK_MOCK_UPDATE_VI.md` để biết quy trình cấu hình.
 
 ## Chạy local
+- Cài Node.js 18+
+- `npm install`
+- Cấu hình `DATABASE_URL` trỏ tới PostgreSQL
+- `npm start` rồi mở `http://localhost:3000`
 
-Yêu cầu Node.js 18+ và PostgreSQL.
+## Cửa hàng, PRO và tài liệu bán riêng
+- Cửa hàng học viên: `/store.html`; giỏ hàng và checkout: `/checkout.html`.
+- Khi database khởi tạo, hệ thống tạo ba gói mặc định: PRO 1 tháng 39.000 ₫, 3 tháng 99.000 ₫, 1 năm 399.000 ₫. Có thể sửa/ẩn và tạo gói mới trong Admin → **Sản phẩm & Tài liệu**.
+- Admin có thể upload ảnh bìa và tài liệu số. File tài liệu được lưu trong `.private-documents`, không phải thư mục upload công khai; học viên chỉ tải được sau khi quyền mua được cấp.
+- Cấu hình tài khoản ngân hàng, BIN VietQR và VAT trong Admin → **Thanh toán**. Tự động mở khóa cần cấu hình SePay; làm theo `PAYMENTS_SEPAY_SETUP_VI.md`.
+- Hướng dẫn quản trị sản phẩm và tài liệu: `STORE_ADMIN_GUIDE_VI.md`.
 
-```bash
-npm install
-```
+## Admin
+- URL: `/admin/`
+- Đăng nhập Admin bằng mật khẩu quản trị `ADMIN_PASSWORD` trong biến môi trường hosting; nếu chưa cấu hình, bản tương thích cũ dùng mật khẩu mặc định đang có trong `server.js`. Hãy đặt mật khẩu mạnh riêng trước khi đưa web công khai. Học viên đăng nhập bằng thông tin tài khoản được Admin tạo/cấp.
+- Khi tạo đề thường, chọn Reading hoặc Listening. Với bộ thi thử HSK 6, Admin có thể chọn thêm Writing hoặc HSKK Cao cấp; hai kỹ năng này sử dụng volume 6 và TEST number riêng theo từng skill.
+- Đề cần được publish trước khi ghép vào bộ thi thử. Listening và HSKK có thể gắn audio URL/tải audio trực tiếp trong builder.
 
-Tạo file `.env` dựa trên `.env.example`, sau đó cấu hình ít nhất:
-
-```env
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE?sslmode=require
-ADMIN_PASSWORD=CHANGE_THIS_TO_A_STRONG_PASSWORD
-```
-
-Để bật AI chấm Writing, Translation và HSKK Speaking, thêm API key của Google AI Studio:
-
-```env
-GEMINI_API_KEY=YOUR_GOOGLE_AI_STUDIO_API_KEY
-GEMINI_MODEL=gemini-3.8-flash
-GEMINI_TIMEOUT_MS=90000
-```
-
-Chạy ứng dụng:
-
-```bash
-npm start
-```
-
-Mở `http://localhost:3000`. Server tạo/cập nhật bảng khi khởi động. Không commit `.env` hoặc API key vào GitHub.
-
-## Trang quản trị
-
-- Đường dẫn: `/admin/`.
-- Đăng nhập bằng mật khẩu Admin đặt trong `ADMIN_PASSWORD`.
-- **Nhập đề HSK 7–9:** chỉ có một chương trình chung. Admin nhập đề theo Listening, Reading, Writing hoặc Translation, không chọn cấp HSK riêng.
-- **HSKK Studio:** mở tại `/admin/hskk.html`, nhập riêng HSKK 2.0 / HSK Speaking 3.0 theo Sơ cấp (27 câu), Trung cấp (14 câu), Cao cấp (6 câu), thêm audio/ảnh và đặt thời gian chuẩn bị/trả lời từng câu.
-- **Thi thử tổng hợp:** chọn một đề đã publish cho từng kỹ năng, đặt thời lượng và cấu hình ngưỡng điểm ước tính HSK7/8/9. Các ngưỡng mặc định trong code là 60/75/88 trên thang 100; Admin có thể thay đổi theo thang điểm nội bộ mong muốn.
-- **PRO:** tạo/sửa/xóa gói, giá, thời hạn và các kỹ năng được mở.
-- **Tài liệu:** tạo/sửa/xóa sản phẩm, giá, mô tả, link tải; theo dõi và xử lý đơn mua.
-- **Thanh toán:** cập nhật ngân hàng, QR và nội dung chuyển khoản.
-
-## Cách quy đổi kết quả thi thử
-
-Điểm tổng là trung bình phần trăm của bốn kỹ năng. Sau khi cả Listening, Reading, Writing và Translation đã chấm thành công:
-
-- Đạt ngưỡng HSK9 trở lên → mức ước tính HSK 9.
-- Đạt ngưỡng HSK8 nhưng chưa tới HSK9 → mức ước tính HSK 8.
-- Đạt ngưỡng HSK7 nhưng chưa tới HSK8 → mức ước tính HSK 7.
-- Dưới ngưỡng HSK7 → chưa đạt ngưỡng quy đổi.
-
-**Lưu ý:** Ngưỡng mặc định 60/75/88 chỉ là ngưỡng tham khảo nội bộ của website, không phải công thức chấm hoặc quy đổi chứng chỉ chính thức. Bài thi mô phỏng trong website có bốn kỹ năng; kết quả hiển thị phải được hiểu là mức ước tính tham khảo.
-
-## Dữ liệu khi nâng cấp
-
-Khi server khởi động, migration sẽ:
-
-1. Xóa các dòng đề ngoài chương trình (các volume HSK3–6 và các volume không thuộc 7–9) khỏi bảng `practice_tests`.
-2. Gộp các đề volume 7, 8, 9 về cùng một mã nội bộ `79`, đổi số thứ tự liên tục theo từng kỹ năng để tránh các bộ đề tách cấp trong hệ thống.
-3. Giữ riêng HSKK Speaking ở các volume nội bộ 20/21/22 (2.0) và 30/31/32 (3.0); không gộp HSKK vào kho HSK 7–9 hoặc bài thi thử dùng để quy đổi HSK.
-4. Không xóa tài khoản, quyền PRO, đơn hàng, lịch sử nộp bài hoặc dữ liệu ghi chú. HSKK được lưu riêng và không bị migration kho HSK7–9 xóa.
-
-Lưu ý: thao tác migration trên là thay đổi dữ liệu thực trong PostgreSQL. Hãy sao lưu database trước khi deploy bản nâng cấp.
-
-## Checklist sau khi deploy
-
-1. Đặt `DATABASE_URL`, `ADMIN_PASSWORD` và `GEMINI_API_KEY` trong Environment Variables.
-2. Đăng nhập Admin, tạo và publish đề thuộc cả bốn kỹ năng. Bộ dữ liệu demo đi kèm hiện có Listening, Reading và Writing; cần nhập/publish ít nhất một đề Translation trước khi cấu hình thi thử.
-3. Vào tab **Thi thử tổng hợp**, chọn đủ bốn đề và lưu cấu hình.
-4. Kiểm tra một bài Listening/Reading để xác nhận answer key và explanation đầy đủ.
-5. Kiểm tra Writing/Translation với Gemini API key hợp lệ.
-6. Hoàn thành thi thử để kiểm tra trang kết quả; mức HSK chỉ xuất hiện sau chấm đủ bốn kỹ năng.
+## Lưu ý dữ liệu
+- Backend và các API PostgreSQL hiện có được giữ nguyên nhằm bảo toàn các chức năng Admin như quản lý đề, tài khoản, quyền truy cập và bài nộp.
+- Front-end mới đọc các đề đã publish qua `/api/practice` và mở bài qua `/hsk-exam.html?id=...`.
+- Cấu trúc `content` của câu hỏi tùy thuộc định dạng mà Admin builder lưu. Trang thi hỗ trợ các cấu trúc câu hỏi phổ biến gồm `questions`, `items`, `parts`, `sections`, `groups`, `passages`, các trường `question/prompt/questionText`, và `options/choices`. Nên kiểm tra một đề thực tế sau khi nhập để xác nhận hiển thị đúng.
+- Đã loại bỏ chức năng và cấu hình đăng nhập Google. Hệ thống tiếp tục sử dụng luồng tài khoản học viên được Admin cấp.
