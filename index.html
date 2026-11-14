@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HSK 7–9 | Learning Studio</title>
+<link rel="icon" href="/logo.png"><link rel="stylesheet" href="/css/hsk79-dashboard.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="/"><span class="brand-mark">汉</span><span>HSK STUDIO<small>ADVANCED 7–9</small></span></a>
+    <div class="side-caption">KHÔNG GIAN HỌC TẬP</div>
+    <nav class="task-nav" aria-label="Điều hướng học tập">
+      <button class="task-link active" data-page="do-test"><span class="nav-icon">▣</span><span>Làm đề</span></button>
+      <button class="task-link" data-page="practice"><span class="nav-icon">◷</span><span>Luyện đề</span></button>
+      <a class="task-link" href="/hskk.html" style="text-decoration:none"><span class="nav-icon">🎙</span><span>HSKK</span></a>
+      <button class="task-link" data-page="personal"><span class="nav-icon">✦</span><span>Cá nhân hóa</span></button>
+      <button class="task-link" data-page="vocabulary"><span class="nav-icon">文</span><span>Từ vựng</span></button>
+      <button class="task-link" data-page="notes"><span class="nav-icon">▤</span><span>Take notes</span></button>
+      <button class="task-link" data-page="flashcards"><span class="nav-icon">▱</span><span>Flashcard</span></button>
+    </nav>
+    <div class="sidebar-bottom"><div class="sidebar-tip"><span>HSK 7–9</span><b>Advanced learning</b><small>Nghe · Đọc · Viết · Dịch · HSKK</small></div><a href="/admin/" class="admin-link">⚙ Khu vực quản trị</a></div>
+  </aside>
+  <main class="main-area">
+    <header class="topbar">
+      <button class="mobile-menu" id="mobileMenu" aria-label="Mở menu">☰</button>
+      <div><div class="breadcrumb">LEARNING SPACE <span>/</span> <b id="breadcrumbCurrent">Làm đề</b></div><h1 id="pageTitle">Làm đề</h1></div>
+      <div class="top-actions"><button class="top-btn" id="openStore">▧ <span>Tài liệu</span></button><button class="top-btn pro-btn" id="openPro">✦ <span>PRO</span></button><div class="user-chip"><span class="avatar">学</span><span id="userName">Khách</span><a id="loginLink" href="/login.html">Đăng nhập</a><button id="logoutBtn" hidden>Thoát</button></div></div>
+    </header>
+    <div class="content-area" id="pageContent"><div class="loading-card">Đang tải không gian học tập…</div></div>
+    <footer class="app-footer">HSK STUDIO · Chỉ dành cho HSK 7–9 <span>Blue learning environment</span></footer>
+  </main>
+</div>
+<button class="notebook-fab" id="notebookFab" aria-label="Mở sổ tay">✎<span>Sổ tay</span></button>
+<aside class="notebook-drawer" id="notebookDrawer" aria-hidden="true"><div class="drawer-head"><div><small>PERSONAL TOOLKIT</small><h2>Sổ tay học tập</h2></div><button id="closeNotebook" class="close-btn">×</button></div><div class="drawer-tabs"><button class="active" data-drawer-tab="notes">Ghi chú</button><button data-drawer-tab="vocab">Từ vựng</button></div><div id="drawerContent"></div></aside><div class="drawer-backdrop" id="drawerBackdrop"></div>
+<script src="/js/hsk79-fonts.js"></script>
+<script src="/js/hsk79-dashboard.js"></script>
+</body></html>

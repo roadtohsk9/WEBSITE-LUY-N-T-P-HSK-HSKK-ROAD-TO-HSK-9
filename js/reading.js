@@ -1,0 +1,276 @@
+const PASSAGES=[["PASSAGE 1", "The origins of tennis", [["A", "The game of tennis has a very long history. It is officially still known as ‘lawn tennis,’ partly because it was originally only played on grass, and also to distinguish it from the older game known as ‘real tennis,’ from which the modern game developed."], ["B", "Some people believe that the ancient Egyptians, Greeks, and Romans played various versions of tennis. No drawings or descriptions of any tennis-like games have been discovered, but a couple of Arabic words dating from ancient Egyptian times are cited as evidence. The theory goes that the name ‘tennis’ is derived from the Egyptian town of Tennis alongside the Nile, and the word ‘racquet’ evolved from the Arabic word for the palm of the hand, rahat."], ["C", "Aside from these two Arabic words, there is no other evidence for any form of tennis prior to the year 1000. Most historians believe the origins of the game date back to 11th- and 12th-century France. It's thought that French monks were the first to play a basic game of handball against their monastery buildings, or over a rope strung across a courtyard. Those who dispute more ancient origins argue that the name ‘tennis’ is derived from the French tenez, which meant something to the effect of ‘take this,’ said as one player would serve to the other."], ["D", "This game took on the name jeu de paume, which means \"game of the hand or palm.\" But as they found playing with bare hands quite uncomfortable, players began using a simple glove, and later either a glove with webbing between the fingers or a solid paddle, similar to the ones used in table tennis today. Wooden racquets were not invented until much later."], ["E", "The French nobility learned the game from the monks, and some accounts report as many as 1,800 tennis courts in France by the 13th century. The game, which remained exclusive to the upper classes, gained more popularity over the 14th and 15th centuries. As it became increasingly fashionable, outdoor courtyards were modified into indoor courts. The game became such a widespread diversion among the aristocracy that both the pope and the French king tried to ban it. By the 16th century, the game had spread to England, where it became known as ‘tennis.’ Both kings Henry VII and Henry VIII were avid players who promoted the building of courts, and it also became a very fashionable game among the English upper classes."], ["F", "An example of one of these early ‘real tennis’ courts can be seen at the royal palace of Hampton Court near London. It was built in 1525 and is still used today. Only a handful of such courts remain. It is a tall, narrow indoor court, bearing more resemblance to a squash court than the type of tennis courts we are familiar with today. ‘Real tennis’ is a remarkably fast and difficult game as the ball can be bounced off any of the surfaces, some of which are slanted at odd angles. The net is just over 1.5 metres high at each end, but drops to just under a metre in the middle."], ["G", "Until the 19th century, the ball was either constructed from a wad of hair, wool, or cork wrapped in string and cloth or leather. Then a major development took place when Charles Goodyear invented vulcanisation, a process that allows rubber to withstand heat and cold. This led to the development of rubber tennis balls. During the 1850s, players began to experiment with these new balls, which bounced easily on outdoor grass courts."], ["H", "In 1874 a Welshman, Major Walter C. Wingfield, known as ‘the father of lawn tennis,’ had the idea of devising rules, which he published. He also introduced standardised equipment, including racquets, balls, posts, and a net, which he patented and sold in sets. The game quickly became a very popular and sociable open-air pursuit for the English middle classes. People also started playing tennis in countries such as the United States, Russia, India, Canada, and China."], ["I", "However, not all of Wingfield’s ideas ultimately survived. Inspired by his knowledge of Greek, he called his version of tennis Sphairistike — a name which never caught on. Interestingly, his original court had the shape of an hourglass, with the net across its narrowest section."], ["J", "A major tennis tournament took place for the first time in Wimbledon, London in 1877, and its organising committee came up with a rectangular court and a modified set of rules that are essentially the same as for the game we know today. The net was still high at the sides, a carryover from the game's indoor ancestor. But by 1882, the specifications for the size of the court, the equipment, and the rules had evolved to their current form."]]], ["PASSAGE 2", "John Ray and the Study of Plants", [["A", "The 17th-century English scholar and botanist John Ray was well aware that he lived through, and participated in, a profound revolution in the way people interacted with nature. In the preface to his Synopsis of British Plants, published in 1690, he gave thanks that he had been born at a time when traditional dependence on the teaching of the Greek philosopher Aristotle (384–322 BCE) had given way to a new philosophy, based on experiment and observation of the real world, that we now call science."], ["B", "Ray was born in 1627. His father was a village blacksmith, and his mother was also a respected member of the community, a healer who was an expert in folk medicine and the use of herbs to treat ailments. Ray must have stood out as an unusually bright boy among his schoolmates, and his talents were recognised by a church official, Samuel Covell, who had graduated from Cambridge University in 1600, and maintained his links with his university. Through his influence, Ray was admitted to Cambridge University in 1644 at the age of seventeen – a huge step for a village blacksmith’s son. There he made a solid start, and quickly gained a reputation as a brilliant student. He studied the classics (Greek, Latin and Hebrew) and mathematics, but there was nothing yet we would now call science in the curriculum. After graduating in 1648, he became a minor member of staff at Trinity College, Cambridge. He was appointed Lecturer in Greek in 1651, Lecturer in Mathematics in 1653, and Lecturer in Humanities in 1655."], ["C", "Almost immediately after graduating, Ray also seems to have developed the interest to which he would devote the rest of his life: the study of the natural world. He explains this conversion into a naturalist – in particular into a botanist – in the preface to his first book, the Cambridge Catalogue of English Plants. Here Ray tells us that he suffered an illness in his early twenties, and was advised to take long walks and ride in the fresh air while recovering. While doing this, he became interested in the local flora, and finding nobody able to teach him, Ray investigated it for himself. He then went on to pass on the knowledge he acquired to others."], ["D", "By the mid-1650s, even the first-year students at Trinity College were able to identify the plants and flowers around Cambridge, as they were being taught (unofficially – none of this was part of their formal education) by Ray. Many of them were the sons of landowners, and so had a natural, if amateurish, interest in country matters. But a few of them took his efforts to understand the natural world much more seriously. One of these, Francis Willughby, later played an important part in Ray’s life."], ["E", "Having himself had no authority on the subject of plants on which to draw, Ray also started work on what would become his Cambridge Catalogue of English Plants. The work was not published until 1660 because, as Ray explained in the preface, he had to start from scratch: he first had to become familiar with the literature, compare plants with pictures, investigate unknown descriptions, and learn by experience to recognise plant tribes and families."], ["F", "Ray’s Cambridge Catalogue of English Plants was much more than a simple list of species. It gave the names of plants found in the area around Cambridge and included information about where they grew and how common they were. In doing this, Ray was producing something that would be of practical use to students and other readers interested in the local natural world. At the same time, the book showed his determination to describe plants accurately, on the basis of direct examination rather than reliance on old authorities. In this respect, it reflected the spirit of the new learning that Ray admired."], ["G", "Ray’s studies of plants were only the beginning of a much larger ambition. With the support of Francis Willughby, he began to imagine a more comprehensive investigation of nature, one that would attempt to classify living things according to careful observation of their shared characteristics. This was an ambitious undertaking, especially at a time when many aspects of the natural world remained poorly described. Yet Ray believed that by collecting evidence systematically and comparing related forms, it would be possible to build a more reliable understanding of nature than scholars had possessed before."]]], ["PASSAGE 3", "Sir Francis Ronalds 1788–1873", [["A", "Francis Ronalds was born in London in 1788, the second of eleven children. When he was nineteen his father died, and as the eldest son, the young Ronalds had to assume the responsibility of running the family's cheese business. He combined this occupation with his passions for chemical experiments and for meteorology, the study of the Earth's atmosphere and its changes. This brought him into contact with the elderly Swiss meteorologist Jean Andre de Luc, who was also an inspired inventor in the field of electricity. In 1814, de Luc encouraged Ronalds to start work on this new discipline."], ["B", "For the next few years, Ronalds experimented enthusiastically with various kinds of electrostatic clockwork devices. He was particularly interested in the idea of electric telegraphy: transmitting messages over distance, using electrical impulses carried along metal wires. In the best traditions of nineteenth-century scientists, these investigations were carried out at home. In early 1816, Ronalds gutted the family home in Hammersmith, West London, and covered its rooms, halls, and staircases with electric wire. This experiment involved the use of current to produce movement in small corks at the ends of circuits."], ["C", "Some months later, Ronalds built two large wooden frames accommodating 8 miles (12.9 km) of electrically charged iron wire in his back garden. At either end of the wire was a revolving disc, on which letters and numbers were engraved. These dials were kept revolving by means of a clockwork mechanism. When somebody wanted to send a message, he would wait until the dial at his end was showing the desired number or letter, and then interrupt the charge on the wire. This would cause two balls suspended on the wire to fall together. The person at the opposite end would then note down what was indicated by the dial at his end at the moment when the balls made contact. Ronalds soon developed a modified version of his invention in which the wire was encased in glass tubes and buried in the ground. The system was slow and depended on the two dials staying in step, but it worked."], ["D", "Ronalds immediately contacted the Admiralty, the department of the British government which had control over the nation's naval affairs. He was not the first to propose a system of this nature to them. Some ten years earlier, in 1806, the inventor Ralph Wedgwood had offered the Admiralty a similar type of telegraph based on frictional electricity, which it had rejected. The Admiralty had its home in London, whereas its naval fleets were based over 130 km away in Portsmouth. With communication between these two cities in mind, Ronalds wrote to Lord Melville, the then First Lord of the Admiralty, to offer him his telegraphic system."], ["E", "Ronalds believed that his invention was capable of carrying messages some 800 km, and in his letter to Lord Melville written on 11 July 1816 he spoke of the 'mode of conveying telegraphic intelligence with great rapidity, accuracy, and certainty, in all states of the atmosphere, either at night or in the day, and at small expense.' In 1816, the Admiralty had at its disposal only the late eighteenth-century telegraphic system of semaphore, whereby a mechanical device was used to control a mast with two arms. The disadvantage of this system was that it was only usable in daylight and in clear weather conditions. Nevertheless, John Barrow, Secretary to the Admiralty, wrote back to Ronalds on 5 August, saying that 'telegraphs of any kind are wholly unnecessary, and NO other than the one now in use will be adopted.'"], ["F", "Ronalds did not pursue the matter further or attempt to patent his telegraph. However, in a small pamphlet published in 1823, he described his invention and listed some of its potential uses: why should not government govern at Portsmouth almost as promptly as in Downing Street? Why should our defaulters escape by default of our foggy climate? Let us have Electrical Conversazione offices communicating with each other all over the kingdom if we can. Although Ronalds lived long enough to see his prophecies come to fruition, he made no further contribution to the progress of telegraphic communication. In 1843, he was appointed the first Honorary Director and Superintendent of the Observatory at Kew, where he devised an accurate, automatic system for registering meteorological data using photography. A similar system was developed independently by Charles Brooke, but the British Association of Meteorologists confirmed Ronalds's priority. His system remained in use for many decades."], ["G", "Meanwhile, the people who benefited most directly from Ronalds's telegraphic work were the physicist Charles Wheatstone and his business partner William Cooke. They saw the potential of a rapid communication system for the growing number of private railway companies, and in 1837 they developed the Wheatstone-Cooke five-needle telegraph. The pair patented their design in the same year, the first of its kind to be officially registered, and reaped considerable financial gain as a result. Ronalds himself retired in 1852 and devoted his later years to collecting and cataloguing a vast library of published material on electricity and magnetism. In 1870, three years before he died, he was knighted by Queen Victoria, a belated honour in recognition of his early and remarkable labours in telegraphic investigations."]]]];
+let currentPassage=0, answers=JSON.parse(localStorage.getItem('readingAnswers')||'{}'), start=Date.now(), selected=null;
+const READING_BAND_MAP={40:9,39:9,38:8.5,37:8.5,36:8,35:8,34:7.5,33:7.5,32:7,31:7,30:7,29:6.5,28:6.5,27:6.5,26:6,25:6,24:6,23:6,22:5.5,21:5.5,20:5.5,19:5.5,18:5,17:5,16:5,15:5,14:4.5,13:4.5,12:4,11:4,10:4,9:3.5,8:3.5,7:3,6:3,5:2.5,4:2.5,3:2,2:1.5,1:1,0:0.5};
+const READING_ANSWER_KEY={1:'FALSE',2:'TRUE',3:'NOT GIVEN',4:'FALSE',5:'NOT GIVEN',6:'TRUE',7:'wall',8:'net',9:'rubber',10:'rules',11:'equipment',12:'hourglass',13:'tournament',14:'i',15:'ii',16:'viii',17:'iii',18:'iv',19:'v',20:'vi',21:'revolution',22:'science',23:'illness',24:'students','25-26':['C','D'],27:'C',28:'H',29:'E',30:'B',31:'D',32:'letters and numbers',33:'glass tubes',34:'800 km',35:'frictional electricity',36:'G',37:'E',38:'C',39:'A',40:'F'};
+const READING_EXPLANATIONS={
+ 1:"Paragraph B says no drawings or descriptions of any tennis-like games have ever been found, so this is FALSE.",
+ 2:"Paragraph D describes players first hitting the ball with bare hands before gloves and paddles were introduced, so this is TRUE.",
+ 3:"Paragraph D only compares the paddle's shape to table tennis; it never states when table tennis itself began, so this is NOT GIVEN.",
+ 4:"Paragraph E says tennis \"remained exclusive to the upper classes\" in this period, so this is FALSE.",
+ 5:"Paragraph E mentions courtyards being turned into indoor courts but gives no comparison of their sizes, so this is NOT GIVEN.",
+ 6:"Paragraph E states that both the pope and the French king tried to ban the game, so this is TRUE.",
+ 7:"Paragraph F explains the ball can be bounced off any of the court's surrounding surfaces, i.e. the wall.",
+ 8:"Paragraph F states the net is lower in the middle than at the ends.",
+ 9:"Paragraph G explains that vulcanised rubber balls came into use during the 1850s.",
+ 10:"Paragraph H says Wingfield published written rules for the game.",
+ 11:"Paragraph H says Wingfield sold complete sets of standardised equipment.",
+ 12:"Paragraph I describes his original court as shaped like an hourglass.",
+ 13:"Paragraph J describes the first major tournament, held at Wimbledon in 1877.",
+ 14:"Paragraph A opens with Ray's gratitude for living when experiment-based thinking replaced old authorities \u2014 matching heading (i).",
+ 15:"Paragraph B traces his rise through Lecturer posts in Greek, Mathematics and Humanities \u2014 a succession of achievements, heading (ii).",
+ 16:"Paragraph C explains how his interest in plants began, matching heading (viii).",
+ 17:"Paragraph D describes him informally teaching Cambridge students to identify plants \u2014 heading (iii), informal tuition.",
+ 18:"Paragraph E explains the working method he used to compile his catalogue \u2014 heading (iv).",
+ 19:"Paragraph F describes the content of the Cambridge Catalogue of English Plants \u2014 heading (v).",
+ 20:"Paragraph G outlines his ambition for a larger classification project \u2014 heading (vi), a bold new plan.",
+ 21:"Paragraph A refers directly to the \"profound revolution\" in how people thought about nature.",
+ 22:"Paragraph A says this new philosophy is what \"we now call science\".",
+ 23:"Paragraph C says Ray suffered an illness in his early twenties, which led him outdoors.",
+ 24:"Paragraph D says first-year students at Trinity were being taught (informally) by Ray.",
+ '25-26':"Paragraph B says Ray was helped by Samuel Covell, a former Cambridge student (C), and that both his parents were respected members of the community (D).",
+ 27:"Paragraph C/D: Ronalds built his garden telegraph and then contacted the Admiralty in 1816.",
+ 28:"Paragraph G says Ronalds was knighted by Queen Victoria in 1870.",
+ 29:"Paragraph G says Wheatstone and Cooke patented their telegraph in 1837.",
+ 30:"Paragraph A says de Luc encouraged Ronalds to start work on electricity in 1814.",
+ 31:"Paragraph F refers to Ronalds's 1823 pamphlet describing possible uses of his invention.",
+ 32:"Paragraph C says the revolving discs at each end of the wire were engraved with letters and numbers.",
+ 33:"Paragraph C says his later version encased the wire in glass tubes buried in the ground.",
+ 34:"Paragraph E says Ronalds believed his invention could carry messages roughly 800 km.",
+ 35:"Paragraph D says Wedgwood's earlier system was based on frictional electricity.",
+ 36:"Paragraph G describes railway companies adopting the Wheatstone-Cooke telegraph, a commercial use.",
+ 37:"Paragraph E quotes the Admiralty's letter rejecting Ronalds's telegraph.",
+ 38:"Paragraph C says the system was slow and depended on the two dials staying in step \u2014 its drawback.",
+ 39:"Paragraph A describes de Luc's positive influence in encouraging Ronalds's work.",
+ 40:"Paragraph F says the British Association confirmed Ronalds's priority over Charles Brooke's similar system."
+};
+function normalizeAnswer(v){return String(v??'').trim().toLowerCase().replace(/[“”‘’.,!?;:()\[\]{}]/g,'').replace(/\s+/g,' ')}
+function scoreReading(){let score=0; for(let n=1;n<=40;n++){if(n===25||n===26)continue; const key=READING_ANSWER_KEY[n]; if(key!=null && normalizeAnswer(answers[String(n)])===normalizeAnswer(key))score++;} const pairKey=READING_ANSWER_KEY['25-26']; const got=new Set(String(answers['25-26']||'').split('|').map(x=>normalizeAnswer(x)).filter(Boolean)); if(pairKey.every(x=>got.has(normalizeAnswer(x))))score+=2; return {score,total:40,band:READING_BAND_MAP[score]??0.5};}
+const $=id=>document.getElementById(id); const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const headings=['i Ray’s appreciation of his contemporary academic culture','ii A succession of academic achievements','iii Ray’s informal tuition','iv Ray’s account of his working methods','v A description of the content of Ray’s first book','vi Plans for a bold new project','vii The botanical expert who inspired Ray','viii A childhood interest in plant'];
+function passageHTML(){const p=PASSAGES[currentPassage];return `<div class="passage-scroll"><div class="plain-passage-title"><div class="plain-passage-name">${esc(p[0])}</div><h1>${esc(p[1])}</h1></div>${p[2].map(x=>`<p data-text><span class="para-label">${esc(x[0])}</span> ${esc(x[1])}</p>`).join('')}</div>`}
+function fill(n,label,after=''){return `${label}<span class="fill-line"><input type="text" data-q="${n}" value="${esc(answers[n]||'')}" aria-label="Question ${n}"></span>${after}`}
+function restoreValues(){
+  Object.entries(answers).forEach(([id,val])=>{
+    const els=[...document.querySelectorAll(`[data-q="${CSS.escape(id)}"]`)];
+    if(els[0]?.type==='checkbox'){
+      const vals=String(val).split('|').filter(Boolean);
+      els.forEach(x=>x.checked=vals.includes(x.value));
+    }else if(els[0]?.type==='radio'){
+      els.forEach(x=>x.checked=x.value===String(val));
+    }else{
+      els.forEach(x=>x.value=val||'');
+    }
+  });
+}
+function questionHTML(){const ctx='';
+ if(currentPassage===0)return ctx+ `<div class="q-head">Questions 1–6</div><p class="instruction">Choose TRUE if the statement agrees with the information given in the text, choose FALSE if the statement contradicts the information, or choose NOT GIVEN if there is no information on this.</p>${[
+'1 There are a few surviving documents which show that a game similar to tennis was played in the ancient world.','2 An early form of tennis involved players hitting a ball with just their hand.','3 The game of table tennis developed around the same time as tennis.','4 Tennis became popular with all sections of French society in the 14th and 15th centuries.','5 The indoor courts created in the 14th and 15th centuries were larger than the outdoor courtyards.','6 There were attempts to prevent French aristocrats from playing tennis.'
+].map(t=>tfCard(t)).join('')}<div class="q-head">Questions 7–13</div><p class="instruction">Complete the notes below. Write ONE WORD ONLY from the passage for each answer.</p><div class="q-card summary-box"><b>The development of tennis in England</b><br>• ‘Real tennis’ court at Hampton Court<br>— The ball may be hit against the ${fill(7,'')} around the court<br>— The ${fill(8,'')} is lower in the centre<br>• 1850s<br>— Balls made out of ${fill(9,'')} started to be used<br>• 1874<br>— Major Walter C. Wingfield<br>Published written ${fill(10,'')} for the game<br>Produced complete sets of tennis ${fill(11,'')} for sale<br>Introduced a name for the game which was never adopted<br>Designed an unusual ${fill(12,'')} for the court<br>• 1877<br>— The first large ${fill(13,'')} was held</div>`;
+ if(currentPassage===1)return ctx+`<div class="q-head">Questions 14–20</div><p class="instruction">Reading Passage 2 has seven paragraphs. Choose the correct heading for each paragraph from the list of headings below. Choose the correct number, i–viii, in boxes 14–20.</p><div class="heading-list">${headings.map((h,i)=>`<div class="heading-item"><b>${h}</b></div>`).join('')}</div>${[14,15,16,17,18,19,20].map((n,i)=>`<div class="q-card"><div class="q-number">Question ${n}</div><div class="q-text">Paragraph ${String.fromCharCode(65+i)}</div><select data-q="${n}"><option value="">Choose heading…</option>${headings.map((h,j)=>`<option value="${String.fromCharCode(105+j)}" ${answers[n]===String.fromCharCode(105+j)?'selected':''}>${esc(h)}</option>`).join('')}</select></div>`).join('')}<div class="q-head">Questions 21–24</div><p class="instruction">Complete the summary below. Write ONE WORD ONLY from the passage for each answer.</p><div class="q-card summary-box">John Ray was a scholar and self-taught botanist, whose work reflected the ${fill(21,'')} that was taking place during the 17th century in people’s way of thinking about the natural world. This new approach is the basis of the modern field of ${fill(22,'')}. It represented a complete break from the ideas of Aristotle. As Ray himself explained, his interest in plants was aroused after graduating, when he had to spend time outdoors after a period of ${fill(23,'')}. He taught himself, in addition to many Cambridge ${fill(24,'')}, and began compiling his catalogue of plants, which was published in 1660.</div><div class="q-head">Questions 25–26</div><p class="instruction">Choose TWO correct answers.</p><div class="q-card"><div class="q-text">Which TWO of the following statements are true of Ray’s early life?</div>${['A. His teacher recommended that he should go to university.','B. His school record was not exceptional in any way.','C. He was helped by a former student of Cambridge University.','D. His parents were both valued by the people in their local area.','E. He originally planned to take up his father’s occupation.'].map((x,i)=>`<label class="option"><input type="checkbox" data-q="25-26" value="${String.fromCharCode(65+i)}" ${String(answers['25-26']||'').split('|').includes(String.fromCharCode(65+i))?'checked':''}>${x}</label>`).join('')}</div>`;
+ return ctx+`<div class="q-head">Questions 27–31</div><p class="instruction">Look at the following events and the list of dates below. Match each event with the correct date, A–H.</p><div class="date-list">${['A. 1806','B. 1814','C. 1816','D. 1823','E. 1837','F. 1843','G. 1852','H. 1870'].map(x=>`<div class="date-item">${x}</div>`).join('')}</div>${[['27','The first electric telegraph system was submitted to the Admiralty.'],['28','Ronalds received official recognition of his contribution to telegraphy.'],['29','The first electric telegraph was patented.'],['30','Ronalds began to experiment with electricity.'],['31','Ronalds informed the public about the possible uses of his telegraph.']].map(([n,t])=>`<div class="q-card"><div class="q-number">Question ${n}</div><div class="q-text">${t}</div><select data-q="${n}"><option value="">Choose date…</option>${['A','B','C','D','E','F','G','H'].map(x=>`<option ${answers[n]===x?'selected':''}>${x}</option>`).join('')}</select></div>`).join('')}<div class="q-head">Questions 32–35</div><p class="instruction">Answer the questions below. Write NO MORE THAN THREE WORDS AND/OR A NUMBER from the passage for each answer.</p>${[['32','What was marked on the dials on Ronalds’s garden telegraph?'],['33','What did Ronalds use to enclose the wires on his later version of the garden telegraph?'],['34','How far did Ronalds believe his telegraph could transmit information?'],['35','What did the communication system invented by Ralph Wedgwood use?']].map(([n,t])=>`<div class="q-card"><div class="q-number">Question ${n}</div><div class="q-text">${t}</div>${fill(n,'')}</div>`).join('')}<div class="q-head">Questions 36–40</div><p class="instruction">Reading Passage 3 has seven paragraphs, A–G. Which paragraph contains the following information? Choose the correct letter, A–G.</p>${[['36','a description of a commercial application for the electric telegraph'],['37','a rejection of Ronalds’s invention'],['38','a drawback of Ronalds’s invention'],['39','reference to the positive influence on Ronald of a fellow scientist'],['40','reference to the adoption of one of Ronalds’s procedures in preference to that of another scientist']].map(([n,t])=>`<div class="q-card"><div class="q-number">Question ${n}</div><div class="q-text">${t}</div><select data-q="${n}"><option value="">Choose paragraph…</option>${'ABCDEFG'.split('').map(x=>`<option ${answers[n]===x?'selected':''}>${x}</option>`).join('')}</select></div>`).join('')}`;
+}
+function tfCard(t){const [n,...rest]=t.split(' ');const val=answers[n]||'';return `<div class="q-card" data-card="${n}"><div class="q-number">Question ${n}</div><div class="q-text">${esc(rest.join(' '))}</div>${['TRUE','FALSE','NOT GIVEN'].map(o=>`<label class="option"><input type="radio" name="q${n}" data-q="${n}" value="${o}" ${val===o?'checked':''}>${o}</label>`).join('')}</div>`}
+function render(){ $('passagePane').innerHTML=passageHTML(); $('questionPane').innerHTML=questionHTML(); bind(); restoreValues(); restoreHighlights(); nav(); }
+function collectReadingAnswersFromDOM(){
+  const seen=new Set();
+  document.querySelectorAll('[data-q]').forEach(el=>{
+    const q=String(el.dataset.q||'').trim(); 
+    if(!q)return;
+    if(seen.has(q) && el.type==='checkbox')return;
+    if(el.type==='checkbox'){
+      seen.add(q);
+      answers[q]=[...document.querySelectorAll(`[data-q="${CSS.escape(q)}"]`)].filter(x=>x.type==='checkbox'&&x.checked).map(x=>x.value).join('|');
+    }else if(el.type==='radio'){
+      if(el.checked)answers[q]=el.value;
+    }else{
+      // For text inputs, select, and other input types
+      answers[q]=el.value||'';
+    }
+  });
+  localStorage.setItem('readingAnswers',JSON.stringify(answers));
+}
+function bind(){
+  document.querySelectorAll('[data-q]').forEach(el=>{
+    const eventType = el.type==='text' ? 'input' : 'change';
+    el.addEventListener(eventType, (e)=>{
+      const q = el.dataset.q;
+      if(!q || !q.trim()) return;
+      
+      if(el.type==='checkbox'){
+        answers[q]=[...document.querySelectorAll(`[data-q="${CSS.escape(q)}"]:checked`)].map(x=>x.value).join('|');
+      }else if(el.type==='radio'){
+        if(el.checked) answers[q]=el.value;
+      }else{
+        // For text inputs and select dropdowns
+        answers[q]=el.value||'';
+      }
+      
+      localStorage.setItem('readingAnswers',JSON.stringify(answers));
+      nav();
+    });
+  });
+}
+ document.querySelectorAll('[data-pager]').forEach(b=>b.addEventListener('click',()=>{currentPassage=Number(b.dataset.pager);render();requestAnimationFrame(()=>{const pp=$('passagePane'),qp=$('questionPane');if(pp)pp.scrollTo({top:0,behavior:'smooth'});if(qp)qp.scrollTo({top:0,behavior:'smooth'});});}));
+function nav(){
+ let h='';
+ [[0,1,13],[1,14,26],[2,27,40]].forEach(([p,a,b])=>{h+=`<div class="nav-passage-group ${p===currentPassage?'active':''}"><button class="nav-section ${p===currentPassage?'active':''}" data-p="${p}">PASSAGE ${p+1} <small>${Object.keys(answers).filter(k=>Number(k)>=a&&Number(k)<=b&&String(answers[k]||'').trim()).length}/${b-a+1}</small></button><div class="nav-passage-questions">`;for(let n=a;n<=b;n++)h+=`<button class="nav-q ${answers[n]?'answered':''}" data-j="${n}">${n}</button>`;h+='</div></div>'});
+ $('readingNav').innerHTML=h+'<button class="bottom-submit" id="openSubmit" title="Submit"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></button>';
+ document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{currentPassage=Number(b.dataset.p);render();requestAnimationFrame(()=>{const pp=$('passagePane'),qp=$('questionPane');if(pp)pp.scrollTo({top:0,behavior:'smooth'});if(qp)qp.scrollTo({top:0,behavior:'smooth'});});});document.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>jump(Number(b.dataset.j)));$('openSubmit').onclick=()=>$('submitModal').classList.add('open')
+}
+function jump(n){currentPassage=n<=13?0:n<=26?1:2;render();requestAnimationFrame(()=>{const pane=$('questionPane');const el=document.querySelector(`[data-q="${n}"]`)||document.querySelector(`[data-card="${n}"]`);if(el&&pane){const c=el.closest('.q-card')||el;const pr=pane.getBoundingClientRect(),er=c.getBoundingClientRect();const target=pane.scrollTop+(er.top-pr.top)-(pane.clientHeight-er.height)/2;pane.scrollTo({top:Math.max(0,target),behavior:'smooth'});c.classList.add('jump');setTimeout(()=>c.classList.remove('jump'),1200)}})}
+let timer=3600;let readingTimerInterval=null;
+function currentAccountKey(){try{const u=JSON.parse(localStorage.getItem('currentUser')||'{}');const id=u.eitcode||u.registrationid||u.email||u.fullname;return id?String(id).trim().toLowerCase():'guest'}catch{return 'guest'}}
+function startReadingTimer(){clearInterval(readingTimerInterval);const key=`eitLegacyTimer:READING-VOL9-TEST5:${currentAccountKey()}`;let deadline=Number(localStorage.getItem(key));if(!Number.isFinite(deadline)||deadline<=Date.now()){deadline=Date.now()+3600*1000;localStorage.setItem(key,String(deadline));}const timerEl=$('readingTimer');const WARN_AT=600;const tick=()=>{timer=Math.max(0,Math.ceil((deadline-Date.now())/1000));timerEl.textContent=`${String(Math.floor(timer/60)).padStart(2,'0')}:${String(timer%60).padStart(2,'0')}`;timerEl.classList.toggle('timer-warn',timer<=WARN_AT);if(timer<=0){clearInterval(readingTimerInterval);submit(true)}};tick();readingTimerInterval=setInterval(tick,250);}
+
+$('readModalClose').onclick=()=>$('submitModal').classList.remove('open');$('checkAgain').onclick=()=>$('submitModal').classList.remove('open');$('submitNow').onclick=submit;
+function pairSplit(n){return n===25||n===26}
+function buildAnswerReviewHTML(result){
+  let rows='';
+  for(let n=1;n<=40;n++){
+    if(n===26)continue; // 25-26 rendered together as one row
+    const isPair=n===25;
+    const qLabel=isPair?'25-26':String(n);
+    const correctRaw=READING_ANSWER_KEY[isPair?'25-26':n];
+    const correctText=Array.isArray(correctRaw)?correctRaw.join(' & '):correctRaw;
+    let userText,isCorrect;
+    if(isPair){
+      const got=new Set(String(answers['25-26']||'').split('|').map(x=>normalizeAnswer(x)).filter(Boolean));
+      userText=(answers['25-26']||'').split('|').filter(Boolean).join(' & ')||'—';
+      isCorrect=correctRaw.every(x=>got.has(normalizeAnswer(x)));
+    }else{
+      userText=answers[n]||'—';
+      isCorrect=normalizeAnswer(answers[n])===normalizeAnswer(correctRaw);
+    }
+    const exp=READING_EXPLANATIONS[isPair?'25-26':n]||'';
+    rows+=`<div class="review-row ${isCorrect?'is-correct':'is-wrong'}"><div class="review-row-head"><span class="review-q">Q${qLabel}</span><span class="review-verdict">${isCorrect?'Correct':'Incorrect'}</span></div><div class="review-line"><b>Your answer:</b> ${esc(userText)}</div><div class="review-line"><b>Correct answer:</b> ${esc(correctText)}</div>${exp?`<div class="review-explain"><b>Explanation:</b> ${esc(exp)}</div>`:''}</div>`;
+  }
+  return `<div class="answer-review"><h2>Answer Review &amp; Detailed Explanation</h2><div class="review-list">${rows}</div></div>`;
+}
+async function submit(auto=false){if(window.__eitLegacyReadingSubmitting)return;window.__eitLegacyReadingSubmitting=true;collectReadingAnswersFromDOM();const u=JSON.parse(localStorage.getItem('currentUser')||'{}');const result=scoreReading();const payload={studentName:u.fullname||'Unknown',studentEmail:u.email||'',studentCode:u.registrationid||'',eitCode:u.eitcode||'',dob:u.dob||'',testId:'READING-VOL9-TEST5',testTitle:'HSK Reading · VOL 9 TEST 5',skill:'Reading',answers,score:result.score,total:result.total,bandScore:result.band,highlights:getHighlights(),elapsedSeconds:3600-timer,autoSubmitted:auto};try{const r=await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json',...((JSON.parse(localStorage.getItem('currentUser')||'null')||{}).token?{Authorization:'Bearer '+(JSON.parse(localStorage.getItem('currentUser')||'{}').token)}:{})},body:JSON.stringify(payload)});const d=await r.json();if(!d.ok)throw Error(d.message);localStorage.setItem('readingCompleted','1');localStorage.removeItem(`eitLegacyTimer:READING-VOL9-TEST5:${currentAccountKey()}`);clearInterval(readingTimerInterval);document.body.innerHTML=`<div class="completion"><div class="completion-card"><div class="success-icon"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div><div class="part-kicker">HSK · READING</div><h1>Đã nộp bài thành công</h1><p>Câu trả lời của bạn đã được ghi nhận.</p><div class="score-box"><strong>${result.score}/${result.total}</strong><span>Số câu trả lời đúng</span><b class="band-result">${Math.round(result.score/Math.max(result.total,1)*100)}%</b></div><p class="score-note">Hãy đối chiếu các câu sai với đáp án và phần giải thích để biết nội dung cần ôn lại.</p><button class="primary-red" id="toggleReview">Xem đáp án và giải thích</button><div id="reviewHost"></div><button class="primary-red" onclick="location.href='index.html'">Quay về kho đề</button></div></div>`;const host=document.getElementById('reviewHost');const btn=document.getElementById('toggleReview');let shown=false;btn.onclick=()=>{shown=!shown;if(shown){host.innerHTML=buildAnswerReviewHTML(result);btn.textContent='Ẩn đáp án'}else{host.innerHTML='';btn.textContent='Xem đáp án và giải thích'}}}catch(e){window.__eitLegacyReadingSubmitting=false;startReadingTimer();alert('Unable to submit: '+(e?.message||'Unknown error')+'\n\nPlease log in again if your session has expired.')}}
+// Highlight / note tools
+// Highlights are persisted per passage so switching Passage 1/2/3 never clears them.
+let pending=null;
+const HIGHLIGHT_KEY='readingHighlights';
+function getHighlights(){try{return JSON.parse(localStorage.getItem(HIGHLIGHT_KEY)||'[]')}catch{return[]}}
+function saveHighlights(a){localStorage.setItem(HIGHLIGHT_KEY,JSON.stringify(a))}
+function findHighlightWrap(node){
+  let el=node && node.nodeType===1 ? node : node && node.parentElement;
+  while (el && el !== document.body) {
+    if (el.classList && (el.classList.contains('hl-brown') || el.classList.contains('hl-pink'))) return el;
+    el = el.parentElement;
+  }
+  return null;
+}
+function getTextOffset(root,node,offset){
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  let total=0, current;
+  while(current=walker.nextNode()){
+    if(current===node) return total+offset;
+    total+=current.nodeValue.length;
+  }
+  return total;
+}
+function rangeFromOffsets(root,start,end){
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  let total=0,startNode=null,endNode=null,startOffset=0,endOffset=0,current;
+  while(current=walker.nextNode()){
+    const next=total+current.nodeValue.length;
+    if(startNode===null && start>=total && start<=next){startNode=current;startOffset=start-total;}
+    if(end>=total && end<=next){endNode=current;endOffset=end-total;break;}
+    total=next;
+  }
+  if(!startNode||!endNode)return null;
+  const range=document.createRange();range.setStart(startNode,startOffset);range.setEnd(endNode,endOffset);return range;
+}
+function wrapSelection(range,colorClass='hl-brown'){
+  if(!range||range.collapsed)return null;
+  const wrapper=document.createElement('span');wrapper.className=colorClass;
+  let bgColor='#352315';
+  if(colorClass==='hl-pink') bgColor='#FF007F';
+  wrapper.setAttribute('style',`background-color:${bgColor}!important;color:#FFF!important;display:inline!important;padding:2px 4px!important;border-radius:2px!important;`);
+  try{range.surroundContents(wrapper);}catch(error){const fragment=range.extractContents();wrapper.appendChild(fragment);range.insertNode(wrapper);}
+  return wrapper;
+}
+function restoreHighlights(){
+  const records=getHighlights().filter(h=>h.passage===currentPassage);
+  const roots={passage:document.getElementById('passagePane'),question:document.getElementById('questionPane')};
+  records.sort((a,b)=>(b.start||0)-(a.start||0)).forEach(h=>{
+    const root=roots[h.pane]||roots.passage;
+    const range=rangeFromOffsets(root,Number(h.start),Number(h.end));
+    if(range)wrapSelection(range,h.class||'hl-brown');
+  });
+}
+function removeHighlightRecord(record){saveHighlights(getHighlights().filter(h=>h.id!==record.id))}
+function findHighlightRecordForElement(el){
+  const pane=el.closest('#passagePane')?'passage':'question';
+  const root=el.closest('#passagePane')||el.closest('#questionPane');
+  if(!root)return null;
+  const start=getTextOffset(root,el.firstChild,0);
+  const end=start+el.textContent.length;
+  return getHighlights().find(h=>h.passage===currentPassage&&h.pane===pane&&h.start===start&&h.end===end)||null;
+}
+document.addEventListener('selectionchange',()=>{const s=getSelection();if(!s||s.isCollapsed)return;const r=s.getRangeAt(0);const qp=document.getElementById('questionPane'),pp=document.getElementById('passagePane');if(!qp.contains(r.commonAncestorContainer)&&!pp.contains(r.commonAncestorContainer))return;pending={text:s.toString().trim(),range:r.cloneRange(),pane:pp.contains(r.commonAncestorContainer)?'passage':'question'};if(!pending.text)return;const m=$('selectionMenu'),b=r.getBoundingClientRect();m.style.left=(b.left+b.width/2-65)+'px';m.style.top=(Math.max(5,b.top-44))+'px';m.classList.add('show')});
+document.addEventListener('mousedown',e=>{if(!e.target.closest('#selectionMenu'))$('selectionMenu').classList.remove('show')});
+$('highlightBtn').onclick=()=>{
+  if(!pending){console.log('[HIGHLIGHT] No pending selection');return;}
+  console.log('[HIGHLIGHT] Clicked - Text:', pending.text);
+  const root=pending.pane==='passage'?$('passagePane'):$('questionPane');
+  const start=getTextOffset(root,pending.range.startContainer,pending.range.startOffset);
+  const end=getTextOffset(root,pending.range.endContainer,pending.range.endOffset);
+  console.log('[HIGHLIGHT] Offsets:', start, end);
+  if(end<=start){console.log('[HIGHLIGHT] Invalid range');return;}
+  const records=getHighlights();
+  const exact=records.find(h=>h.passage===currentPassage&&h.pane===pending.pane&&Number(h.start)===start&&Number(h.end)===end);
+  if(exact){
+    console.log('[HIGHLIGHT] Re-highlighting - current class:', exact.class);
+    const target=findHighlightWrap(pending.range.commonAncestorContainer)||findHighlightWrap(pending.range.startContainer)||findHighlightWrap(pending.range.endContainer);
+    if(exact.class==='hl-brown'){
+      exact.class='hl-pink';
+      if(target){target.classList.remove('hl-brown');target.classList.add('hl-pink');target.setAttribute('style','background-color:#FF007F!important;color:#FFF!important;display:inline!important;padding:2px 4px!important;border-radius:2px!important;');console.log('[HIGHLIGHT] Changed to pink');}
+      saveHighlights(records);
+    } else if(exact.class==='hl-pink'){
+      if(target&&target.parentNode){
+        const parent=target.parentNode;
+        while(target.firstChild)parent.insertBefore(target.firstChild,target);
+        parent.removeChild(target);
+      }
+      console.log('[HIGHLIGHT] Removed highlight');
+      saveHighlights(records.filter(h=>h.id!==exact.id));
+    } else {
+      exact.class='hl-brown';saveHighlights(records);
+      if(target){target.classList.remove('hl-pink');target.classList.add('hl-brown');target.setAttribute('style','background-color:#352315!important;color:#FFF!important;display:inline!important;padding:2px 4px!important;border-radius:2px!important;');}
+      console.log('[HIGHLIGHT] Reset to brown');
+    }
+  }else{
+    console.log('[HIGHLIGHT] Creating new highlight - brown');
+    const wrapper=wrapSelection(pending.range.cloneRange(),'hl-brown');
+    console.log('[HIGHLIGHT] Wrapper created:', wrapper);
+    if(wrapper){console.log('[HIGHLIGHT] Wrapper className:', wrapper.className, 'styles:', window.getComputedStyle(wrapper).backgroundColor);}
+    records.push({id:'hl-'+Date.now()+'-'+Math.random().toString(36).slice(2),passage:currentPassage,pane:pending.pane,start,end,text:pending.text,class:'hl-brown'});
+    saveHighlights(records);
+  }
+  $('selectionMenu').classList.remove('show');pending=null;getSelection().removeAllRanges();
+};
+$('noteBtn').onclick=()=>{if(!pending)return;$('notesPanel').classList.add('open');$('noteInput').dataset.selected=pending.text;$('selectionMenu').classList.remove('show')};$('closeNotes').onclick=()=>$('notesPanel').classList.remove('open');$('saveNote').onclick=()=>{$('notesPanel').classList.remove('open');$('noteInput').value=''};
+
+function initReadingResizer(){
+  const body=document.querySelector('.split-reading'),divider=document.querySelector('.split-reading .divider');
+  if(!body||!divider)return;
+  const saved=Number(localStorage.getItem('eitReadingSplitV20'));
+  const apply=pct=>{
+    const v=Math.min(75,Math.max(25,Number(pct)||50));
+    const r=body.getBoundingClientRect();
+    const usable=Math.max(300,r.width-22);
+    const left=Math.round(usable*v/100);
+    const right=Math.round(usable-left);
+    body.style.setProperty('grid-template-columns',`${left}px 22px ${right}px`,'important');
+    localStorage.setItem('eitReadingSplitV20',v.toFixed(1));
+  };
+  apply(saved||50); let dragging=false;
+  const move=e=>{if(!dragging)return;const r=body.getBoundingClientRect();if(!r.width)return;const usable=Math.max(300,r.width-22);const x=Math.max(0,Math.min(usable,e.clientX-r.left));apply((x/usable)*100);e.preventDefault?.()};
+  const stop=()=>{dragging=false;document.body.classList.remove('resizing');window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',stop,true);window.removeEventListener('mousemove',move,true);window.removeEventListener('mouseup',stop,true)};
+  const start=e=>{if(e.button!==undefined&&e.button!==0)return;dragging=true;document.body.classList.add('resizing');try{divider.setPointerCapture?.(e.pointerId)}catch{}window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',stop,true);window.addEventListener('mousemove',move,true);window.addEventListener('mouseup',stop,true);e.preventDefault?.()};
+  divider.addEventListener('pointerdown',start);divider.addEventListener('mousedown',e=>{if(!window.PointerEvent)start(e)});divider.addEventListener('dblclick',()=>apply(50));
+}
+
+render();initReadingResizer();startReadingTimer();

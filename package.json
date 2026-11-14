@@ -1,0 +1,15 @@
+{
+  "name": "hsk-exam-practice",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HSK 7-9 four-skill practice platform with separate HSKK speaking module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "pg": "^8.16.3",
+    "busboy": "^1.6.0",
+    "adm-zip": "^0.5.16"
+  }
+}
