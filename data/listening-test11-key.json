@@ -1,0 +1,49 @@
+{
+  "testId": "LISTENING-VOL7-TEST11",
+  "answers": {
+    "1": "Birds",
+    "2": "Tent",
+    "3": "Mountains",
+    "4": "Swim",
+    "5": "Waterfall",
+    "6": "Cave",
+    "7": "Back",
+    "8": "Walking boots",
+    "9": "Discount",
+    "10": "Insurance",
+    "31": "Transport",
+    "32": "Clean",
+    "33": "Information",
+    "34": "Doctors",
+    "35": "Bonus",
+    "36": "Visitors",
+    "37": "Communication",
+    "38": "Sleep",
+    "39": "Plastic",
+    "40": "Planning",
+    "11": "the general operation of the camp",
+    "12": "They know their children will be looked after at the camp.",
+    "13": "the preparation for professional sports",
+    "14": "who young children can talk to",
+    "15": "artistic talents",
+    "16": "Sports coaches earn the most.",
+    "21": "a lecture handout",
+    "22": "the permanent preservation of recordings",
+    "23": "his father loves football.",
+    "24": "doing research in the local newspaper archives",
+    "25": "in the phone book",
+    "26": "G too complicated",
+    "27": "D too long",
+    "28": "A too unreliable",
+    "29": "H too vague",
+    "30": "F too factual",
+    "17-18": [
+      "a T-shirt",
+      "use of sports facilities"
+    ],
+    "19-20": [
+      "a friendly personality",
+      "to be over a certain age"
+    ]
+  }
+}
