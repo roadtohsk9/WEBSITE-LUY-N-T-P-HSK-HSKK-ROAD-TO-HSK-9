@@ -1,0 +1,109 @@
+/* ROAD TO HSK 9 — lớp chuyển động dùng chung
+   Chỉ dùng transform / opacity / filter để giữ khung hình mượt.
+   Tắt hoàn toàn khi người dùng bật "giảm chuyển động". */
+
+:root{
+  --rm-ease:cubic-bezier(.16,1,.3,1);
+  --rm-ease-soft:cubic-bezier(.33,1,.68,1);
+  --rm-accent:#2563eb;
+  --rm-accent-2:#38bdf8;
+}
+
+/* ---------- Thanh tiến độ cuộn ---------- */
+.rm-scroll{
+  position:fixed;top:0;left:0;right:0;height:2px;z-index:9999;
+  pointer-events:none;transform-origin:0 50%;
+  transform:scaleX(var(--rm-p,0));
+  background:linear-gradient(90deg,#1e40af,var(--rm-accent),var(--rm-accent-2));
+  box-shadow:0 0 10px rgba(56,189,248,.45);
+}
+
+/* ---------- Nền aurora rất nhẹ ---------- */
+.rm-aurora{
+  position:fixed;inset:-20%;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(40% 35% at 18% 14%,rgba(59,130,246,.11),transparent 70%),
+    radial-gradient(34% 30% at 86% 12%,rgba(56,189,248,.09),transparent 70%),
+    radial-gradient(46% 40% at 72% 92%,rgba(99,102,241,.07),transparent 72%);
+  animation:rmAurora 38s ease-in-out infinite alternate;
+  will-change:transform;contain:strict;
+}
+
+/* ---------- Chuyển trang mượt ---------- */
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{transition:opacity .28s var(--rm-ease-soft);animation:rmEnter .55s var(--rm-ease) both}
+body.rm-leaving{opacity:0!important}
+@keyframes rmEnter{from{opacity:0}to{opacity:1}}
+
+/* ---------- Hiện nội dung khi cuộn tới ---------- */
+.rm-ready .rm-reveal:not(.rm-in){
+  opacity:0;transform:translate3d(0,18px,0);will-change:opacity,transform;
+}
+.rm-reveal{
+  transition:
+    opacity .65s var(--rm-ease-soft) var(--rm-d,0ms),
+    transform .8s var(--rm-ease) var(--rm-d,0ms);
+}
+
+/* ---------- Tiêu đề: hiện từng từ ---------- */
+.rm-word{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.1em;margin-bottom:-.1em}
+.rm-word>span{display:inline-block;transition:transform 1s var(--rm-ease) var(--rm-d,0ms)}
+.rm-ready .rm-word>span{transform:translate3d(0,108%,0)}
+.rm-ready .rm-split-in .rm-word>span{transform:none}
+
+/* ---------- Nút: kéo nhẹ theo chuột (chỉ thiết bị có chuột) ---------- */
+.rm-press:active{transform:scale(.97)!important}
+@media (hover:hover) and (pointer:fine){
+  .rm-mag{
+    translate:var(--rm-mx,0px) var(--rm-my,0px);
+    transition:translate .6s var(--rm-ease),transform .35s var(--rm-ease),box-shadow .3s ease,background-color .3s ease,color .3s ease,border-color .3s ease;
+  }
+}
+
+/* ---------- Thẻ: ánh sáng theo con trỏ ---------- */
+.rm-paused .rm-aurora{animation-play-state:paused}
+.rm-spot{isolation:isolate}
+.rm-spot::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;
+  background:radial-gradient(360px circle at var(--rm-sx,50%) var(--rm-sy,50%),rgba(37,99,235,.11),transparent 62%);
+  opacity:0;transition:opacity .45s ease;
+}
+.rm-spot:hover::before{opacity:1}
+
+/* ---------- Gạch chân trượt cho liên kết menu ---------- */
+.rm-link{position:relative}
+.rm-link::after{
+  content:"";position:absolute;left:0;right:0;bottom:-6px;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,var(--rm-accent),var(--rm-accent-2));
+  transform:scaleX(0);transform-origin:right;transition:transform .45s var(--rm-ease);
+}
+.rm-link:hover::after,.rm-link[aria-current="page"]::after{transform:scaleX(1);transform-origin:left}
+
+/* ---------- Logo: nghiêng nhẹ khi rê ---------- */
+.brand img{transition:transform .7s var(--rm-ease)}
+.brand:hover img{transform:rotate(-5deg) scale(1.05)}
+
+/* ---------- Focus rõ ràng cho bàn phím ---------- */
+:focus-visible{outline:2px solid rgba(37,99,235,.55);outline-offset:3px}
+
+@keyframes rmAurora{
+  from{transform:translate3d(-2%,-1%,0) scale(1)}
+  to{transform:translate3d(3%,2%,0) scale(1.06)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .rm-aurora{display:none}
+  .rm-ready .rm-reveal:not(.rm-in),.rm-ready .rm-word>span{opacity:1!important;transform:none!important;filter:none!important}
+  .rm-mag{translate:none!important}
+}
+
+
+/* ---------- Thành phần dùng chung: chuyển động nhỏ, mượt ---------- */
+.tab,.btn-red,.btn-outline,.btn-light,.history-item,.word-card,.level,.skill,.test{
+  transition:transform .28s var(--rm-ease),box-shadow .28s var(--rm-ease-soft),background-color .22s ease,border-color .22s ease,color .22s ease
+}
+@media (hover:hover) and (pointer:fine){
+  .word-card:hover,.test:hover,.level:hover,.skill:hover{transform:translate3d(0,-3px,0);box-shadow:0 14px 32px rgba(30,64,175,.12)}
+}
+.tab:active,.btn-red:active,.btn-outline:active,.btn-light:active{transform:scale(.97)}

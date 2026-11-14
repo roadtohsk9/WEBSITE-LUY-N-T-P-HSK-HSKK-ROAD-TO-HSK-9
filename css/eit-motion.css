@@ -1,0 +1,160 @@
+/* EIT IELTS — Premium motion & visual polish layer
+   UI/animation only: no content, scoring, navigation or answer logic changes. */
+:root{
+  --eit-red:#d1121e;
+  --eit-red-dark:#991b1b;
+  --eit-red-hover:#b91c1c;
+  --eit-red-soft:#fef2f2;
+  --eit-line:#e7e9ee;
+  --eit-shadow:0 18px 50px rgba(15,23,42,.08);
+}
+
+html{scroll-behavior:smooth}
+body{animation:eitPageIn .55s cubic-bezier(.22,1,.36,1) both}
+
+/* Shared premium motion */
+.topbar,.home-head,.personal-head,.module-head{
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  background:rgba(255,255,255,.88)!important;
+  transition:box-shadow .3s ease,border-color .3s ease,background .3s ease;
+}
+.topbar:hover,.home-head:hover,.personal-head:hover,.module-head:hover{
+  box-shadow:0 8px 30px rgba(15,23,42,.06);
+}
+
+.brand img,.personal-brand img,.module-brand img{
+  transition:transform .35s cubic-bezier(.22,1,.36,1),filter .35s ease;
+}
+.brand:hover img,.personal-brand:hover img,.module-brand:hover img{
+  transform:translateY(-2px) rotate(-2deg) scale(1.035);
+}
+
+.btn,.btn-red,.primary,.secondary,.pro-button,.go-login,.icon-btn,.skill-card,.test-card,.pred,.mock-card,.completion-card,.login-card,.pro-card-compact{
+  transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s ease,border-color .25s ease,background-color .25s ease,color .25s ease;
+}
+.btn:hover,.btn-red:hover,.primary:hover,.secondary:hover,.pro-button:hover,.go-login:hover{
+  transform:translateY(-2px);
+}
+.btn-red,.primary,.pro-button,.go-login{
+  position:relative;
+  overflow:hidden;
+}
+.btn-red::after,.primary::after,.pro-button::after,.go-login::after{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 -120%;
+  width:70%;
+  transform:skewX(-18deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
+  transition:left .65s ease;
+  pointer-events:none;
+}
+.btn-red:hover::after,.primary:hover::after,.pro-button:hover::after,.go-login:hover::after{left:145%}
+
+/* Landing / portal */
+.hero,.home,.section,.prediction,.personal-hero{position:relative;isolation:isolate}
+.hero::before,.personal-hero::before{
+  content:"";
+  position:absolute;
+  width:430px;height:430px;
+  right:-140px;top:-160px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(209,18,30,.12),rgba(209,18,30,0) 68%);
+  filter:blur(4px);
+  z-index:-1;
+  animation:eitFloatGlow 7s ease-in-out infinite;
+  pointer-events:none;
+}
+.hero::after{
+  content:"";
+  position:absolute;left:-180px;bottom:-240px;width:520px;height:520px;border-radius:50%;
+  background:radial-gradient(circle,rgba(153,27,27,.08),transparent 68%);
+  z-index:-1;pointer-events:none;animation:eitFloatGlow 9s ease-in-out -2s infinite reverse;
+}
+
+.hero-grid>*{animation:eitRevealUp .75s cubic-bezier(.22,1,.36,1) both}
+.hero-grid>*:nth-child(2){animation-delay:.1s}
+.catalog>*:nth-child(1),.skill-grid>*:nth-child(1),.list-grid>*:nth-child(1),.pred-grid>*:nth-child(1){animation-delay:.03s}
+.catalog>*:nth-child(2),.skill-grid>*:nth-child(2),.list-grid>*:nth-child(2),.pred-grid>*:nth-child(2){animation-delay:.08s}
+.catalog>*:nth-child(3),.skill-grid>*:nth-child(3),.list-grid>*:nth-child(3),.pred-grid>*:nth-child(3){animation-delay:.13s}
+.catalog>*:nth-child(4),.skill-grid>*:nth-child(4),.list-grid>*:nth-child(4),.pred-grid>*:nth-child(4){animation-delay:.18s}
+.catalog>*,.skill-grid>*,.list-grid>*,.pred-grid>*{animation:eitRevealUp .62s cubic-bezier(.22,1,.36,1) both}
+
+.skill-card:hover,.test-card:hover,.pred:hover,.mock-card:hover{
+  transform:translateY(-7px);
+  box-shadow:var(--eit-shadow);
+  border-color:#f0b6bb;
+}
+.skill-card::before,.test-card::before,.pred::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--eit-red),transparent);
+  transform:scaleX(0);transform-origin:center;transition:transform .35s ease;
+}
+.skill-card:hover::before,.test-card:hover::before,.pred:hover::before{transform:scaleX(1)}
+.skill-card,.test-card,.pred{overflow:hidden}
+
+.mock{animation:eitMockFloat 5s ease-in-out infinite;transform-origin:center}
+.mock:hover{animation-play-state:paused;transform:rotate(0) translateY(-5px);box-shadow:0 30px 85px rgba(127,29,29,.2)}
+
+/* Login / personalization / result */
+.login-shell{background:radial-gradient(circle at 80% 10%,rgba(209,18,30,.11),transparent 30%),linear-gradient(135deg,#fff,#fff7f7)!important}
+.login-card,.lock-card,.completion-card{
+  animation:eitRevealUp .7s cubic-bezier(.22,1,.36,1) both;
+  box-shadow:0 24px 70px rgba(15,23,42,.09)!important;
+}
+.login-card:hover,.completion-card:hover{box-shadow:0 30px 85px rgba(15,23,42,.12)!important}
+.login-card input,.personal-content input,.searchbar input,.notes-panel textarea,.select,.blank{
+  transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;
+}
+.login-card input:focus,.personal-content input:focus,.searchbar input:focus,.notes-panel textarea:focus,.select:focus,.blank:focus{
+  transform:translateY(-1px);
+  border-color:var(--eit-red)!important;
+  box-shadow:0 0 0 4px rgba(209,18,30,.09)!important;
+  outline:none;
+}
+
+/* Exam interface — subtle, not distracting */
+.module-head{box-shadow:0 1px 0 rgba(15,23,42,.03)}
+.module-title,.pane-title,.passage-heading,.qhead{animation:eitTextIn .5s ease both}
+.pane{scroll-behavior:smooth}
+.question,.qgroup,.summary-sheet-ielts,.review-item{transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.question:hover{transform:translateX(2px)}
+.question:focus-within{box-shadow:0 0 0 3px rgba(209,18,30,.06);background:#fffafa}
+.icon-btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 8px 22px rgba(15,23,42,.08)}
+.divider::after{transition:height .25s ease,box-shadow .25s ease,background .25s ease;animation:eitDividerPulse 2.8s ease-in-out infinite}
+.bottom{box-shadow:0 -8px 25px rgba(15,23,42,.05)!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(255,255,255,.94)!important}
+.num,.section-btn{transition:transform .18s cubic-bezier(.22,1,.36,1),box-shadow .18s ease,border-color .18s ease,background .18s ease}
+.num:hover,.section-btn:hover{transform:translateY(-2px) scale(1.025)}
+.num.active,.section-btn.active{box-shadow:0 5px 16px rgba(209,18,30,.2)}
+.submit-icon:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(209,18,30,.1)}
+
+/* Modals / overlays */
+.modal-backdrop.open{animation:eitBackdrop .22s ease both}
+.submit-modal,.pro-modal-card,.notes-panel,.selection-menu.show{animation:eitModalIn .32s cubic-bezier(.22,1,.36,1) both}
+
+/* Scrollbars */
+*{scrollbar-width:thin;scrollbar-color:#d6d9df transparent}
+*::-webkit-scrollbar{width:8px;height:8px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:#d6d9df;border-radius:999px;border:2px solid transparent;background-clip:padding-box}
+*::-webkit-scrollbar-thumb:hover{background:#b9bec7;border:2px solid transparent;background-clip:padding-box}
+
+@keyframes eitPageIn{from{opacity:0}to{opacity:1}}
+@keyframes eitRevealUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes eitTextIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes eitMockFloat{0%,100%{transform:rotate(1deg) translateY(0)}50%{transform:rotate(1deg) translateY(-7px)}}
+@keyframes eitFloatGlow{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-16px,12px,0) scale(1.04)}}
+@keyframes eitDividerPulse{0%,100%{box-shadow:0 0 0 3px rgba(225,29,46,.04)}50%{box-shadow:0 0 0 6px rgba(225,29,46,.07)}}
+@keyframes eitBackdrop{from{opacity:0}to{opacity:1}}
+@keyframes eitModalIn{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+
+@media(max-width:700px){
+  .hero::before,.hero::after,.personal-hero::before{opacity:.6;transform:scale(.7)}
+  .hero-grid>*{animation-duration:.55s}
+  .mock{animation-duration:6s}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}
+}
