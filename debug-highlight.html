@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DEBUG Highlight Test</title>
+<link rel="stylesheet" href="css/modules.css">
+<link rel="stylesheet" href="css/listening.css">
+<style>
+body { font-family: "Be Vietnam Pro", Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+.container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; }
+h1 { color: #d1121e; }
+#questionArea { line-height: 1.8; font-size: 16px; margin: 30px 0; padding: 20px; background: #f9f9f9; border: 1px solid #ddd; min-height: 300px; }
+.debug-box { position: fixed; bottom: 20px; right: 20px; background: #fff; border: 2px solid #d1121e; padding: 15px; border-radius: 10px; max-height: 400px; overflow-y: auto; font-size: 12px; font-family: monospace; width: 400px; max-width: 90vw; }
+.log-line { margin: 3px 0; padding: 3px; border-radius: 3px; }
+.log-success { background: #efe; color: #060; }
+.log-error { background: #fee; color: #c00; }
+.log-info { background: #eef; color: #06c; }
+.log-warn { background: #ffe; color: #a60; }
+.buttons { margin: 20px 0; }
+.buttons button { padding: 10px 15px; margin-right: 10px; background: #d1121e; color: white; border: 0; border-radius: 6px; cursor: pointer; }
+</style>
+<link rel="stylesheet" href="css/eit-motion.css"></head>
+<body>
+
+<div class="container">
+  <h1>🧪 DEBUG Highlight Test</h1>
+  
+  <div class="buttons">
+    <button onclick="testDOM()">Test DOM</button>
+    <button onclick="testSelection()">Test Selection</button>
+    <button onclick="testWrap()">Test Wrap</button>
+    <button onclick="clearLogs()">Clear Logs</button>
+  </div>
+
+  <h2>Select Text Below:</h2>
+  <div id="questionArea">
+    <p>Jim's weekly rent will be $.</p>
+    <p>Jim can park his car in the.</p>
+    <p>The telephone is in the.</p>
+    <p>Jim will bring a for his <strong>bedroom</strong>.</p>
+    <p>Peter would like Jim to bring a.</p>
+    <p>Peter and Jim will probably watch TV on.</p>
+  </div>
+</div>
+
+<!-- UI Elements -->
+<div class="selection-menu" id="selectionMenu">
+  <button id="highlightBtn">Highlight</button>
+  <button id="noteBtn">Note</button>
+</div>
+
+<!-- Debug Log -->
+<div class="debug-box" id="debugBox"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let logs = [];
+
+function log(msg, type = 'info') {
+  const time = new Date().toLocaleTimeString();
+  const line = `[${time}] ${msg}`;
+  logs.unshift({ msg: line, type });
+  if (logs.length > 50) logs.pop();
+  updateLog();
+}
+
+function updateLog() {
+  const box = $('debugBox');
+  box.innerHTML = logs.map(l => 
+    `<div class="log-line log-${l.type}">${l.msg}</div>`
+  ).join('');
+  box.scrollTop = 0;
+}
+
+function clearLogs() {
+  logs = [];
+  updateLog();
+}
+
+function testDOM() {
+  log('=== DOM TEST ===', 'warn');
+  const els = [
+    'questionArea',
+    'selectionMenu',
+    'highlightBtn',
+    'noteBtn'
+  ];
+  els.forEach(id => {
+    const el = $(id);
+    if (el) {
+      log(`✓ Found #${id}`, 'success');
+    } else {
+      log(`✗ Missing #${id}`, 'error');
+    }
+  });
+}
+
+function testSelection() {
+  log('=== SELECTION TEST ===', 'warn');
+  const sel = window.getSelection();
+  log(`Selection type: ${sel.type}`, 'info');
+  log(`Collapsed: ${sel.isCollapsed}`, 'info');
+  log(`Range count: ${sel.rangeCount}`, 'info');
+  
+  if (sel.rangeCount > 0) {
+    const r = sel.getRangeAt(0);
+    log(`Range: ${r.toString().substring(0, 50)}...`, 'info');
+    
+    const root = $('questionArea');
+    const inRoot = root.contains(r.commonAncestorContainer);
+    log(`In questionArea: ${inRoot}`, inRoot ? 'success' : 'error');
+  } else {
+    log('No selection - please select text first!', 'warn');
+  }
+}
+
+function testWrap() {
+  log('=== WRAP TEST ===', 'warn');
+  const sel = window.getSelection();
+  
+  if (!sel.rangeCount) {
+    log('No selection!', 'error');
+    return;
+  }
+  
+  const range = sel.getRangeAt(0);
+  const text = range.toString();
+  log(`Selected text: "${text}"`, 'info');
+  
+  // Test creating mark
+  const mark = document.createElement('mark');
+  mark.textContent = 'TEST_HIGHLIGHT';
+  mark.setAttribute('style', 'background-color:#352315!important;color:#FFF!important;display:inline!important;padding:2px 4px!important;border-radius:2px!important;');
+  
+  log(`Created <mark> element`, 'info');
+  log(`mark.style.backgroundColor = ${mark.style.backgroundColor}`, 'info');
+  log(`mark.getAttribute("style") = ${mark.getAttribute('style')}`, 'info');
+  
+  // Test computed style
+  document.body.appendChild(mark);
+  const computed = window.getComputedStyle(mark);
+  log(`Computed backgroundColor: ${computed.backgroundColor}`, 'info');
+  log(`Computed color: ${computed.color}`, 'info');
+  
+  if (computed.backgroundColor !== 'rgba(0, 0, 0, 0)' && computed.backgroundColor !== 'transparent') {
+    log('✓ Color is being applied!', 'success');
+  } else {
+    log('✗ Color NOT applied - CSS might be blocking', 'error');
+  }
+  
+  mark.remove();
+}
+
+// Setup actual highlight
+let pendingSelection = null;
+
+log('Page loaded - ready to test', 'success');
+log('1. Select text in the box', 'info');
+log('2. Click buttons above to debug', 'info');
+log('3. Or click Highlight menu button', 'info');
+
+// Selection listener
+document.addEventListener('selectionchange', () => {
+  const sel = window.getSelection();
+  if (!sel.rangeCount || sel.isCollapsed) {
+    $('selectionMenu').classList.remove('show');
+    return;
+  }
+  
+  const text = sel.toString().trim();
+  if (!text) return;
+  
+  const r = sel.getRangeAt(0);
+  const root = $('questionArea');
+  
+  if (!root.contains(r.commonAncestorContainer)) {
+    log('Selection outside questionArea', 'warn');
+    return;
+  }
+  
+  pendingSelection = {
+    text: text,
+    range: r.cloneRange()
+  };
+  
+  log(`Selection: "${text.substring(0, 40)}..."`, 'success');
+  
+  const menu = $('selectionMenu');
+  const rect = r.getBoundingClientRect();
+  menu.style.left = Math.max(5, rect.left + rect.width/2 - 70) + 'px';
+  menu.style.top = Math.max(5, rect.top - 42) + 'px';
+  menu.classList.add('show');
+  
+  log('Menu shown', 'info');
+});
+
+// Close menu on mousedown
+document.addEventListener('mousedown', e => {
+  if (!e.target.closest('#selectionMenu')) {
+    $('selectionMenu').classList.remove('show');
+  }
+});
+
+// Highlight button
+$('highlightBtn').onclick = () => {
+  if (!pendingSelection) {
+    log('No selection!', 'error');
+    return;
+  }
+  
+  log('Highlight clicked', 'warn');
+  
+  const range = pendingSelection.range;
+  const root = $('questionArea');
+  
+  log(`Range valid: ${!!range}`, 'info');
+  log(`Root valid: ${!!root}`, 'info');
+  
+  // Simple wrap test
+  const mark = document.createElement('mark');
+  mark.className = 'hl-brown';
+  mark.textContent = pendingSelection.text;
+  mark.setAttribute('style', 'background-color:#352315!important;color:#FFF!important;display:inline!important;padding:2px 4px!important;border-radius:2px!important;');
+  
+  log(`Created mark with style`, 'info');
+  
+  try {
+    range.surroundContents(mark);
+    log('✓ Wrapped with surroundContents', 'success');
+  } catch (error) {
+    log(`surroundContents failed: ${error.message}`, 'warn');
+    log('Using fallback method', 'info');
+    
+    try {
+      const frag = range.extractContents();
+      mark.appendChild(frag);
+      range.insertNode(mark);
+      log('✓ Fallback worked', 'success');
+    } catch (e) {
+      log(`✗ Fallback failed: ${e.message}`, 'error');
+      return;
+    }
+  }
+  
+  // Check if mark is in DOM
+  const inDOM = document.body.contains(mark);
+  log(`Mark in DOM: ${inDOM}`, inDOM ? 'success' : 'error');
+  
+  // Check computed style
+  const computed = window.getComputedStyle(mark);
+  log(`Computed bg: ${computed.backgroundColor}`, 'info');
+  log(`Computed color: ${computed.color}`, 'info');
+  
+  if (computed.backgroundColor === 'rgb(53, 35, 21)' || computed.backgroundColor.includes('53')) {
+    log('✓✓✓ COLOR IS APPLIED!', 'success');
+  } else {
+    log('⚠ Color might not be visible', 'warn');
+  }
+  
+  $('selectionMenu').classList.remove('show');
+  window.getSelection()?.removeAllRanges();
+  pendingSelection = null;
+};
+
+log('Debug page ready!', 'success');
+</script>
+
+</body>
+</html>

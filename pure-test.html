@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Pure Test - No CSS</title>
+<style>
+body { font-family: Arial; margin: 20px; }
+.container { max-width: 800px; }
+#questionArea { background: #f0f0f0; padding: 20px; margin: 20px 0; line-height: 1.8; }
+#debugBox { position: fixed; bottom: 20px; right: 20px; background: #fff; border: 2px solid red; padding: 10px; max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace; width: 350px; }
+.log-success { color: green; }
+.log-error { color: red; }
+.log-info { color: blue; }
+</style>
+<link rel="stylesheet" href="css/eit-motion.css"></head>
+<body>
+
+<div class="container">
+  <h1>PURE TEST - NO CSS INTERFERENCE</h1>
+  <p>This tests highlight with ZERO external CSS</p>
+  
+  <button onclick="testMark()">Test 1: Create Mark</button>
+  <button onclick="testWrap()">Test 2: Wrap Selection</button>
+  <button onclick="clearDebug()">Clear</button>
+  
+  <div id="questionArea">
+    <p>Jim's weekly rent will be $. <strong>Click here and select "bedroom" then click a button above</strong></p>
+    <p>Jim can park his car in the.</p>
+    <p>The telephone is in the.</p>
+    <p>Jim will bring a for his <mark>bedroom</mark>.</p>
+  </div>
+</div>
+
+<div id="debugBox"></div>
+
+<script>
+let debug = [];
+
+function log(msg, type = 'info') {
+  debug.unshift(`[${type.toUpperCase()}] ${msg}`);
+  if (debug.length > 30) debug.pop();
+  updateDebug();
+}
+
+function updateDebug() {
+  document.getElementById('debugBox').innerHTML = debug.map(d => 
+    `<div class="${d.includes('SUCCESS') ? 'log-success' : d.includes('ERROR') ? 'log-error' : 'log-info'}">${d}</div>`
+  ).join('');
+}
+
+function clearDebug() {
+  debug = [];
+  updateDebug();
+}
+
+function testMark() {
+  log('=== TEST 1: Create Mark ===', 'warn');
+  
+  const mark = document.createElement('mark');
+  mark.textContent = 'HIGHLIGHT_TEST';
+  mark.setAttribute('style', 'background-color:#352315!important;color:#FFF!important;padding:2px 4px!important;border-radius:2px!important;');
+  
+  log('Mark created', 'success');
+  log('Style set: background-color:#352315', 'success');
+  
+  document.getElementById('questionArea').appendChild(mark);
+  log('Mark added to DOM', 'success');
+  
+  const computed = window.getComputedStyle(mark);
+  log(`Computed background: ${computed.backgroundColor}`, computed.backgroundColor === 'rgb(53, 35, 21)' ? 'success' : 'error');
+  log(`Computed color: ${computed.color}`, 'info');
+  
+  setTimeout(() => {
+    document.getElementById('questionArea').removeChild(mark);
+    log('Mark removed', 'info');
+  }, 3000);
+}
+
+function testWrap() {
+  log('=== TEST 2: Wrap Selection ===', 'warn');
+  
+  const sel = window.getSelection();
+  
+  if (!sel.rangeCount || sel.isCollapsed) {
+    log('NO SELECTION - select text first!', 'error');
+    return;
+  }
+  
+  const range = sel.getRangeAt(0);
+  const text = range.toString();
+  
+  log(`Selected: "${text}"`, 'success');
+  
+  const mark = document.createElement('mark');
+  mark.textContent = text;
+  mark.setAttribute('style', 'background-color:#352315!important;color:#FFF!important;padding:2px 4px!important;border-radius:2px!important;');
+  
+  log('Mark created with inline style', 'success');
+  
+  try {
+    range.surroundContents(mark);
+    log('✓ Wrapped with surroundContents', 'success');
+  } catch (e) {
+    log(`surroundContents failed: ${e.message}`, 'error');
+    
+    try {
+      const frag = range.extractContents();
+      mark.appendChild(frag);
+      range.insertNode(mark);
+      log('✓ Fallback method worked', 'success');
+    } catch (e2) {
+      log(`Fallback also failed: ${e2.message}`, 'error');
+      return;
+    }
+  }
+  
+  const computed = window.getComputedStyle(mark);
+  log(`Computed bg: ${computed.backgroundColor}`, 'info');
+  
+  if (computed.backgroundColor === 'rgb(53, 35, 21)') {
+    log('✓✓✓ COLOR WORKING!!!', 'success');
+  } else {
+    log('⚠ Color NOT showing', 'error');
+  }
+  
+  window.getSelection().removeAllRanges();
+}
+
+log('Test page ready - select text and click buttons', 'success');
+</script>
+
+</body>
+</html>

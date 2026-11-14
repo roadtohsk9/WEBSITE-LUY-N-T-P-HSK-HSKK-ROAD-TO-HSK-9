@@ -2,7 +2,7 @@
   "name": "hsk-exam-practice",
   "version": "1.0.0",
   "private": true,
-  "description": "HSK 7-9 four-skill practice platform with separate HSKK speaking module",
+  "description": "HSK 3-6 Reading and Listening practice exam platform",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"
