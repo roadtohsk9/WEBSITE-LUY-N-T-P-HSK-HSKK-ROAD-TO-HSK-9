@@ -1,0 +1,35 @@
+EIT IELTS — PRACTICE IMPORT FORMAT
+
+1) FILE WORD
+- Mỗi câu bắt đầu bằng: 1. ... / 2. ...
+- Đáp án lựa chọn có thể dùng A. ... B. ... C. ... D. ...
+- Sau phần câu hỏi đặt heading: ANSWER KEY
+- Sau đó mỗi dòng: 1. B / 2. grey / 3. TRUE
+- Sau đó heading: EXPLANATIONS
+- Mỗi dòng: 1. Giải thích...
+
+2) CHẤM ĐÁP ÁN
+- Không phân biệt hoa/thường: grey = GREY = Grey.
+- Có phân biệt dấu câu: grey khác grey.
+- Chỉ bỏ khoảng trắng thừa ở đầu/cuối đáp án.
+- Với Multiple Choice, answer key B/C... có thể khớp với option tương ứng.
+
+3) BAND ACADEMIC (40 CÂU)
+39–40 9.0
+37–38 8.5
+35–36 8.0
+33–34 7.5
+30–32 7.0
+27–29 6.5
+23–26 6.0
+20–22 5.5
+16–19 5.0
+13–15 4.5
+10–12 4.0
+7–9 3.5
+5–6 3.0
+3–4 2.5
+
+4) LISTENING
+- Upload thêm MP3/WAV/M4A/OGG trong Admin.
+- File upload tối đa 100MB.
