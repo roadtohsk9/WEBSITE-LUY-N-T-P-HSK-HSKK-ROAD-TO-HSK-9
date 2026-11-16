@@ -58,7 +58,7 @@
         <div class="field"><label>Answer seconds · Giây ghi âm</label><input class="input ht-speak" type="number" min="1" max="900" value="${Number(t.speakSeconds)||60}"></div>
       </div>
       <div class="field"><label>Nội dung hiển thị / câu hỏi / chủ đề</label><textarea class="textarea ht-text" rows="3" placeholder="Nhập nội dung câu hỏi. Với câu chỉ nghe audio, có thể để trống.">${escH(t.text||'')}</textarea></div>
-      <div class="field"><label>Văn bản chuẩn riêng của câu này (chỉ Admin và AI sử dụng)</label><textarea class="textarea ht-reference" rows="3" placeholder="Dán transcript / đáp án tham chiếu để Gemini đối chiếu. Nội dung này không hiển thị cho học viên.">${escH(t.referenceText||'')}</textarea></div>
+      <div class="field"><label>Văn bản chuẩn riêng của câu này (chỉ Admin và AI sử dụng)</label><textarea class="textarea ht-reference" rows="3" placeholder="Dán transcript / đáp án tham chiếu để AI đối chiếu. Nội dung này không hiển thị cho học viên.">${escH(t.referenceText||'')}</textarea></div>
       <section class="hskk-audio-uploader">
         <div class="hskk-upload-title"><div><strong>🎧 AUDIO CỦA CÂU ${ti+1}</strong><small>Chọn file ở đây; audio chỉ gắn vào đúng câu hiện tại.</small></div><span class="hskk-upload-state ${audioUrl?'is-ready':''}">${audioUrl?'ĐÃ CÓ AUDIO':'CHƯA CÓ AUDIO'}</span></div>
         <div class="hskk-upload-controls"><input type="file" class="file ht-audio-file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.webm,.aac,.flac,.opus"><button type="button" class="btn red" data-upload-audio="${si}-${ti}">Upload audio câu này</button><button type="button" class="btn ghost" data-remove-audio="${si}-${ti}" ${audioUrl?'':'disabled'}>Gỡ audio</button></div>
@@ -144,9 +144,9 @@
     const cards=editor().querySelectorAll('.hskk-section-row');
     cards[sectionIndex]?.querySelector('.hskk-task-row:last-child')?.scrollIntoView({behavior:'smooth',block:'center'});
   }
-  async function checkGemini(){
-    try{const r=await fetch('/api/hskk/ai-status',{cache:'no-store'});const d=await r.json();$h('hskkGeminiStatus').className='notice '+(d.configured?'ok':'err');$h('hskkGeminiStatus').textContent=d.configured?`✓ Google Gemini đã sẵn sàng · Model ${d.model}`:'Chưa cấu hình GEMINI_API_KEY trên Render. Hãy thêm key trong Environment Variables và redeploy để bật chấm HSKK.';}
-    catch{$h('hskkGeminiStatus').className='notice err';$h('hskkGeminiStatus').textContent='Không kiểm tra được trạng thái Gemini.';}
+  async function checkAI(){
+    try{const r=await fetch('/api/hskk/ai-status',{cache:'no-store'});const d=await r.json();$h('hskkAIStatus').className='notice '+(d.configured?'ok':'err');$h('hskkAIStatus').textContent=d.configured?'✓ AI chấm đã sẵn sàng.':'Dịch vụ AI chấm chưa được cấu hình. Hãy kiểm tra Environment Variables trên máy chủ và triển khai lại.';}
+    catch{$h('hskkAIStatus').className='notice err';$h('hskkAIStatus').textContent='Không kiểm tra được trạng thái AI chấm.';}
   }
   async function loadExams(){
     const d=await api('/admin/hskk/exams');HSKK_EXAMS=d.exams||[];
@@ -156,7 +156,7 @@
   }
   async function loadAttempts(){
     const d=await api('/admin/hskk/attempts');const rows=d.attempts||[];
-    $h('hskkAttemptsList').innerHTML=rows.length?`<div class="table-wrap"><table class="table"><thead><tr><th>Học viên</th><th>Đề</th><th>Thời gian</th><th>Điểm AI</th><th>Trạng thái</th></tr></thead><tbody>${rows.map(a=>`<tr><td><b>${escH(a.student_name)}</b><br><small>${escH(a.candidate_code)}</small></td><td>${escH(a.exam_title||'Đề đã xóa')}<br><small>${escH(a.version||'')} · ${escH(a.level_label||'')}</small></td><td>${new Date(a.submitted_at).toLocaleString('vi-VN')}</td><td>${a.total_score==null?'—':Number(a.total_score).toFixed(0)+'/100'}</td><td>${a.status==='completed'?'<span class="pill" style="color:#166534;background:#ecfdf3">Đã chấm</span>':a.status==='failed'?`<span title="${escH(a.error_message)}" class="pill" style="color:#991b1b;background:#fef2f2">Lỗi Gemini</span>`:'<span class="pill">Đang chấm</span>'}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Chưa có học viên nộp bài.</div>';
+    $h('hskkAttemptsList').innerHTML=rows.length?`<div class="table-wrap"><table class="table"><thead><tr><th>Học viên</th><th>Đề</th><th>Thời gian</th><th>Điểm AI</th><th>Trạng thái</th></tr></thead><tbody>${rows.map(a=>`<tr><td><b>${escH(a.student_name)}</b><br><small>${escH(a.candidate_code)}</small></td><td>${escH(a.exam_title||'Đề đã xóa')}<br><small>${escH(a.version||'')} · ${escH(a.level_label||'')}</small></td><td>${new Date(a.submitted_at).toLocaleString('vi-VN')}</td><td>${a.total_score==null?'—':Number(a.total_score).toFixed(0)+'/100'}</td><td>${a.status==='completed'?'<span class="pill" style="color:#166534;background:#ecfdf3">Đã chấm</span>':a.status==='failed'?`<span title="${escH(a.error_message)}" class="pill" style="color:#991b1b;background:#fef2f2">Lỗi AI</span>`:'<span class="pill">Đang chấm</span>'}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Chưa có học viên nộp bài.</div>';
   }
   function editExam(id){
     const x=HSKK_EXAMS.find(e=>e.id===id);if(!x)return;
@@ -282,7 +282,7 @@
   $h('hskkReset')?.addEventListener('click',reset);
   $h('hskkRefresh')?.addEventListener('click',loadExams);
   $h('hskkAttemptsRefresh')?.addEventListener('click',loadAttempts);
-  window.loadHskkAdmin=async()=>{try{await Promise.all([checkGemini(),loadExams(),loadAttempts()])}catch(e){$h('hskkExamList').innerHTML=`<div class="notice err">${escH(e.message)}</div>`}};
+  window.loadHskkAdmin=async()=>{try{await Promise.all([checkAI(),loadExams(),loadAttempts()])}catch(e){$h('hskkExamList').innerHTML=`<div class="notice err">${escH(e.message)}</div>`}};
   updateLevelOptions(false);
   $h('hskkLevel').value='advanced';
   $h('hskkTitle').placeholder='Nhập tên đề HSKK Cao cấp của bạn';
