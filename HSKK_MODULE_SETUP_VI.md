@@ -5,7 +5,7 @@
 - Trang học viên: `/hskk.html` để chọn HSKK 2.0 hoặc HSK 3.0 Speaking, sau đó chọn cấp và đề đã xuất bản.
 - Trang làm bài: `/hskk-test.html?examId=...`; phát audio / hiển thị tranh / câu hỏi, đếm thời gian chuẩn bị, tự ghi âm trong thời gian trả lời và chuyển câu.
 - Trang kết quả: `/hskk-result.html?id=...`; phân chia feedback Gemini theo tab: Tổng quan, Phát âm, Độ trôi chảy, Logic & ý tưởng, Ngôn ngữ, Từng câu, Kế hoạch cải thiện.
-- Admin: tab `HSKK 2.0 / 3.0` trong `/admin/`; tạo đề từ template, chỉnh số câu / nội dung / audio / hình / thời gian / văn bản tham chiếu, lưu nháp hoặc publish.
+- Admin: tab `HSKK 2.0 / 3.0` trong `/admin/`; với HSKK 2.0 cao cấp có nút `Tạo đề HSKK cao cấp tùy chỉnh`, cho phép tự thêm/xóa phần, thêm/xóa câu, đổi dạng câu, đặt thời gian và upload audio riêng tại từng câu. Có thể lưu nháp trước khi publish.
 - PostgreSQL: hai bảng `hskk_exams` và `hskk_attempts` được tạo tự động khi server khởi động.
 
 ## 2. Format mẫu trong Admin
@@ -40,7 +40,7 @@ Template tạo cấu trúc luyện tập ban đầu. Trước khi publish, Admin
 2. Mở tab `HSKK 2.0 / 3.0`.
 3. Chọn phiên bản và cấp độ; kiểm tra số đề, thời lượng.
 4. Chọn `Tạo cấu trúc mẫu theo phiên bản / cấp độ`.
-5. Với các câu 听后重复 / 听后回答 / 听后复述: tải audio câu hỏi lên tại trường Audio đề. Có thể nhập `Văn bản chuẩn để Gemini so sánh` nếu có transcript chính xác.
+5. Với từng câu 听后重复 / 听后回答 / 听后复述: chọn file trong khung `Audio của riêng câu ...`; upload có thanh tiến trình và phát thử ngay tại Admin. File audio được lưu URL riêng trong đúng câu hỏi, không dùng chung một audio cho toàn đề. Có thể nhập `Văn bản chuẩn để Gemini so sánh` nếu có transcript chính xác.
 6. Với 看图说话: tải ảnh đề / tranh lên.
 7. Với 回答问题 / 朗读: nhập văn bản câu hỏi hoặc đoạn đọc và chọn hiển thị cho học viên.
 8. Điều chỉnh `Thời gian chuẩn bị` và `Thời gian ghi âm` cho từng câu.
@@ -71,7 +71,7 @@ Gemini nhận các file ghi âm ở định dạng WebM/Opus của trình duyệ
 1. Học viên đăng nhập và mở một đề đã publish.
 2. Học viên xác nhận đồng ý ghi âm/gửi audio để phân tích.
 3. Học viên bấm Bắt đầu; trình duyệt hiện lời nhắc cấp quyền micro. Phải cho phép quyền này.
-4. Audio câu hỏi phát trước. Khi audio kết thúc, đồng hồ chuẩn bị (nếu có) chạy; sau đó đồng hồ trả lời chạy và MediaRecorder tự ghi âm.
+4. Với câu có audio, thời gian chuẩn bị bắt đầu đếm ngay tại sự kiện audio thực sự phát. Audio kết thúc và đồng hồ chuẩn bị về 00:00 (điều kiện nào đến sau) thì đồng hồ trả lời bắt đầu và MediaRecorder tự ghi âm. Nếu câu không có audio, đồng hồ chuẩn bị bắt đầu ngay khi câu hỏi hiển thị.
 5. Khi đồng hồ về 00:00, bản ghi của câu được lưu tạm trong trình duyệt và hệ thống chuyển sang câu kế tiếp.
 6. Sau câu cuối, các bản ghi gửi đến backend và Gemini. Kết quả được lưu trong `hskk_attempts` và mở ở trang feedback.
 
@@ -86,9 +86,29 @@ Feedback chia theo từng tab, gồm: điểm tổng quan; phát âm / thanh đi
 - Mở `/hskk.html`, kiểm tra bộ lọc 2.0 / 3.0 và các cấp.
 - Trong Admin tạo một đề thử ngắn 1–2 câu, gắn audio / ảnh và để ở trạng thái nháp trước khi publish.
 - Publish đề thử, đăng nhập một tài khoản học viên và làm bài trên HTTPS.
-- Kiểm tra audio kết thúc thì đồng hồ chuyển qua chuẩn bị/trả lời; đèn micro chuyển đỏ khi ghi âm; câu tự chuyển khi hết giờ.
+- Kiểm tra đồng hồ chuẩn bị bắt đầu ngay khi audio phát, tiếp tục chạy nếu audio kết thúc trước; micro tự ghi âm khi cả audio và thời gian chuẩn bị đã hoàn tất.
 - Nộp bài, kiểm tra Gemini status và tab feedback; kiểm tra Admin → HSKK → Bài nói đã nộp.
 
 ## 8. Dữ liệu và quyền riêng tư
 
 Ứng dụng lưu thông tin lượt thi, metadata bản ghi và feedback trong PostgreSQL; file audio không được lưu thành file phát lại trong hồ sơ học viên bởi luồng này, nhưng được truyền tới Google Gemini để phân tích. Cần công bố mục đích xử lý, bên nhận dữ liệu, thời hạn lưu, cách yêu cầu xóa và xin sự đồng ý phù hợp trước khi cho người học sử dụng; đặc biệt lưu ý nếu người dùng là trẻ vị thành niên. Hãy rà soát chính sách Google API và yêu cầu pháp lý tại nơi website phục vụ trước khi mở cho người dùng thật.
+
+
+## 9. Tạo đề HSKK cao cấp tùy chỉnh và upload audio từng câu
+
+1. Vào Admin → `HSKK 2.0 / 3.0`.
+2. Nhấn `+ Tạo đề HSKK cao cấp tùy chỉnh`. Hệ thống tạo một khung HSKK 2.0 Cao cấp ở trạng thái nháp.
+3. Bạn có thể đổi tên từng phần, hướng dẫn, thêm/xóa phần, thêm/xóa câu và đổi loại câu giữa 听后重复, 听后回答, 听后复述, 看图说话, 回答问题, 朗读.
+4. Tại từng câu, chọn file ở khung `Audio của riêng câu ...`; upload có thanh tiến trình. Khi thành công, URL được tự điền và có trình phát để nghe kiểm tra.
+5. Cài đặt `Thời gian chuẩn bị (giây)` và `Thời gian ghi âm (giây)` riêng cho từng câu.
+6. Lưu nháp, nghe kiểm tra các file audio, sau đó bật `Xuất bản đề cho học viên` và lưu lại.
+
+Audio hỗ trợ: MP3, WAV, M4A, OGG, WEBM, AAC, FLAC, OPUS. Giới hạn upload HSKK là 80 MB mỗi file. Nếu upload thất bại, Admin hiển thị thông báo cụ thể và không tự gán một URL không hợp lệ vào câu hỏi.
+
+### Lưu file upload bền vững trên Render
+
+Mặc định file nằm trong thư mục `uploads/` của ứng dụng. Filesystem của web service Render có thể bị làm mới khi deploy/restart; nếu muốn giữ audio và hình đã upload qua các lần deploy, hãy gắn Persistent Disk vào web service, ví dụ mount path `/var/data`, rồi thêm Environment Variable:
+
+- `UPLOAD_DIR=/var/data/uploads`
+
+Server đã hỗ trợ đọc/ghi thư mục upload qua biến `UPLOAD_DIR` và phục vụ URL `/uploads/...` từ thư mục đó. Khi chuyển sang Persistent Disk lần đầu, hãy sao chép các file đang có trong `uploads/` sang thư mục trên disk nếu cần giữ chúng.

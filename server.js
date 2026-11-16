@@ -17,7 +17,7 @@ const DATA_DIR = path.join(ROOT, 'data');
 const DB_FILE = path.join(DATA_DIR, 'submissions.json');
 const TOKENS = new Map();
 const CANDIDATE_TOKENS = new Map();
-const UPLOAD_DIR = path.join(ROOT, 'uploads');
+const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || path.join(ROOT, 'uploads'));
 const PRIVATE_DOC_DIR = path.join(ROOT, '.private-documents');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 fs.mkdirSync(PRIVATE_DOC_DIR, { recursive: true });
@@ -923,7 +923,7 @@ async function api(req,res,url){
     if(!title||!sections.length||sections.some(s=>!Array.isArray(s.tasks)||!s.tasks.length))return json(res,400,{ok:false,message:'Đề cần có tiêu đề và ít nhất một phần với câu hỏi.'});
     const totalTasks=sections.reduce((n,s)=>n+(s.tasks||[]).length,0); if(totalTasks>150)return json(res,400,{ok:false,message:'Một đề không được vượt quá 150 nhiệm vụ.'});
     for(const sec of sections)for(const t of sec.tasks){
-      if(!t.id||!t.type||!Number.isFinite(Number(t.speakSeconds))||Number(t.speakSeconds)<1||Number(t.speakSeconds)>900)return json(res,400,{ok:false,message:'Mỗi câu cần mã, dạng câu hỏi và thời gian trả lời hợp lệ.'});
+      if(!t.id||!['listen_repeat','listen_answer','listen_recall','picture','question','read_aloud'].includes(String(t.type))||!Number.isFinite(Number(t.prepSeconds||0))||Number(t.prepSeconds||0)<0||Number(t.prepSeconds||0)>1800||!Number.isFinite(Number(t.speakSeconds))||Number(t.speakSeconds)<1||Number(t.speakSeconds)>900)return json(res,400,{ok:false,message:'Mỗi câu cần mã, dạng câu hợp lệ, thời gian chuẩn bị 0–1800 giây và thời gian trả lời 1–900 giây.'});
       if(b.published===true){
         if(['listen_repeat','listen_answer','listen_recall'].includes(String(t.type))&&!String(t.audioUrl||'').trim())return json(res,400,{ok:false,message:`Không thể xuất bản: câu “${String(t.id)}” thuộc dạng nghe nhưng chưa có audio.`});
         if(String(t.type)==='picture'&&!String(t.imageUrl||'').trim())return json(res,400,{ok:false,message:`Không thể xuất bản: câu “${String(t.id)}” thuộc dạng nhìn tranh nhưng chưa có ảnh.`});
@@ -1195,12 +1195,34 @@ async function api(req,res,url){
     if(!r.rowCount)return json(res,404,{ok:false,message:'Practice test not found.'});
     return json(res,200,{ok:true,message:'Practice test deleted.'});
   }
+  if(url.pathname==='/api/admin/hskk/upload-audio' && req.method==='POST'){
+    if(!admin(req))return json(res,401,{ok:false,message:'Phiên Admin đã hết hạn. Hãy đăng nhập lại.'});
+    let files=[];
+    try{({files}=await parseMultipart(req));}
+    catch(err){
+      const message=String(err?.message||'Upload audio thất bại.');
+      const status=/quá lớn|too large|file size/i.test(message)?413:400;
+      return json(res,status,{ok:false,message});
+    }
+    const f=files.find(x=>x.field==='audio');
+    if(!f)return json(res,400,{ok:false,message:'Không nhận được file audio. Hãy chọn file tại đúng câu hỏi rồi upload lại.'});
+    const allowed=/\.(mp3|wav|m4a|ogg|webm|aac|flac|opus)$/i;
+    if(!allowed.test(f.original||'')){
+      try{fs.unlinkSync(f.path)}catch{}
+      return json(res,400,{ok:false,message:'Định dạng chưa hỗ trợ. Hãy dùng MP3, WAV, M4A, OGG, WEBM, AAC, FLAC hoặc OPUS.'});
+    }
+    if(!Number(f.size)||Number(f.size)>80*1024*1024){
+      try{fs.unlinkSync(f.path)}catch{}
+      return json(res,413,{ok:false,message:'Audio phải lớn hơn 0 byte và không vượt quá 80 MB.'});
+    }
+    return json(res,201,{ok:true,url:f.url,filename:f.original,mime:f.mime,size:f.size,message:'Đã upload audio cho câu hỏi.'});
+  }
   if(url.pathname==='/api/admin/asset/upload' && req.method==='POST'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
     const {files}=await parseMultipart(req);
     const f=files.find(x=>x.field==='audio' || x.field==='file');
     if(!f)return json(res,400,{ok:false,message:'No file uploaded.'});
-    if(!/\.(mp3|wav|m4a|ogg|png|jpe?g|webp|pdf)$/i.test(f.original))return json(res,400,{ok:false,message:'Unsupported file type.'});
+    if(!/\.(mp3|wav|m4a|ogg|webm|aac|flac|opus|png|jpe?g|webp|pdf)$/i.test(f.original))return json(res,400,{ok:false,message:'Unsupported file type.'});
     return json(res,201,{ok:true,url:f.url,filename:f.original,mime:f.mime,size:f.size});
   }
   if(url.pathname.startsWith('/api/admin/practice/') && req.method==='PUT'){
@@ -1675,7 +1697,7 @@ async function api(req,res,url){
   return json(res,404,{ok:false,message:'API route not found'});
 }
 
-function contentType(file){return {'.html':'text/html; charset=utf-8','.js':'application/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.txt':'text/plain; charset=utf-8','.mp3':'audio/mpeg','.wav':'audio/wav','.m4a':'audio/mp4','.webm':'audio/webm','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.pdf':'application/pdf','.docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','.pptx':'application/vnd.openxmlformats-officedocument.presentationml.presentation','.xlsx':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','.zip':'application/zip','.ogg':'audio/ogg'}[path.extname(file).toLowerCase()]||'application/octet-stream'}
+function contentType(file){return {'.html':'text/html; charset=utf-8','.js':'application/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.txt':'text/plain; charset=utf-8','.mp3':'audio/mpeg','.wav':'audio/wav','.m4a':'audio/mp4','.webm':'audio/webm','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.pdf':'application/pdf','.docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','.pptx':'application/vnd.openxmlformats-officedocument.presentationml.presentation','.xlsx':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','.zip':'application/zip','.ogg':'audio/ogg','.aac':'audio/aac','.flac':'audio/flac','.opus':'audio/opus'}[path.extname(file).toLowerCase()]||'application/octet-stream'}
 function sendStaticFile(req,res,file,st){
   const baseHeaders={'Content-Type':contentType(file),'Cache-Control':'no-cache','Accept-Ranges':'bytes'};
   if(req.method==='HEAD'){
@@ -1716,10 +1738,18 @@ function staticFile(req,res,url){
   try{pathname=decodeURIComponent(url.pathname)}catch{return json(res,400,{message:'Invalid URL path'});}
   if(pathname==='/') pathname='/index.html';
   if(pathname.startsWith('/.private-documents/') || pathname==='/\.private-documents') return json(res,404,{message:'File not found'});
-  let file=path.normalize(path.join(ROOT,pathname));
+  let file;
   const privateDir=path.resolve(PRIVATE_DOC_DIR);
-  if(file===privateDir||file.startsWith(privateDir+path.sep)) return json(res,404,{message:'File not found'});
-  if(!file.startsWith(ROOT+path.sep)&&file!==ROOT) return json(res,403,{message:'Forbidden'});
+  if(pathname.startsWith('/uploads/')){
+    const uploadName=pathname.slice('/uploads/'.length);
+    if(!uploadName || uploadName.includes('/') || uploadName.includes('\\') || uploadName==='.' || uploadName==='..') return json(res,404,{message:'File not found'});
+    file=path.resolve(UPLOAD_DIR,uploadName);
+    if(file!==UPLOAD_DIR && !file.startsWith(UPLOAD_DIR+path.sep)) return json(res,403,{message:'Forbidden'});
+  }else{
+    file=path.normalize(path.join(ROOT,pathname));
+    if(file===privateDir||file.startsWith(privateDir+path.sep)) return json(res,404,{message:'File not found'});
+    if(!file.startsWith(ROOT+path.sep)&&file!==ROOT) return json(res,403,{message:'Forbidden'});
+  }
   fs.stat(file,(err,st)=>{
     if(!err && st.isDirectory()){
       file=path.join(file,'index.html');
