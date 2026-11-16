@@ -920,18 +920,25 @@ async function api(req,res,url){
     const content=b.content&&typeof b.content==='object'?b.content:{}; const sections=Array.isArray(content.sections)?content.sections:[];
     const validLevel=version==='2.0'?['beginner','intermediate','advanced'].includes(level):version==='3.0'?['3','4','5','6'].includes(level):false;
     if(!validLevel)return json(res,400,{ok:false,message:'Phiên bản hoặc cấp độ HSKK không hợp lệ.'});
-    if(!title||!sections.length||sections.some(s=>!Array.isArray(s.tasks)||!s.tasks.length))return json(res,400,{ok:false,message:'Đề cần có tiêu đề và ít nhất một phần với câu hỏi.'});
+    if(!title)return json(res,400,{ok:false,message:'Hãy nhập tên đề HSKK trước khi lưu.'});
+    if(sections.some(s=>!s||!Array.isArray(s.tasks)))return json(res,400,{ok:false,message:'Dữ liệu phần thi không hợp lệ. Hãy tải lại trang Admin và thử lại.'});
+    const isPublishing=b.published===true;
+    if(isPublishing&&(!sections.length||sections.some(s=>!s.tasks.length)))return json(res,400,{ok:false,message:'Để xuất bản, đề cần có ít nhất một phần thi và mỗi phần phải có ít nhất một câu hỏi.'});
     const totalTasks=sections.reduce((n,s)=>n+(s.tasks||[]).length,0); if(totalTasks>150)return json(res,400,{ok:false,message:'Một đề không được vượt quá 150 nhiệm vụ.'});
+    const allowedTaskTypes=['listen_repeat','listen_answer','listen_recall','picture','question','read_aloud'];
     for(const sec of sections)for(const t of sec.tasks){
-      if(!t.id||!['listen_repeat','listen_answer','listen_recall','picture','question','read_aloud'].includes(String(t.type))||!Number.isFinite(Number(t.prepSeconds||0))||Number(t.prepSeconds||0)<0||Number(t.prepSeconds||0)>1800||!Number.isFinite(Number(t.speakSeconds))||Number(t.speakSeconds)<1||Number(t.speakSeconds)>900)return json(res,400,{ok:false,message:'Mỗi câu cần mã, dạng câu hợp lệ, thời gian chuẩn bị 0–1800 giây và thời gian trả lời 1–900 giây.'});
-      if(b.published===true){
+      const type=String(t.type||'');
+      if(!t.id||(type&&!allowedTaskTypes.includes(type))||(isPublishing&&!allowedTaskTypes.includes(type))||!Number.isFinite(Number(t.prepSeconds||0))||Number(t.prepSeconds||0)<0||Number(t.prepSeconds||0)>1800||!Number.isFinite(Number(t.speakSeconds))||Number(t.speakSeconds)<1||Number(t.speakSeconds)>900)return json(res,400,{ok:false,message:'Mỗi câu cần mã hợp lệ, chọn dạng câu khi xuất bản, thời gian chuẩn bị 0–1800 giây và thời gian trả lời 1–900 giây.'});
+      if(isPublishing){
         if(['listen_repeat','listen_answer','listen_recall'].includes(String(t.type))&&!String(t.audioUrl||'').trim())return json(res,400,{ok:false,message:`Không thể xuất bản: câu “${String(t.id)}” thuộc dạng nghe nhưng chưa có audio.`});
         if(String(t.type)==='picture'&&!String(t.imageUrl||'').trim())return json(res,400,{ok:false,message:`Không thể xuất bản: câu “${String(t.id)}” thuộc dạng nhìn tranh nhưng chưa có ảnh.`});
         if(String(t.type)==='read_aloud'&&(!String(t.text||'').trim()||t.showText===false))return json(res,400,{ok:false,message:`Không thể xuất bản: câu đọc thành tiếng “${String(t.id)}” cần có văn bản hiển thị cho học viên.`});
         if(String(t.type)==='question'&&!String(t.text||'').trim()&&!String(t.audioUrl||'').trim())return json(res,400,{ok:false,message:`Không thể xuất bản: câu hỏi “${String(t.id)}” cần có văn bản hoặc audio.`});
       }
     }
-    const r=await dbQuery(`INSERT INTO hskk_exams(id,version,level,level_label,test_no,title,description,duration_minutes,prep_minutes,content,published) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11) ON CONFLICT(id) DO UPDATE SET version=EXCLUDED.version,level=EXCLUDED.level,level_label=EXCLUDED.level_label,test_no=EXCLUDED.test_no,title=EXCLUDED.title,description=EXCLUDED.description,duration_minutes=EXCLUDED.duration_minutes,prep_minutes=EXCLUDED.prep_minutes,content=EXCLUDED.content,published=EXCLUDED.published,updated_at=NOW() RETURNING *`,[id,version,level,levelLabel,testNo,title,String(b.description||''),duration,prep,JSON.stringify(content),b.published===true]);
+    const duplicate=(await dbQuery('SELECT id,title FROM hskk_exams WHERE version=$1 AND level=$2 AND test_no=$3 AND id<>$4 LIMIT 1',[version,level,testNo,id])).rows[0];
+    if(duplicate)return json(res,409,{ok:false,message:`Số đề ${testNo} đã được dùng cho “${duplicate.title||'một đề khác'}”. Hãy đổi Test No. hoặc mở đề đó để chỉnh sửa.`});
+    const r=await dbQuery(`INSERT INTO hskk_exams(id,version,level,level_label,test_no,title,description,duration_minutes,prep_minutes,content,published) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11) ON CONFLICT(id) DO UPDATE SET version=EXCLUDED.version,level=EXCLUDED.level,level_label=EXCLUDED.level_label,test_no=EXCLUDED.test_no,title=EXCLUDED.title,description=EXCLUDED.description,duration_minutes=EXCLUDED.duration_minutes,prep_minutes=EXCLUDED.prep_minutes,content=EXCLUDED.content,published=EXCLUDED.published,updated_at=NOW() RETURNING *`,[id,version,level,levelLabel,testNo,title,String(b.description||''),duration,prep,JSON.stringify(content),isPublishing]);
     return json(res,200,{ok:true,exam:r.rows[0],message:'Đã lưu đề HSKK.'});
   }
   if(url.pathname.match(/^\/api\/admin\/hskk\/exams\/[0-9a-f-]+$/i) && req.method==='DELETE'){
