@@ -1,43 +1,36 @@
-# EIT AI grading setup
+# Server-side AI configuration
 
-AI grading runs **server-side**. Do not put the Gemini API key in frontend JavaScript or commit it into the ZIP.
+AI credentials must remain on the server. Never place API keys in frontend JavaScript, HTML, public JSON files or GitHub commits.
 
-## Required Environment Variables on VibeHost
+## Required environment variable
 
-- `GEMINI_API_KEY` = your Google AI Studio / Gemini API key
-- `GEMINI_MODEL` = `gemini-3.6-flash`
-- `GEMINI_FALLBACK_MODEL` = optional, comma-separated list of backup models to use automatically when the primary model returns a "high demand / overloaded" (429/503) error. Defaults to `gemini-3.6-flash`.
-- `GEMINI_TIMEOUT_MS` = optional, defaults to `90000`
+- `DEEPSEEK_API_KEY`: server-side key used by the website's Writing/Speaking text review and HSKK recognition-and-feedback pipeline.
 
-After adding or changing environment variables, **redeploy/restart the app** so the Node process loads them.
+Optional settings for other skill reviews:
+- `DEEPSEEK_MODEL`
+- `DEEPSEEK_VISION_MODEL`
+- `DEEPSEEK_TIMEOUT_MS`
 
-## What the app does
+Optional settings for HSKK:
+- `HSKK_DEEPSEEK_MODEL` (recommended `deepseek-flash`; existing Render values override source defaults)
+- `HSKK_AI_TIMEOUT_MS` (default `240000` milliseconds)
 
-### Writing
+After adding or changing variables in Render → Environment, save and redeploy/restart the service.
 
-- AI grading runs immediately during submission.
-- The result page shows the estimated overall Writing band.
-- Task 2 carries twice the weight of Task 1 when calculating the Writing result.
-- PRO users with active `writing` entitlement can view the four-criterion breakdown, examiner-style feedback, sentence-level corrections, explanations, better options and revised excerpts.
-- Free users can see the overall band, while detailed correction remains locked behind PRO.
-- Task 1 and Task 2 prompt images are sent to Gemini when available.
+## HSKK processing flow
 
-### Speaking
+HSKK audio is normalized in the browser to 16-bit PCM WAV, mono, 16 kHz and divided into segments no longer than 110 seconds. The server sends each segment to speech recognition, combines the resulting transcripts in question order, then sends the transcript, task prompt and Admin-provided reference text (if present) to the text evaluator.
 
-- Submitted recordings are sent to Gemini for grading.
-- The result page shows the estimated overall Speaking band.
-- PRO users with active `speaking` entitlement can view the four-criterion breakdown, faithful transcript, part-by-part feedback and pronunciation targets.
+The HSKK feedback evaluates task achievement, content accuracy, response organization, idea development, grammar and vocabulary from the transcript. The current path does **not** directly evaluate pronunciation, tones, initials/finals, prosody, speaking speed or hesitation. These criteria are marked as unavailable instead of being assigned unsupported scores. ASR transcripts may contain omissions or recognition errors and should be reviewed as practice feedback, not an official test score.
 
-### Diagnostic endpoint
+See `HSKK_DEEPSEEK_SETUP_VI.md` for Render configuration, audio limits, scoring scope and test steps.
 
-Open `/api/ai/status` on the deployed app to verify:
+## Status check
 
-- whether `GEMINI_API_KEY` is configured (`true/false` only; the key itself is never returned)
-- the active Gemini model
-- whether PostgreSQL is available
+- `/api/ai/status` reports whether the shared server-side key is configured for the website's other AI review features.
+- `/api/hskk/ai-status` reports only whether the HSKK analysis service is configured. It does not return the provider name, model name or API key to the browser.
 
-## Security
 
-- Gemini API credentials stay on the server.
-- The frontend never receives the Gemini API key.
-- Google OAuth Client ID is separate from the Gemini API key.
+## Token-efficient DeepSeek settings
+
+Recommended model: `deepseek-flash` for text and vision grading. Use `DEEPSEEK_MODEL=deepseek-flash`, `DEEPSEEK_VISION_MODEL=deepseek-flash`, and `HSKK_DEEPSEEK_MODEL=deepseek-flash`. The application disables thinking for rubric-based JSON grading, limits feedback list sizes and output tokens, and records token/cache usage in server logs. See `DEEPSEEK_SETUP.md` for the full environment-variable set.

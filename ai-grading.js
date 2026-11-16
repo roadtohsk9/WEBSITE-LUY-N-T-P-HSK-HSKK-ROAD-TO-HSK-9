@@ -2,8 +2,12 @@ const https = require('https');
 
 // DeepSeek is server-side only. Never expose DEEPSEEK_API_KEY to the browser.
 function deepseekApiKey(){ return String(process.env.DEEPSEEK_API_KEY || '').trim(); }
-const DEEPSEEK_MODEL = String(process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash').trim();
-const DEEPSEEK_VISION_MODEL = String(process.env.DEEPSEEK_VISION_MODEL || 'deepseek-v4-flash-vision-exp').trim();
+function envInt(name,fallback,min,max){const n=Number(process.env[name]);return Math.max(min,Math.min(max,Number.isFinite(n)&&n>0?n:fallback));}
+const DEEPSEEK_MODEL = String(process.env.DEEPSEEK_MODEL || 'deepseek-flash').trim() || 'deepseek-flash';
+const DEEPSEEK_VISION_MODEL = String(process.env.DEEPSEEK_VISION_MODEL || 'deepseek-flash').trim() || 'deepseek-flash';
+const WRITING_MAX_TOKENS = envInt('DEEPSEEK_WRITING_MAX_TOKENS',8000,3500,10000);
+const SPEAKING_MAX_TOKENS = envInt('DEEPSEEK_SPEAKING_MAX_TOKENS',5200,2500,7000);
+const REPAIR_MAX_TOKENS = envInt('DEEPSEEK_REPAIR_MAX_TOKENS',4500,2000,7000);
 const AI_REQUEST_TIMEOUT_MS = Math.max(15000, Number(process.env.DEEPSEEK_TIMEOUT_MS || 120000));
 
 function roundHalf(n){ return Math.round(Number(n || 0) * 2) / 2; }
@@ -34,21 +38,26 @@ function extractText(data){
   return data?.choices?.[0]?.message?.content || '';
 }
 
-function schemaInstruction(schema){
-  return `Return ONLY one valid JSON object. No markdown fences and no commentary. It must follow this schema exactly:\n${JSON.stringify(schema)}`;
-}
+const writingOutputContract = `JSON only. Keep these keys and use concise, evidence-based Vietnamese feedback; English examples remain English.
+{"task1":{"criteria":{"task_achievement":0,"coherence_cohesion":0,"lexical_resource":0,"grammar":0},"summary":"","strengths":[],"improvements":[],"improvement_plan":[],"vocabulary_upgrades":[],"errors":[{"original":"","corrected":"","error_type":"","explanation":"","better_option":"","context":"","rule":""}],"paragraph_analysis":[{"paragraph":1,"excerpt":"","summary":"","grammar_errors":[{"original":"","corrected":"","location":"","rule":"","explanation":""}],"vocabulary_notes":[],"cohesion_notes":[],"next_step":""}],"revised_excerpt":"","band_upgrade_plan":[]},"task2":{"criteria":{"task_response":0,"coherence_cohesion":0,"lexical_resource":0,"grammar":0},"summary":"","strengths":[],"improvements":[],"improvement_plan":[],"vocabulary_upgrades":[],"errors":[],"paragraph_analysis":[],"revised_excerpt":"","band_upgrade_plan":[]},"examiner_summary":"","priority_fixes":[],"style_flags":[]}`;
+const speakingOutputContract = `JSON only. Use Vietnamese explanations and English examples. Keep every field concise and evidence-based.
+{"criteria":{"fluency_coherence":0,"lexical_resource":0,"grammar":0,"pronunciation":0},"part_feedback":[{"part":1,"summary":"","strengths":[],"improvements":[],"transcript":""}],"pronunciation_issues":[],"detailed_corrections":[{"original":"","improved":"","reason":"","category":"","context":"","rule":""}],"upgraded_response":"","action_plan":[],"examiner_summary":"","priority_fixes":[]}`;
 
 function callDeepSeekOnce(payload, model){
   const key=deepseekApiKey();
   if(!key) return Promise.reject(new Error('DEEPSEEK_API_KEY is not configured on the server.'));
   const url='https://api.deepseek.com/chat/completions';
   return new Promise((resolve,reject)=>{
-    const body=JSON.stringify({...payload,model:model||DEEPSEEK_MODEL});
+    const body=JSON.stringify({...payload,model:model||DEEPSEEK_MODEL,thinking:{type:'disabled'}});
     const req=https.request(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`}},res=>{
       let data=''; res.on('data',c=>data+=c);
       res.on('end',()=>{
         try{
           const j=JSON.parse(data);
+          if(res.statusCode>=200&&res.statusCode<300&&j?.usage){
+            const u=j.usage, details=u.prompt_tokens_details||{}, out=u.completion_tokens_details||{};
+            console.info('[DEEPSEEK_TOKEN_USAGE]',JSON.stringify({model:j.model||model||DEEPSEEK_MODEL,input:u.prompt_tokens||0,output:u.completion_tokens||0,total:u.total_tokens||0,cacheHit:u.prompt_cache_hit_tokens??details.cached_tokens??0,cacheMiss:u.prompt_cache_miss_tokens??Math.max(0,(u.prompt_tokens||0)-(u.prompt_cache_hit_tokens??details.cached_tokens??0)),reasoning:out.reasoning_tokens||0}));
+          }
           if(res.statusCode<200||res.statusCode>=300){
             const msg=j?.error?.message||`DeepSeek API ${res.statusCode}`;
             const e=new Error(msg); e.httpStatus=res.statusCode; e.deepseekResponse=j; return reject(e);
@@ -111,7 +120,7 @@ async function repairModelJson(raw,schema,model){
   const data=await callDeepSeek({messages:[
     {role:'system',content:'You are a JSON repair service. Output only valid JSON.'},
     {role:'user',content:repairPrompt}
-  ],response_format:{type:'json_object'},temperature:0,max_tokens:16000},model);
+  ],response_format:{type:'json_object'},temperature:0,max_tokens:REPAIR_MAX_TOKENS},model);
   return parseModelJson(extractText(data));
 }
 
@@ -128,7 +137,8 @@ PARAGRAPH-BY-PARAGRAPH REVIEW: split each student's Task 1 and Task 2 answer int
 
 TEACHING DEPTH: For every major weakness, explain WHAT is wrong, WHY it matters for IELTS, HOW to fix it, and WHEN to use the corrected form. Give short examples when helpful. Include strengths, high-impact improvements, vocabulary upgrades with Vietnamese meaning + usage context, a practical improvement plan, a band-upgrade plan and a revised excerpt preserving the student's meaning. Be a demanding IELTS teacher, not a friendly score generator.
 
-${schemaInstruction(writingSchema)}
+${writingOutputContract}
+LIMITS: strengths <=3; improvements <=5; errors <=12 for Task 1 and <=16 for Task 2; paragraph_analysis must cover each real paragraph (normally <=6 per task); <=3 grammar errors per paragraph; <=5 vocabulary upgrades; <=4 improvement and band-plan items. Never invent errors.
 
 TASK 1 PROMPT:\n${task1Prompt}\n\nTASK 1 WORD COUNT: ${task1Words}\nTASK 1 ANSWER:\n${task1Answer||'(no answer)'}\n\nTASK 2 PROMPT:\n${task2Prompt}\n\nTASK 2 WORD COUNT: ${task2Words}\nTASK 2 ANSWER:\n${task2Answer||'(no answer)'}`;
 }
@@ -142,20 +152,20 @@ async function gradeWriting(input){
   addImagePart(content,input.taskImages?.task2,'Task 2 prompt image');
   const hasImage=content.some(x=>x.type==='image_url');
   const model=hasImage?DEEPSEEK_VISION_MODEL:DEEPSEEK_MODEL;
-  const payload={messages:[{role:'user',content}],response_format:{type:'json_object'},temperature:0.1,max_tokens:16000};
+  const payload={messages:[{role:'user',content}],response_format:{type:'json_object'},temperature:0.1,max_tokens:WRITING_MAX_TOKENS};
   let data;
   try{data=await callDeepSeek(payload,model);}catch(err){
     if(hasImage){
       // If the experimental vision endpoint is unavailable, preserve the grading flow by retrying text-only.
       const textOnly=[{type:'text',text:buildWritingPrompt(input)+`\n\nThe reference images could not be processed. Judge from the prompt text only and explicitly mention any visual limitation in examiner_summary.`}];
-      data=await callDeepSeek({messages:[{role:'user',content:textOnly}],response_format:{type:'json_object'},temperature:0.1,max_tokens:16000},DEEPSEEK_MODEL);
+      data=await callDeepSeek({messages:[{role:'user',content:textOnly}],response_format:{type:'json_object'},temperature:0.1,max_tokens:WRITING_MAX_TOKENS},DEEPSEEK_MODEL);
     }else throw err;
   }
   const text=extractText(data); let parsed; try{parsed=parseModelJson(text)}catch(err){ parsed=await repairModelJson(err.rawModelOutput||text,writingSchema,model); }
   const t1=parsed.task1.criteria,t2=parsed.task2.criteria;
   const t1Avg=(t1.task_achievement+t1.coherence_cohesion+t1.lexical_resource+t1.grammar)/4;
   const t2Avg=(t2.task_response+t2.coherence_cohesion+t2.lexical_resource+t2.grammar)/4;
-  parsed.task1.band=clampBand(t1Avg);parsed.task2.band=clampBand(t2Avg);parsed.overallBand=clampBand((t1Avg+2*t2Avg)/3);parsed.weighting='Task 2 carries twice the weight of Task 1.';parsed.model=model;return parsed;
+  parsed.task1.band=clampBand(t1Avg);parsed.task2.band=clampBand(t2Avg);parsed.overallBand=clampBand((t1Avg+2*t2Avg)/3);parsed.weighting='Task 2 carries twice the weight of Task 1.';delete parsed.model;return parsed;
 }
 
 function buildSpeakingPrompt(items){
@@ -163,19 +173,20 @@ function buildSpeakingPrompt(items){
 
 LANGUAGE OF FEEDBACK: Write ALL explanatory feedback in natural, clear VIETNAMESE. Keep transcript, original English phrases, improved English phrases, and upgraded responses in ENGLISH. Pronunciation explanations may use Vietnamese.
 
-STRICT CALIBRATION: whole or half bands only. Look for hesitation/repetition/self-correction reflected in the transcript, limited development, lexical imprecision/repetition, grammar range and recurring errors. Do not inflate scores. Give exact sentence-level corrections and an upgraded response. For every correction explain WHY, the grammar/lexical LOGIC, the CONTEXT in which the form is natural, and WHEN NOT to use it. Preserve the student's meaning. Return JSON only.\n\n${schemaInstruction(speakingSchema)}\n\n`;
+STRICT CALIBRATION: whole or half bands only. Look for hesitation/repetition/self-correction reflected in the transcript, limited development, lexical imprecision/repetition, grammar range and recurring errors. Do not inflate scores. Give exact sentence-level corrections and an upgraded response. For every correction explain WHY, the grammar/lexical LOGIC, the CONTEXT in which the form is natural, and WHEN NOT to use it. Preserve the student's meaning. Return JSON only.\n\n${speakingOutputContract}
+LIMITS: for each part give <=3 strengths and <=4 improvements; <=12 genuine corrections total; <=5 action steps and <=5 priority fixes. Keep explanations to 1-2 short sentences. Never invent evidence.\n\n`;
   return intro+items.map(i=>`PART ${i.part} · QUESTION:\n${i.question}\nTRANSCRIPT:\n${i.transcript||'(no transcript available)'}\n`).join('\n');
 }
 
 async function gradeSpeaking(items){
   if(!items.length || items.every(i=>!String(i.transcript||'').trim())) throw new Error('DeepSeek Speaking grading needs a browser transcript. Please use Chrome/Edge with microphone permission and record again.');
-  const data=await callDeepSeek({messages:[{role:'user',content:buildSpeakingPrompt(items)}],response_format:{type:'json_object'},temperature:0.1,max_tokens:14000},DEEPSEEK_MODEL);
+  const data=await callDeepSeek({messages:[{role:'user',content:buildSpeakingPrompt(items)}],response_format:{type:'json_object'},temperature:0.1,max_tokens:SPEAKING_MAX_TOKENS},DEEPSEEK_MODEL);
   let parsed; const text=extractText(data); try{parsed=parseModelJson(text)}catch(err){parsed=await repairModelJson(err.rawModelOutput||text,speakingSchema,DEEPSEEK_MODEL);} const c=parsed.criteria;
   const proxy=clampBand((c.fluency_coherence+c.lexical_resource+c.grammar)/3);
   c.pronunciation=proxy;
   parsed.pronunciationProxy=true;
-  parsed.audioLimitation='DeepSeek API is not audio-capable for this grading path. Pronunciation is shown as a provisional proxy based on language performance, not an acoustic pronunciation score. For true pronunciation scoring, an audio-capable examiner is required.';
-  parsed.overallBand=proxy; parsed.model=DEEPSEEK_MODEL;return parsed;
+  parsed.audioLimitation='Lượt chấm này phân tích transcript văn bản, không đo trực tiếp chất lượng âm thanh. Vì vậy, nhận xét về phát âm chỉ là tham khảo và không phải điểm phát âm dựa trên âm học.';
+  parsed.overallBand=proxy; delete parsed.model; return parsed;
 }
 
 module.exports={gradeWriting,gradeSpeaking,isProWriting,isProSpeaking,DEEPSEEK_MODEL};

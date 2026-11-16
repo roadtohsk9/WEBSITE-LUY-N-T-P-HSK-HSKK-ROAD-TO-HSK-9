@@ -1,24 +1,31 @@
-# EIT IELTS — DeepSeek AI setup
+# DeepSeek AI setup – token-efficient configuration
 
-This build uses DeepSeek server-side for IELTS Writing and transcript-based Speaking grading.
+This build uses DeepSeek server-side for Writing, transcript-based Speaking and HSKK transcript assessment. API keys must stay in the hosting environment and must never be placed in browser code or committed to Git.
 
-## Required environment variables
+## Render Environment
 
-Set these in VibeHost (or your Node hosting provider) under Environment Variables:
+Recommended economical defaults:
 
-- `DEEPSEEK_API_KEY` = your DeepSeek API key
-- `DEEPSEEK_MODEL` = `deepseek-v4-flash`
-- `DEEPSEEK_VISION_MODEL` = `deepseek-v4-flash-vision-exp`
+- `DEEPSEEK_API_KEY` = your private API key
+- `DEEPSEEK_MODEL` = `deepseek-flash`
+- `DEEPSEEK_VISION_MODEL` = `deepseek-flash`
+- `HSKK_DEEPSEEK_MODEL` = `deepseek-flash`
+- `DEEPSEEK_WRITING_MAX_TOKENS` = `8000`
+- `DEEPSEEK_SPEAKING_MAX_TOKENS` = `5200`
+- `DEEPSEEK_REPAIR_MAX_TOKENS` = `4500`
+- `HSKK_DEEPSEEK_MAX_TOKENS` = `4200`
 - `DEEPSEEK_TIMEOUT_MS` = `120000`
+- `HSKK_AI_TIMEOUT_MS` = `240000`
 
-Do **not** put the real API key in HTML/JS or commit it to Git. The browser calls only `/api/ai/status` and `/api/submit`; the server calls DeepSeek.
+The source disables thinking mode for structured grading calls, uses concise JSON feedback limits, avoids sending duplicate HSKK exam metadata/transcripts, and logs input/output/cache token counts server-side. DeepSeek context caching is automatic; stable grading instructions are placed before each student's changing answer data to improve cache-prefix reuse.
 
-## Speaking limitation
+## Audio and token billing are different
 
-DeepSeek's current API path used by this build is text/image based, not raw-audio based. The browser therefore captures an English transcript with Web Speech API while recording and DeepSeek grades that transcript. Pronunciation is shown as a clearly labelled provisional proxy, not a true acoustic pronunciation score. Chrome/Edge are recommended for the transcript capture.
+HSKK audio recognition is billed by audio duration, not by chat-model text tokens. The transcript evaluation step is token-billed. Shorter but complete recordings reduce ASR audio time; concise transcripts and bounded feedback reduce text-model tokens. Do not truncate a student's valid answer only to reduce model tokens.
 
 ## Deployment
 
-1. Add the environment variables above.
-2. Redeploy/restart the Node server.
-3. Open `/api/ai/status` while logged in; it should report `configured: true` and `model: deepseek-v4-flash`.
+1. Update the Environment Variables in Render. In particular, change an old `HSKK_DEEPSEEK_MODEL=deepseek-v4-pro` setting to `deepseek-flash`; an existing Render variable takes precedence over source defaults.
+2. Redeploy/restart the service.
+3. Inspect Render logs for `[DEEPSEEK_TOKEN_USAGE]` and `[DEEPSEEK_HSKK_USAGE]`. These report token counts and cache hits without exposing the API key or learner content.
+4. Run one short Writing/Speaking test and one short HSKK test to verify output quality before using the configuration for all learners.
