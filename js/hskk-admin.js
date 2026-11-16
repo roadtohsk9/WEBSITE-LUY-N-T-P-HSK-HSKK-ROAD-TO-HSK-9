@@ -68,13 +68,21 @@
   }
   function renderTask(t,si,ti){
     const opts=Object.entries(taskTypeLabels).map(([v,l])=>`<option value="${v}" ${t.type===v?'selected':''}>${l}</option>`).join('');
+    const audioUrl=String(t.audioUrl||'');
     return `<div class="hskk-task-row" data-task-index="${ti}" style="border:1px solid #e2e8f0;border-radius:12px;background:#fff;padding:12px;margin:10px 0">
       <div class="toolbar"><b>Câu ${ti+1}</b><button type="button" class="btn danger" data-remove-task="${si}-${ti}">Xóa câu</button></div>
       <input type="hidden" class="ht-id" value="${escH(t.id||`q-${si}-${ti}`)}">
       <div class="grid3"><div class="field"><label>Dạng câu</label><select class="select ht-type">${opts}</select></div><div class="field"><label>Thời gian chuẩn bị (giây)</label><input class="input ht-prep" type="number" min="0" max="1800" value="${Number(t.prepSeconds||0)}"></div><div class="field"><label>Thời gian ghi âm (giây)</label><input class="input ht-speak" type="number" min="1" max="900" value="${Number(t.speakSeconds||30)}"></div></div>
       <div class="field"><label>Nội dung / câu hỏi / chủ đề</label><textarea class="textarea ht-text" rows="2" placeholder="Nội dung hiển thị cho học viên (bỏ trống nếu chỉ nghe audio)">${escH(t.text||'')}</textarea></div>
       <div class="field"><label>Văn bản chuẩn để Gemini so sánh (dành cho nghe-nhắc lại / nghe-kể lại)</label><textarea class="textarea ht-reference" rows="2" placeholder="Nhập nguyên văn câu/đoạn audio nếu có; giúp AI nhận diện thiếu/thừa từ chính xác hơn.">${escH(t.referenceText||'')}</textarea></div>
-      <div class="grid3"><div class="field"><label>Audio đề (mp3/wav/m4a/ogg)</label><input class="input ht-audio" value="${escH(t.audioUrl||'')}" placeholder="/uploads/hskk-question.mp3"><input type="file" class="file ht-audio-file" accept=".mp3,.wav,.m4a,.ogg,audio/*" style="margin-top:6px"></div><div class="field"><label>Ảnh đề / tranh</label><input class="input ht-image" value="${escH(t.imageUrl||'')}" placeholder="/uploads/hskk-picture.png"><input type="file" class="file ht-image-file" accept="image/png,image/jpeg,image/webp" style="margin-top:6px"></div><div class="field"><label>Pinyin / ghi chú biên tập</label><input class="input ht-pinyin" value="${escH(t.pinyin||'')}" placeholder="Pinyin (nếu cần)"><input class="input ht-notes" style="margin-top:6px" value="${escH(t.notes||'')}" placeholder="Ghi chú nội bộ"></div></div>
+      <div class="field" style="border:1px solid #bfdbfe;background:#f8fbff;border-radius:10px;padding:12px">
+        <label style="color:#1e40af">Audio của riêng câu ${ti+1} (MP3 / WAV / M4A / OGG / WEBM / AAC / FLAC)</label>
+        <input class="input ht-audio" value="${escH(audioUrl)}" placeholder="Link audio sẽ tự điền sau khi upload">
+        <input type="file" class="file ht-audio-file" accept=".mp3,.wav,.m4a,.ogg,.webm,.aac,.flac,.opus,audio/*" style="margin-top:8px">
+        <div class="ht-audio-status muted" aria-live="polite" style="font-size:12px;margin-top:6px">${audioUrl?'✓ Đã có audio cho câu này.':'Chưa có audio. Chọn file để upload riêng cho câu hỏi này.'}</div>
+        <div class="ht-audio-preview" style="margin-top:8px">${audioUrl?`<audio controls preload="none" style="width:100%" src="${escH(audioUrl)}"></audio>`:''}</div>
+      </div>
+      <div class="grid3" style="margin-top:10px"><div class="field"><label>Ảnh đề / tranh</label><input class="input ht-image" value="${escH(t.imageUrl||'')}" placeholder="/uploads/hskk-picture.png"><input type="file" class="file ht-image-file" accept="image/png,image/jpeg,image/webp" style="margin-top:6px"></div><div class="field"><label>Pinyin / ghi chú biên tập</label><input class="input ht-pinyin" value="${escH(t.pinyin||'')}" placeholder="Pinyin (nếu cần)"><input class="input ht-notes" style="margin-top:6px" value="${escH(t.notes||'')}" placeholder="Ghi chú nội bộ"></div></div>
       <label style="display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700"><input type="checkbox" class="ht-showtext" ${t.showText?'checked':''}> Hiển thị văn bản câu hỏi cho học viên (tắt nếu đề chỉ phát audio)</label>
     </div>`;
   }
@@ -83,6 +91,24 @@
   }
   function reset(){
     $h('hskkExamId').value='';$h('hskkVersion').value='2.0';updateLevelOptions(false);$h('hskkLevel').value='beginner';$h('hskkTestNo').value=1;$h('hskkTitle').value='';$h('hskkDuration').value=17;$h('hskkPrepTotal').value=7;$h('hskkDescription').value='';$h('hskkPublished').checked=true;$h('hskkSaveMsg').textContent='';renderSections({sections:[]});
+  }
+  function createAdvancedCustom(){
+    if(editor().querySelector('.hskk-section-row') && !confirm('Tạo đề tùy chỉnh mới? Nội dung đang soạn sẽ được thay thế.'))return;
+    $h('hskkExamId').value='';
+    $h('hskkVersion').value='2.0';updateLevelOptions(false);
+    $h('hskkLevel').value='advanced';
+    $h('hskkTestNo').value=1;
+    $h('hskkTitle').value='HSKK 高级 · Custom Practice Test 01';
+    $h('hskkDuration').value=24;$h('hskkPrepTotal').value=10;
+    $h('hskkDescription').value='Đề HSKK cao cấp tùy chỉnh. Admin tự thiết kế số phần, dạng câu, thời lượng và audio riêng từng câu.';
+    $h('hskkPublished').checked=false;
+    renderSections({sections:[{
+      id:'sec-1',title:'第一部分 · 听后复述',
+      instruction:'Nghe đoạn audio; sau đó thuật lại nội dung bằng tiếng Trung theo thời gian đã thiết lập.',
+      tasks:[task('listen_recall',1,0,120,'')]
+    }]});
+    $h('hskkSaveMsg').textContent='Đã tạo khung đề cao cấp tùy chỉnh ở trạng thái nháp. Bạn có thể thêm/xóa phần và câu theo ý muốn.';
+    $h('hskk')?.scrollIntoView({behavior:'smooth',block:'start'});
   }
   function defaultDuration(v,l){return v==='2.0'?(l==='beginner'?17:l==='intermediate'?21:24):(l==='3'?20:l==='4'?23:25)}
   async function checkGemini(){
@@ -107,6 +133,7 @@
 
   $h('hskkVersion')?.addEventListener('change',()=>updateLevelOptions(false));
   $h('hskkLevel')?.addEventListener('change',()=>{const v=$h('hskkVersion').value,l=$h('hskkLevel').value;$h('hskkDuration').value=defaultDuration(v,l);$h('hskkPrepTotal').value=v==='2.0'?(l==='beginner'?7:10):(l==='3'?7:10)});
+  $h('hskkCreateCustom')?.addEventListener('click',createAdvancedCustom);
   $h('hskkApplyTemplate')?.addEventListener('click',()=>{if(editor().querySelector('.hskk-section-row')&&!confirm('Thay thế toàn bộ nội dung đang soạn bằng cấu trúc mẫu?'))return;const v=$h('hskkVersion').value,l=$h('hskkLevel').value;renderSections(template(v,l));$h('hskkDuration').value=defaultDuration(v,l);$h('hskkPrepTotal').value=v==='2.0'?(l==='beginner'?7:10):(l==='3'?7:10);if(!$h('hskkTitle').value)$h('hskkTitle').value=`${levelLabel(v,l)} · Practice Test ${String($h('hskkTestNo').value||1).padStart(2,'0')}`});
   $h('hskkAddSection')?.addEventListener('click',()=>{const s=collectSections();s.push({title:`Phần ${s.length+1}`,instruction:'',tasks:[task('question',1,0,60,'')]});renderSections({sections:s})});
   editor()?.addEventListener('click',e=>{
@@ -114,10 +141,54 @@
     const add=e.target.closest('[data-add-task]');if(add){const s=collectSections(),i=Number(add.dataset.addTask);s[i].tasks.push(task('question',s[i].tasks.length+1,0,60,''));renderSections({sections:s});return}
     const rm=e.target.closest('[data-remove-task]');if(rm){const [si,ti]=rm.dataset.removeTask.split('-').map(Number);const s=collectSections();s[si].tasks.splice(ti,1);renderSections({sections:s});}
   });
+  function uploadHskkAudio(file,row,input){
+    return new Promise((resolve,reject)=>{
+      const status=row.querySelector('.ht-audio-status');
+      const target=row.querySelector('.ht-audio');
+      const preview=row.querySelector('.ht-audio-preview');
+      if(file.size<=0){reject(new Error('File audio đang trống.'));return}
+      if(file.size>80*1024*1024){reject(new Error('Audio vượt giới hạn 80 MB. Hãy nén audio hoặc giảm bitrate rồi upload lại.'));return}
+      const fd=new FormData();fd.append('audio',file,file.name);
+      const xhr=new XMLHttpRequest();
+      xhr.open('POST','/api/admin/hskk/upload-audio',true);
+      xhr.setRequestHeader('Authorization','Bearer '+(localStorage.getItem('eitAdminToken')||''));
+      xhr.timeout=180000;
+      input.disabled=true;
+      if(status)status.textContent='Đang tải audio lên máy chủ… 0%';
+      xhr.upload.onprogress=e=>{if(e.lengthComputable&&status)status.textContent=`Đang tải audio lên máy chủ… ${Math.round(e.loaded/e.total*100)}%`};
+      xhr.onerror=()=>reject(new Error('Không kết nối được máy chủ upload. Kiểm tra mạng và thử lại.'));
+      xhr.ontimeout=()=>reject(new Error('Upload quá thời gian chờ. Hãy thử file nhỏ hơn.'));
+      xhr.onload=()=>{
+        let data={};try{data=JSON.parse(xhr.responseText||'{}')}catch{}
+        if(xhr.status<200||xhr.status>=300||!data.ok||!data.url){
+          reject(new Error(data.message||`Máy chủ từ chối upload (HTTP ${xhr.status}).`));return;
+        }
+        target.value=data.url;
+        if(preview)preview.innerHTML=`<audio controls preload="none" style="width:100%" src="${escH(data.url)}"></audio>`;
+        if(status)status.textContent=`✓ Upload thành công: ${escH(data.filename||file.name)} · ${(Number(data.size||file.size)/1024/1024).toFixed(2)} MB`;
+        resolve(data);
+      };
+      xhr.onloadend=()=>{input.disabled=false;input.value=''};
+      xhr.send(fd);
+    });
+  }
   editor()?.addEventListener('change',async e=>{
     const input=e.target.closest('.ht-audio-file,.ht-image-file');if(!input||!input.files?.[0])return;
-    const row=input.closest('.hskk-task-row');const isAudio=input.classList.contains('ht-audio-file');const target=row.querySelector(isAudio?'.ht-audio':'.ht-image');
-    try{const fd=new FormData();fd.append(isAudio?'audio':'file',input.files[0]);const d=await api('/admin/asset/upload',{method:'POST',body:fd});target.value=d.url;input.insertAdjacentHTML('afterend',`<small class="muted">Đã upload: ${escH(d.filename)}</small>`)}catch(err){alert('Upload thất bại: '+err.message)}finally{input.value=''}
+    const row=input.closest('.hskk-task-row');const isAudio=input.classList.contains('ht-audio-file');
+    if(isAudio){
+      const status=row.querySelector('.ht-audio-status');
+      try{await uploadHskkAudio(input.files[0],row,input)}
+      catch(err){if(status)status.textContent='✕ Upload thất bại: '+err.message;alert('Upload audio thất bại: '+err.message)}
+      finally{input.disabled=false;input.value=''}
+      return;
+    }
+    const target=row.querySelector('.ht-image');
+    try{
+      const fd=new FormData();fd.append('file',input.files[0],input.files[0].name);
+      const d=await api('/admin/asset/upload',{method:'POST',body:fd});
+      target.value=d.url;input.insertAdjacentHTML('afterend',`<small class="muted">Đã upload: ${escH(d.filename)}</small>`);
+    }catch(err){alert('Upload ảnh thất bại: '+err.message)}
+    finally{input.value=''}
   });
   $h('hskkExamForm')?.addEventListener('submit',async e=>{
     e.preventDefault();const msg=$h('hskkSaveMsg');msg.textContent='Đang lưu…';
