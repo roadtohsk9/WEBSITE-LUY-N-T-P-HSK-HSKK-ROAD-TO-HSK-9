@@ -4,7 +4,7 @@
 
 - Trang học viên: `/hskk.html` để chọn HSKK 2.0 hoặc HSK 3.0 Speaking, sau đó chọn cấp và đề đã xuất bản.
 - Trang làm bài: `/hskk-test.html?examId=...`; phát audio / hiển thị tranh / câu hỏi, đếm thời gian chuẩn bị, tự ghi âm trong thời gian trả lời và chuyển câu.
-- Trang kết quả: `/hskk-result.html?id=...`; phân chia feedback Gemini theo tab: Tổng quan, Phát âm, Độ trôi chảy, Logic & ý tưởng, Ngôn ngữ, Từng câu, Kế hoạch cải thiện.
+- Trang kết quả: `/hskk-result.html?id=...`; phân chia feedback AI chấm theo tab: Tổng quan, Phát âm, Độ trôi chảy, Logic & ý tưởng, Ngôn ngữ, Từng câu, Kế hoạch cải thiện.
 - Admin: tab `HSKK 2.0 / 3.0` trong `/admin/`; với HSKK 2.0 cao cấp có nút `Tạo đề HSKK cao cấp tùy chỉnh`, cho phép tự thêm/xóa phần, thêm/xóa câu, đổi dạng câu, đặt thời gian và upload audio riêng tại từng câu. Có thể lưu nháp trước khi publish.
 - PostgreSQL: hai bảng `hskk_exams` và `hskk_attempts` được tạo tự động khi server khởi động.
 
@@ -40,7 +40,7 @@ Template tạo cấu trúc luyện tập ban đầu. Trước khi publish, Admin
 2. Mở tab `HSKK 2.0 / 3.0`.
 3. Chọn phiên bản và cấp độ; kiểm tra số đề, thời lượng.
 4. Chọn `Tạo cấu trúc mẫu theo phiên bản / cấp độ`.
-5. Với từng câu 听后重复 / 听后回答 / 听后复述: chọn file trong khung `Audio của riêng câu ...`; upload có thanh tiến trình và phát thử ngay tại Admin. File audio được lưu URL riêng trong đúng câu hỏi, không dùng chung một audio cho toàn đề. Có thể nhập `Văn bản chuẩn để Gemini so sánh` nếu có transcript chính xác.
+5. Với từng câu 听后重复 / 听后回答 / 听后复述: chọn file trong khung `Audio của riêng câu ...`; upload có thanh tiến trình và phát thử ngay tại Admin. File audio được lưu URL riêng trong đúng câu hỏi, không dùng chung một audio cho toàn đề. Có thể nhập `Văn bản chuẩn để AI đối chiếu` nếu có transcript chính xác.
 6. Với 看图说话: tải ảnh đề / tranh lên.
 7. Với 回答问题 / 朗读: nhập văn bản câu hỏi hoặc đoạn đọc và chọn hiển thị cho học viên.
 8. Điều chỉnh `Thời gian chuẩn bị` và `Thời gian ghi âm` cho từng câu.
@@ -54,17 +54,18 @@ Các loại tác vụ hỗ trợ:
 - `回答问题`: đọc/nghe câu hỏi, chuẩn bị nếu cần, sau đó ghi âm.
 - `朗读`: đọc văn bản hiển thị và ghi âm.
 
-## 4. Google Gemini trên Render
+## 4. Cấu hình AI chấm trên Render
 
 Trong Render → Web Service → Environment, thêm:
 
-- `GEMINI_API_KEY`: API key do quản trị viên tạo trong Google AI Studio.
-- `GEMINI_MODEL`: `gemini-3.8-flash` (có thể bỏ qua vì đây là mặc định trong code).
-- `GEMINI_TIMEOUT_MS`: `180000` (tùy chọn).
+- `DEEPSEEK_API_KEY`: khóa dịch vụ AI được dùng phía máy chủ.
+- `HSKK_DEEPSEEK_MODEL`: `deepseek-flash` (hoặc giữ giá trị bạn đã cấu hình).
+- `HSKK_DEEPSEEK_MAX_TOKENS`: giới hạn token đầu ra cho chấm HSKK.
+- `DEEPSEEK_WRITING_MAX_TOKENS`: giới hạn token đầu ra cho chấm HSK Writing.
 
-Sau đó Save Changes và deploy lại. API key chỉ được giữ phía server, không đặt trong HTML, JavaScript công khai hoặc repository. Admin có thể mở tab HSKK để xem trạng thái cấu hình Gemini.
+Sau đó Save Changes và deploy lại. API key chỉ được giữ phía server, không đặt trong HTML, JavaScript công khai hoặc repository. Admin có thể mở tab HSKK để xem trạng thái cấu hình AI chấm.
 
-Gemini nhận các file ghi âm ở định dạng WebM/Opus của trình duyệt hoặc các định dạng audio được hỗ trợ, phân tích lời nói trực tiếp và trả JSON cho giao diện feedback. Google công bố Gemini audio understanding hỗ trợ WebM, WAV, MP3, M4A, OGG và một số định dạng khác. Luồng hiện tại dùng dữ liệu audio nội tuyến và giới hạn tổng audio gốc ở 12 MB/lượt để giữ payload an toàn dưới ngưỡng 20 MB của inline audio; bitrate ghi âm đặt ở 64 kbps. Nếu bài có tổng audio vượt giới hạn, cần tách thành các đề/lượt luyện ngắn hơn hoặc nâng cấp luồng sang Gemini Files API.
+Trình duyệt ghi âm, chuẩn hóa dữ liệu thành WAV PCM 16-bit mono 16 kHz và chia thành các đoạn ngắn. Backend nhận dạng audio thành transcript, sau đó AI phân tích transcript, câu hỏi và văn bản tham chiếu (nếu có). Hệ thống không gửi khóa API ra trình duyệt; giới hạn kích thước audio được kiểm tra ở cả client và server. Điểm HSKK hiện phản ánh nội dung transcript, không thay thế đánh giá trực tiếp về phát âm và thanh điệu.
 
 ## 5. Luồng thi và quyền micro
 
@@ -73,7 +74,7 @@ Gemini nhận các file ghi âm ở định dạng WebM/Opus của trình duyệ
 3. Học viên bấm Bắt đầu; trình duyệt hiện lời nhắc cấp quyền micro. Phải cho phép quyền này.
 4. Với câu có audio, thời gian chuẩn bị bắt đầu đếm ngay tại sự kiện audio thực sự phát. Audio kết thúc và đồng hồ chuẩn bị về 00:00 (điều kiện nào đến sau) thì đồng hồ trả lời bắt đầu và MediaRecorder tự ghi âm. Nếu câu không có audio, đồng hồ chuẩn bị bắt đầu ngay khi câu hỏi hiển thị.
 5. Khi đồng hồ về 00:00, bản ghi của câu được lưu tạm trong trình duyệt và hệ thống chuyển sang câu kế tiếp.
-6. Sau câu cuối, các bản ghi gửi đến backend và Gemini. Kết quả được lưu trong `hskk_attempts` và mở ở trang feedback.
+6. Sau câu cuối, các bản ghi gửi đến backend để nhận dạng và AI chấm. Kết quả được lưu trong `hskk_attempts` và mở ở trang feedback.
 
 Mic chỉ được phép bật sau thao tác bắt đầu rõ ràng và quyền trình duyệt; website không ghi âm âm thầm. Nên sử dụng HTTPS (Render deploy mặc định có HTTPS), Chrome hoặc Edge mới và kiểm tra quyền micro của website.
 
@@ -87,11 +88,11 @@ Feedback chia theo từng tab, gồm: điểm tổng quan; phát âm / thanh đi
 - Trong Admin tạo một đề thử ngắn 1–2 câu, gắn audio / ảnh và để ở trạng thái nháp trước khi publish.
 - Publish đề thử, đăng nhập một tài khoản học viên và làm bài trên HTTPS.
 - Kiểm tra đồng hồ chuẩn bị bắt đầu ngay khi audio phát, tiếp tục chạy nếu audio kết thúc trước; micro tự ghi âm khi cả audio và thời gian chuẩn bị đã hoàn tất.
-- Nộp bài, kiểm tra Gemini status và tab feedback; kiểm tra Admin → HSKK → Bài nói đã nộp.
+- Nộp bài, kiểm tra trạng thái AI chấm và tab feedback; kiểm tra Admin → HSKK → Bài nói đã nộp.
 
 ## 8. Dữ liệu và quyền riêng tư
 
-Ứng dụng lưu thông tin lượt thi, metadata bản ghi và feedback trong PostgreSQL; file audio không được lưu thành file phát lại trong hồ sơ học viên bởi luồng này, nhưng được truyền tới Google Gemini để phân tích. Cần công bố mục đích xử lý, bên nhận dữ liệu, thời hạn lưu, cách yêu cầu xóa và xin sự đồng ý phù hợp trước khi cho người học sử dụng; đặc biệt lưu ý nếu người dùng là trẻ vị thành niên. Hãy rà soát chính sách Google API và yêu cầu pháp lý tại nơi website phục vụ trước khi mở cho người dùng thật.
+Ứng dụng lưu thông tin lượt thi, metadata bản ghi và feedback trong PostgreSQL; file audio không được lưu thành file phát lại trong hồ sơ học viên bởi luồng này, nhưng được được gửi tới dịch vụ nhận dạng giọng nói bên ngoài và transcript được dùng cho AI chấm. Cần công bố mục đích xử lý, bên nhận dữ liệu, thời hạn lưu, cách yêu cầu xóa và xin sự đồng ý phù hợp trước khi cho người học sử dụng; đặc biệt lưu ý nếu người dùng là trẻ vị thành niên. Hãy rà soát chính sách Google API và yêu cầu pháp lý tại nơi website phục vụ trước khi mở cho người dùng thật.
 
 
 ## 9. Tạo đề HSKK cao cấp tùy chỉnh và upload audio từng câu

@@ -33,7 +33,7 @@ Hệ thống phân tích dựa trên transcript được nhận dạng từ audi
 
 Trong thời gian xử lý, trang kết quả chỉ hiển thị:
 
-**“Đang phân tích và chấm điểm”**
+**“AI đang chấm bài”**
 
 Kèm vòng tròn xoay và thông báo bài làm đang được nhận dạng, đối chiếu với đề và tạo feedback. Giao diện không hiển thị tên nhà cung cấp hay tên mô hình.
 

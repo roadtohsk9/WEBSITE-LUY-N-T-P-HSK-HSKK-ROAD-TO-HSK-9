@@ -37,7 +37,7 @@ Giải nén ZIP patch vào thư mục gốc GitHub repository, ghi đè theo đ�
 - `js/hskk-admin.js`
 - `server.js`
 
-Sau đó Commit changes và chờ Render deploy. Không thay `hskk.html`, `hskk-test.html`, `hskk-result.html` hoặc `hskk-gemini.js` trong bản patch này.
+Sau đó Commit changes và chờ Render deploy. Không thay `hskk.html`, `hskk-test.html`, `hskk-result.html` hoặc `hskk-deepseek.js` trong bản patch này.
 
 ## Cách sử dụng trong Admin
 

@@ -30,4 +30,4 @@ Nền tảng luyện thi HSK 3–6 với kho đề Reading/Listening và bộ qu
 
 ## HSKK / HSK 3.0 Speaking
 
-See `HSKK_MODULE_SETUP_VI.md` for admin publishing, microphone recording, Gemini configuration, and test steps. Candidate entry: `/hskk.html`; Admin tab: `HSKK 2.0 / 3.0`.
+See `HSKK_MODULE_SETUP_VI.md` for admin publishing, microphone recording, AI grading configuration, and test steps. Candidate entry: `/hskk.html`; Admin tab: `HSKK 2.0 / 3.0`.

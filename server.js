@@ -6,8 +6,9 @@ const Busboy = require('busboy');
 const AdmZip = require('adm-zip');
 const { URL } = require('url');
 const { Pool } = require('pg');
-const { gradeWriting, gradeSpeaking, isProWriting, isProSpeaking, DEEPSEEK_MODEL } = require('./ai-grading');
-const { gradeHskkWithGemini, GEMINI_MODEL, isGeminiConfigured } = require('./hskk-gemini');
+const { gradeWriting, gradeSpeaking, isProWriting, isProSpeaking } = require('./ai-grading');
+const { gradeHskkWithDeepSeek, isDeepSeekConfigured: isHskkAiConfigured } = require('./hskk-deepseek');
+const { gradeHskWriting, gradeHskTranslation } = require('./hsk-writing-grading');
 
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT || 3000);
@@ -841,8 +842,8 @@ async function api(req,res,url){
   }
 
   if(url.pathname==='/api/health' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} return json(res,200,{ok:true,service:'HSK Exam API',database:!!pool}); }
-  if(url.pathname==='/api/ai/status' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} const keyConfigured=!!String(process.env.DEEPSEEK_API_KEY||'').trim(); return json(res,200,{ok:true,configured:keyConfigured,model:DEEPSEEK_MODEL,serverSideKey:keyConfigured,writesToDatabase:!!pool}); }
-  if(url.pathname==='/api/hskk/ai-status' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} return json(res,200,{ok:true,configured:isGeminiConfigured(),model:GEMINI_MODEL,provider:'Google Gemini'}); }
+  if(url.pathname==='/api/ai/status' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} const keyConfigured=!!String(process.env.DEEPSEEK_API_KEY||'').trim(); return json(res,200,{ok:true,configured:keyConfigured,service:'AI',serverSideKey:keyConfigured,writesToDatabase:!!pool}); }
+  if(url.pathname==='/api/hskk/ai-status' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} return json(res,200,{ok:true,configured:isHskkAiConfigured(),service:'AI'}); }
 
   if(url.pathname==='/api/hskk/exams' && req.method==='GET'){
     const version=String(url.searchParams.get('version')||'').trim();
@@ -877,28 +878,36 @@ async function api(req,res,url){
     let bytes=0; const meta=[];
     for(const r of recordings){
       const task=taskMap.get(String(r.taskId||'')); if(!task)return json(res,400,{ok:false,message:'Bài ghi âm chứa mã câu hỏi không hợp lệ.'});
-      const audio=String(r.audio||'').replace(/^data:[^,]*;base64,/,'');
-      if(!audio||!/^[A-Za-z0-9+/=]+$/.test(audio))return json(res,400,{ok:false,message:'Có bản ghi âm không hợp lệ.'});
-      bytes+=Math.floor(audio.length*3/4);
-      meta.push({taskId:String(task.id),sectionTitle:taskMap.get(String(task.id)).sectionTitle,taskType:String(task.type||''),question:String(task.text||''),referenceText:String(task.referenceText||''),mime:String(r.mime||'audio/webm'),durationSeconds:Number(r.durationSeconds||0)});
+      const segments=Array.isArray(r.segments)?r.segments:[];
+      if(!segments.length)return json(res,400,{ok:false,message:'Một câu trả lời chưa có bản ghi âm đã chuẩn hóa. Hãy tải lại trang thi và làm lại.'});
+      for(const segment of segments){
+        const audio=String(segment?.audio||'');
+        const match=audio.match(/^data:audio\/wav;base64,([A-Za-z0-9+/=]+)$/i);
+        if(!match)return json(res,400,{ok:false,message:'Định dạng audio không hợp lệ. Hãy tải lại trang thi và ghi âm lại.'});
+        const segmentBytes=Math.floor(match[1].length*3/4);
+        if(segmentBytes>8*1024*1024)return json(res,413,{ok:false,message:'Một đoạn ghi âm vượt giới hạn cho phép. Hãy thử lại với thời lượng ngắn hơn.'});
+        if(Number(segment.durationSeconds||0)>111)return json(res,400,{ok:false,message:'Một đoạn ghi âm quá dài. Hãy tải lại trang thi và thực hiện lại.'});
+        bytes+=segmentBytes;
+      }
+      meta.push({taskId:String(task.id),sectionTitle:String(task.sectionTitle||''),taskType:String(task.type||''),question:String(task.text||''),durationSeconds:segments.reduce((n,x)=>n+Math.max(0,Number(x.durationSeconds||0)),0)});
     }
-    if(bytes>12*1024*1024)return json(res,413,{ok:false,message:'Tổng dung lượng bản ghi vượt 12 MB. Hãy giảm thời lượng hoặc chia bài thi thành các lượt luyện ngắn hơn.'});
+    if(bytes>12*1024*1024)return json(res,413,{ok:false,message:'Tổng dung lượng ghi âm vượt giới hạn chấm trong một lượt. Hãy giảm thời lượng hoặc chia thành các lượt luyện ngắn hơn.'});
     const submittedIds=new Set(recordings.map(r=>String(r.taskId||'')));
     if(submittedIds.size!==taskMap.size || [...taskMap.keys()].some(taskId=>!submittedIds.has(taskId)))return json(res,400,{ok:false,message:'Bài nộp chưa có bản ghi của tất cả câu hỏi hoặc có câu bị ghi lặp. Vui lòng thi lại để đảm bảo đủ dữ liệu chấm.'});
     const id=crypto.randomUUID();
     await dbQuery(`INSERT INTO hskk_attempts(id,user_id,exam_id,student_name,candidate_code,recordings,status) VALUES($1,$2,$3,$4,$5,$6::jsonb,'pending')`,[id,u.id,examId,u.full_name||'',u.registration_id||u.eit_code||'',JSON.stringify(meta)]);
-    const geminiRecordings=recordings.map(r=>({...r,sectionTitle:taskMap.get(String(r.taskId||''))?.sectionTitle||'',taskType:taskMap.get(String(r.taskId||''))?.type||'',question:taskMap.get(String(r.taskId||''))?.text||'',referenceText:taskMap.get(String(r.taskId||''))?.referenceText||'',prepSeconds:taskMap.get(String(r.taskId||''))?.prepSeconds||0,answerSeconds:taskMap.get(String(r.taskId||''))?.speakSeconds||0}));
+    const aiRecordings=recordings.map(r=>({...r,sectionTitle:taskMap.get(String(r.taskId||''))?.sectionTitle||'',taskType:taskMap.get(String(r.taskId||''))?.type||'',question:taskMap.get(String(r.taskId||''))?.text||'',referenceText:taskMap.get(String(r.taskId||''))?.referenceText||''}));
     setImmediate(async()=>{
       try{
-        const feedback=await gradeHskkWithGemini({exam,recordings:geminiRecordings});
+        const feedback=await gradeHskkWithDeepSeek({exam,recordings:aiRecordings});
         await dbQuery(`UPDATE hskk_attempts SET total_score=$1,feedback=$2::jsonb,status='completed',error_message='',updated_at=NOW() WHERE id=$3`,[Number(feedback.totalScore||0),JSON.stringify(feedback),id]);
       }catch(err){
-        console.error('HSKK Gemini grading failed:',err);
-        try{await dbQuery(`UPDATE hskk_attempts SET status='failed',error_message=$1,updated_at=NOW() WHERE id=$2`,[String(err.message||'Gemini grading failed'),id]);}
+        console.error('HSKK AI grading failed:',err);
+        try{await dbQuery(`UPDATE hskk_attempts SET status='failed',error_message=$1,updated_at=NOW() WHERE id=$2`,['AI_GRADING_FAILED',id]);}
         catch(dbErr){console.error('HSKK failure status update failed:',dbErr);}
       }
     });
-    return json(res,202,{ok:true,id,status:'pending',ai:{available:isGeminiConfigured(),model:GEMINI_MODEL},message:'Đã nhận bài. Gemini đang phân tích; trang kết quả sẽ tự cập nhật khi hoàn tất.'});
+    return json(res,202,{ok:true,id,status:'pending',ai:{available:isHskkAiConfigured(),label:'AI chấm'},message:'Đã nhận bài. AI đang xử lý; trang kết quả sẽ tự cập nhật khi hoàn tất.'});
   }
   if(url.pathname.match(/^\/api\/hskk\/result\/[0-9a-f-]+$/i) && req.method==='GET'){
     const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Phiên đăng nhập đã hết hạn.'});
@@ -1495,15 +1504,22 @@ async function api(req,res,url){
   if(url.pathname.match(/^\/api\/ai\/review\/[0-9a-f-]+$/i) && req.method==='GET'){
     const u=candidate(req); if(!u)return json(res,401,{ok:false,message:'Candidate session expired. Please log in again.'});
     const id=url.pathname.split('/').pop();
-    const row=(await dbQuery(`SELECT r.*,s.user_id,s.test_title,s.skill,s.submitted_at FROM ai_skill_reviews r JOIN submissions s ON s.id=r.submission_id WHERE r.submission_id=$1`,[id])).rows[0];
+    const row=(await dbQuery(`SELECT r.*,s.user_id,s.test_id,s.test_title,s.skill,s.submitted_at FROM ai_skill_reviews r JOIN submissions s ON s.id=r.submission_id WHERE r.submission_id=$1`,[id])).rows[0];
     if(!row || String(row.user_id)!==String(u.id)) return json(res,404,{ok:false,message:'AI review not found.'});
     let ent=null; try{await grantCoursePro(u); ent=await getEntitlement(u.id)}catch{}
     const isMockTest=['WRITING-TEST-1','SPEAKING-TEST-1'].includes(String(row.test_id||''));
-    const detailAllowed=isMockTest || (String(row.skill).toLowerCase()==='writing'?isProWriting(ent):isProSpeaking(ent));
+    const reviewSkill=String(row.skill).toLowerCase();
+    const detailAllowed=isMockTest || (['writing','translation'].includes(reviewSkill)?isProWriting(ent):isProSpeaking(ent));
     const result=typeof row.result==='object'?row.result:{};
     let summary={overallBand:row.overall_band==null?null:Number(row.overall_band)};
-    if(String(row.skill).toLowerCase()==='writing'){summary={...summary,task1:{criteria:result.task1?.criteria||{},band:result.task1?.band??null,summary:result.task1?.summary||'',improvements:(result.task1?.improvements||[]).slice(0,3)},task2:{criteria:result.task2?.criteria||{},band:result.task2?.band??null,summary:result.task2?.summary||'',improvements:(result.task2?.improvements||[]).slice(0,3)},examiner_summary:result.examiner_summary||'',priority_fixes:(result.priority_fixes||[]).slice(0,3)};} else if(String(row.skill).toLowerCase()==='speaking'){summary={...summary,criteria:result.criteria||{},part_feedback:(result.part_feedback||[]).map(x=>({part:x.part,summary:x.summary||'',improvements:(x.improvements||[]).slice(0,2)})),examiner_summary:result.examiner_summary||'',priority_fixes:(result.priority_fixes||[]).slice(0,3)};}
-    const safe={ok:true,skill:row.skill,testId:row.test_id,submissionId:row.submission_id,model:row.model||DEEPSEEK_MODEL,status:row.status,errorMessage:row.status==='failed'?String(row.error_message||''):'' ,overallBand:row.overall_band==null?null:Number(row.overall_band),detailAllowed,review:detailAllowed?result:summary};
+    if(String(row.skill).toLowerCase()==='writing'){
+      if(Array.isArray(result.taskReviews)){
+        summary={...summary,overallScore:result.overallScore??row.overall_band,levelEstimate:result.levelEstimate||'',criteria:result.criteria||[],taskReviews:result.taskReviews.map(x=>({number:x.number,task:x.task||'',score:x.score||0,max:x.max||100,summary:x.summary||'',strengths:(x.strengths||[]).slice(0,2),improvements:(x.improvements||[]).slice(0,3)})),strengths:(result.strengths||[]).slice(0,3),improvements:(result.improvements||[]).slice(0,3),overallFeedback:result.overallFeedback||''};
+      }else{
+        summary={...summary,task1:{criteria:result.task1?.criteria||{},band:result.task1?.band??null,summary:result.task1?.summary||'',improvements:(result.task1?.improvements||[]).slice(0,3)},task2:{criteria:result.task2?.criteria||{},band:result.task2?.band??null,summary:result.task2?.summary||'',improvements:(result.task2?.improvements||[]).slice(0,3)},examiner_summary:result.examiner_summary||'',priority_fixes:(result.priority_fixes||[]).slice(0,3)};
+      }
+    } else if(String(row.skill).toLowerCase()==='translation'){summary={...summary,overallScore:result.overallScore??row.overall_band,levelEstimate:result.levelEstimate||'',criteria:result.criteria||[],translationReviews:(result.translationReviews||[]).map(x=>({number:x.number,score:x.score||0,max:x.max||100,direction:x.direction||'',source:x.source||'',studentVersion:x.studentVersion||'',referenceVersion:x.referenceVersion||'',feedback:x.feedback||'',errors:(x.errors||[]).slice(0,3)})),strengths:(result.strengths||[]).slice(0,3),improvements:(result.improvements||[]).slice(0,3),overallFeedback:result.overallFeedback||''};} else if(String(row.skill).toLowerCase()==='speaking'){summary={...summary,criteria:result.criteria||{},part_feedback:(result.part_feedback||[]).map(x=>({part:x.part,summary:x.summary||'',improvements:(x.improvements||[]).slice(0,2)})),examiner_summary:result.examiner_summary||'',priority_fixes:(result.priority_fixes||[]).slice(0,3)};}
+    const safe={ok:true,skill:row.skill,testId:row.test_id,submissionId:row.submission_id,model:'AI',status:row.status,errorMessage:row.status==='failed'?'AI chưa thể chấm bài này. Vui lòng thử lại hoặc liên hệ quản trị viên.':'',overallBand:row.overall_band==null?null:Number(row.overall_band),overallScore:row.overall_band==null?null:Number(row.overall_band),detailAllowed,review:detailAllowed?result:summary};
     return json(res,200,safe);
   }
 
@@ -1511,7 +1527,7 @@ async function api(req,res,url){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
     const id=url.pathname.split('/').pop(); const row=(await dbQuery(`SELECT r.*,s.student_name,s.student_email,s.test_title,s.skill FROM ai_skill_reviews r JOIN submissions s ON s.id=r.submission_id WHERE r.submission_id=$1`,[id])).rows[0];
     if(!row)return json(res,404,{ok:false,message:'AI review not found.'});
-    return json(res,200,{ok:true,review:{submissionId:row.submission_id,studentName:row.student_name,studentEmail:row.student_email,skill:row.skill,model:row.model,status:row.status,errorMessage:row.error_message||'',overallBand:row.overall_band==null?null:Number(row.overall_band),result:row.result&&typeof row.result==='object'?row.result:{}}});
+    return json(res,200,{ok:true,review:{submissionId:row.submission_id,studentName:row.student_name,studentEmail:row.student_email,skill:row.skill,model:'AI',status:row.status,errorMessage:row.status==='failed'?'AI chưa thể chấm bài này.':'',overallBand:row.overall_band==null?null:Number(row.overall_band),result:row.result&&typeof row.result==='object'?row.result:{}}});
   }
 
   if(url.pathname==='/api/mock-exams/submit' && req.method==='POST'){
@@ -1538,27 +1554,57 @@ async function api(req,res,url){
     let ai=null; let aiError='';
     try{
       const skill=String(b.skill||'').toLowerCase();
+      const testTitle=String(b.testTitle||'');
+      const hskVolume=Number(b.volume||0);
+      const hskMode=b.hskMode===true || b.isHsk===true || String(b.examSystem||'').toLowerCase()==='hsk' || /^hsk/i.test(String(b.testId||'')) || (hskVolume>=7 && hskVolume<=9) || /\bHSK\s*(?:7|8|9)(?:\s*[-–]\s*9)?\b/i.test(testTitle);
+      if(skill==='writing' && !b.hsk5Mode && hskMode){
+        const tasks=Array.isArray(b.tasks)?b.tasks:[
+          {number:'1',task:'writing',text:String(b.task1Prompt||'')},
+          {number:'2',task:'writing',text:String(b.task2Prompt||'')}
+        ].filter(t=>t.text);
+        const answers=b.answers&&typeof b.answers==='object'?{...b.answers}:{};
+        if(b.task1Answer!==undefined)answers['1']=String(b.task1Answer||'');
+        if(b.task2Answer!==undefined)answers['2']=String(b.task2Answer||'');
+        const rid=crypto.randomUUID();
+        await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,status,error_message,result) VALUES($1,$2,$3,'writing','AI','pending','','{}'::jsonb) ON CONFLICT(submission_id) DO UPDATE SET model='AI',status='pending',error_message='',result='{}'::jsonb,overall_band=NULL,updated_at=NOW()`,[rid,sid,u.id]);
+        setImmediate(async()=>{
+          try{
+            const feedback=await gradeHskWriting({tasks,answers,testTitle,volume:b.volume||7});
+            await dbQuery(`UPDATE ai_skill_reviews SET model='AI',overall_band=$1,result=$2::jsonb,status='completed',error_message='',updated_at=NOW() WHERE submission_id=$3`,[feedback.overallScore,JSON.stringify(feedback),sid]);
+          }catch(err){
+            console.error('HSK Writing AI grading failed:',err);
+            try{await dbQuery(`UPDATE ai_skill_reviews SET model='AI',status='failed',error_message='AI_GRADING_FAILED',updated_at=NOW() WHERE submission_id=$1`,[sid]);}
+            catch(dbErr){console.error('HSK Writing failure status update failed:',dbErr);}
+          }
+        });
+        return json(res,202,{ok:true,id:sid,message:'Đã lưu bài viết. AI đang chấm; kết quả sẽ tự động hiển thị khi hoàn tất.',ai:{available:true,status:'pending',label:'AI chấm'}});
+      }
       if(skill==='writing' && !b.hsk5Mode){
         const a=b.answers||{};
         const task1Answer=String(a[1]??a['1']??''); const task2Answer=String(a[2]??a['2']??'');
         const wordCount=v=>{const x=v.trim();return x?x.split(/\s+/).length:0};
         ai=await gradeWriting({task1Prompt:String(b.task1Prompt||''),task1Answer,task1Words:wordCount(task1Answer),task2Prompt:String(b.task2Prompt||''),task2Answer,task2Words:wordCount(task2Answer),taskImages:b.taskImages||{}});
         const rid=crypto.randomUUID();
-        await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,overall_band,result,status) VALUES($1,$2,$3,'writing',$4,$5,$6::jsonb,'completed') ON CONFLICT(submission_id) DO UPDATE SET overall_band=EXCLUDED.overall_band,result=EXCLUDED.result,status='completed',error_message='',updated_at=NOW()`,[rid,sid,u.id,DEEPSEEK_MODEL,ai.overallBand,JSON.stringify(ai)]);
+        await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,overall_band,result,status) VALUES($1,$2,$3,'writing','AI',$4,$5::jsonb,'completed') ON CONFLICT(submission_id) DO UPDATE SET model='AI',overall_band=EXCLUDED.overall_band,result=EXCLUDED.result,status='completed',error_message='',updated_at=NOW()`,[rid,sid,u.id,ai.overallBand,JSON.stringify(ai)]);
+      } else if(skill==='translation' && hskMode){
+        const tasks=Array.isArray(b.tasks)?b.tasks:[];
+        ai=await gradeHskTranslation({tasks,answers:b.answers||{},testTitle,volume:b.volume||7});
+        const rid=crypto.randomUUID();
+        await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,overall_band,result,status) VALUES($1,$2,$3,'translation','AI',$4,$5::jsonb,'completed') ON CONFLICT(submission_id) DO UPDATE SET model='AI',overall_band=EXCLUDED.overall_band,result=EXCLUDED.result,status='completed',error_message='',updated_at=NOW()`,[rid,sid,u.id,ai.overallScore,JSON.stringify(ai)]);
       } else if(skill==='speaking'){
         const rec=Array.isArray(b.answers?.recordings)?b.answers.recordings:[];
         if(rec.length){
           ai=await gradeSpeaking(rec.map(x=>({part:Number(x.part)||1,question:String(x.question||''),mime:String(x.mime||'audio/webm'),audio:String(x.audio||''),transcript:String(x.transcript||'')})));
           const rid=crypto.randomUUID();
-          await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,overall_band,result,status) VALUES($1,$2,$3,'speaking',$4,$5,$6::jsonb,'completed') ON CONFLICT(submission_id) DO UPDATE SET overall_band=EXCLUDED.overall_band,result=EXCLUDED.result,status='completed',error_message='',updated_at=NOW()`,[rid,sid,u.id,DEEPSEEK_MODEL,ai.overallBand,JSON.stringify(ai)]);
+          await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,overall_band,result,status) VALUES($1,$2,$3,'speaking','AI',$4,$5::jsonb,'completed') ON CONFLICT(submission_id) DO UPDATE SET model='AI',overall_band=EXCLUDED.overall_band,result=EXCLUDED.result,status='completed',error_message='',updated_at=NOW()`,[rid,sid,u.id,ai.overallBand,JSON.stringify(ai)]);
         }
       }
     }catch(err){
-      console.error('AI grading failed:',err); aiError=String(err?.message||'AI grading failed');
+      console.error('AI grading failed:',err); aiError='AI chưa thể chấm bài. Bài làm đã được lưu; vui lòng thử lại hoặc liên hệ quản trị viên.';
       const skill=String(b.skill||'').toLowerCase();
-      if(skill==='writing'||skill==='speaking') await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,status,error_message,result) VALUES($1,$2,$3,$4,$5,'failed',$6,'{}'::jsonb) ON CONFLICT(submission_id) DO UPDATE SET status='failed',error_message=EXCLUDED.error_message,updated_at=NOW()`,[crypto.randomUUID(),sid,u.id,skill,DEEPSEEK_MODEL,String(err.message||'AI grading failed')]);
+      if(['writing','translation','speaking'].includes(skill)) await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,status,error_message,result) VALUES($1,$2,$3,$4,'AI','failed',$5,'{}'::jsonb) ON CONFLICT(submission_id) DO UPDATE SET model='AI',status='failed',error_message=EXCLUDED.error_message,updated_at=NOW()`,[crypto.randomUUID(),sid,u.id,skill,'AI_GRADING_FAILED']);
     }
-    return json(res,201,{ok:true,id:sid,message:'Your answers have been submitted.',ai:ai?{available:true,overallBand:ai.overallBand,model:DEEPSEEK_MODEL}:{available:false,model:DEEPSEEK_MODEL,error:aiError||'AI grading failed'}});
+    return json(res,201,{ok:true,id:sid,message:'Your answers have been submitted.',ai:ai?{available:true,overallBand:ai.overallBand??ai.overallScore,label:'AI chấm'}:{available:false,label:'AI chấm',error:aiError||'AI chưa thể chấm bài.'}});
   }
 
   if(url.pathname==='/api/me/pro' && req.method==='GET'){

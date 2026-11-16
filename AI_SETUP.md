@@ -8,6 +8,7 @@ AI credentials must remain on the server. Never place API keys in frontend JavaS
 
 Optional settings for other skill reviews:
 - `DEEPSEEK_MODEL`
+- `DEEPSEEK_WRITING_MAX_TOKENS` (HSK 7–9 Writing; default 8000)
 - `DEEPSEEK_VISION_MODEL`
 - `DEEPSEEK_TIMEOUT_MS`
 
