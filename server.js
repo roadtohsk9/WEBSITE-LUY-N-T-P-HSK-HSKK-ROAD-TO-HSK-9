@@ -8,7 +8,7 @@ const { URL } = require('url');
 const { Pool } = require('pg');
 const { gradeWriting, gradeSpeaking, isProWriting, isProSpeaking } = require('./ai-grading');
 const { gradeHskkWithDeepSeek, isDeepSeekConfigured: isHskkAiConfigured } = require('./hskk-deepseek');
-const { gradeHskWriting, gradeHskTranslation } = require('./hsk-writing-grading');
+const { gradeHskWriting, gradeHskTranslation, gradeHsk6SummaryWriting } = require('./hsk-writing-grading');
 
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT || 3000);
@@ -1507,7 +1507,7 @@ async function api(req,res,url){
     const row=(await dbQuery(`SELECT r.*,s.user_id,s.test_id,s.test_title,s.skill,s.submitted_at FROM ai_skill_reviews r JOIN submissions s ON s.id=r.submission_id WHERE r.submission_id=$1`,[id])).rows[0];
     if(!row || String(row.user_id)!==String(u.id)) return json(res,404,{ok:false,message:'AI review not found.'});
     let ent=null; try{await grantCoursePro(u); ent=await getEntitlement(u.id)}catch{}
-    const isMockTest=['WRITING-TEST-1','SPEAKING-TEST-1'].includes(String(row.test_id||''));
+    const isMockTest=['WRITING-TEST-1','SPEAKING-TEST-1'].includes(String(row.test_id||'')) || String(row.test_id||'').startsWith('HSK6-WRITING-');
     const reviewSkill=String(row.skill).toLowerCase();
     const detailAllowed=isMockTest || (['writing','translation'].includes(reviewSkill)?isProWriting(ent):isProSpeaking(ent));
     const result=typeof row.result==='object'?row.result:{};
@@ -1569,7 +1569,9 @@ async function api(req,res,url){
         await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,status,error_message,result) VALUES($1,$2,$3,'writing','AI','pending','','{}'::jsonb) ON CONFLICT(submission_id) DO UPDATE SET model='AI',status='pending',error_message='',result='{}'::jsonb,overall_band=NULL,updated_at=NOW()`,[rid,sid,u.id]);
         setImmediate(async()=>{
           try{
-            const feedback=await gradeHskWriting({tasks,answers,testTitle,volume:b.volume||7});
+            const feedback=(Number(b.volume)===6 && b.hsk6Writing===true)
+              ? await gradeHsk6SummaryWriting({tasks,answers,testTitle})
+              : await gradeHskWriting({tasks,answers,testTitle,volume:b.volume||7});
             await dbQuery(`UPDATE ai_skill_reviews SET model='AI',overall_band=$1,result=$2::jsonb,status='completed',error_message='',updated_at=NOW() WHERE submission_id=$3`,[feedback.overallScore,JSON.stringify(feedback),sid]);
           }catch(err){
             console.error('HSK Writing AI grading failed:',err);

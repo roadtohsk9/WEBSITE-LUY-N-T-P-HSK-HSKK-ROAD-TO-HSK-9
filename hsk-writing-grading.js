@@ -1,6 +1,6 @@
 'use strict';
 
-// HSK 7–9 Writing and Translation grading through the server-side AI service.
+// HSK Writing (HSK 6 summary + HSK 7–9) and Translation grading through the server-side AI service.
 // The API key is never sent to the browser.
 const https = require('https');
 
@@ -9,7 +9,7 @@ const DEEPSEEK_TIMEOUT_MS = Math.max(15000, Number(process.env.DEEPSEEK_TIMEOUT_
 const DEEPSEEK_WRITING_MAX_TOKENS = Math.max(3500, Math.min(10000, Number(process.env.DEEPSEEK_WRITING_MAX_TOKENS || 8000)));
 const DEEPSEEK_API_KEY = () => String(process.env.DEEPSEEK_API_KEY || '').trim();
 
-function requestDeepSeek(prompt) {
+function requestDeepSeek(prompt, maxTokens = DEEPSEEK_WRITING_MAX_TOKENS) {
   const key = DEEPSEEK_API_KEY();
   if (!key) return Promise.reject(new Error('AI_NOT_CONFIGURED'));
   const payload = {
@@ -21,7 +21,7 @@ function requestDeepSeek(prompt) {
     response_format: { type: 'json_object' },
     thinking: { type: 'disabled' },
     temperature: 0.1,
-    max_tokens: DEEPSEEK_WRITING_MAX_TOKENS
+    max_tokens: Math.max(700, Math.min(10000, Number(maxTokens) || DEEPSEEK_WRITING_MAX_TOKENS))
   };
   const body = JSON.stringify(payload);
   return new Promise((resolve, reject) => {
@@ -106,6 +106,56 @@ ${JSON.stringify(normalized)}`;
   return result;
 }
 
+
+// Compact rubric for the HSK 6 source-based summary task (缩写).
+// It deliberately caps the response length to reduce API usage while keeping actionable feedback.
+const HSK6_WRITING_MAX_TOKENS = Math.max(700, Math.min(2000, Number(process.env.HSK6_WRITING_MAX_TOKENS || 1300)));
+
+async function gradeHsk6SummaryWriting({ tasks, answers, testTitle }) {
+  const normalized = cleanTasks(tasks, answers);
+  if (!normalized.length) throw new Error('HSK6_WRITING_TASKS_EMPTY');
+  const task = normalized[0];
+  const studentAnswer = String(task.answer || '').trim();
+  const sourceText = String(task.source || '').trim();
+  const instruction = String(task.prompt || '请根据阅读材料进行缩写，字数约400字。').trim();
+  const targetLength = Number(task.minLength || 400) || 400;
+  const actualLength = Array.from(studentAnswer.replace(/\s/g, '')).length;
+  if (!studentAnswer) {
+    const result = { overallScore: 0, criteria: [
+      { name: '内容与要点', score: 0, max: 40, feedback: 'Chưa có bài làm để đánh giá.' },
+      { name: '忠实与准确', score: 0, max: 25, feedback: 'Chưa có bài làm để đối chiếu với văn bản nguồn.' },
+      { name: '结构与衔接', score: 0, max: 20, feedback: 'Chưa có bài làm để đánh giá.' },
+      { name: '语言表达', score: 0, max: 15, feedback: 'Chưa có bài làm để đánh giá.' }
+    ], overallFeedback: 'Bài viết chưa có nội dung. Hãy hoàn thành phần tóm tắt trước khi nộp.', missingOrDistortedPoints: [], corrections: [], referenceSummary: '', actionPlan: ['Viết bản tóm tắt khoảng 400 chữ Hán theo đúng văn bản nguồn.'], taskReviews: [{ number: String(task.number || '1'), task: '缩写', score: 0, max: 100, summary: 'Bài làm trống.', strengths: [], improvements: ['Hoàn thành bài viết trước khi nộp.'] }] };
+    return result;
+  }
+  const evidence = {
+    instruction,
+    sourceText,
+    targetLength,
+    studentAnswer,
+    actualChineseCharacters: actualLength
+  };
+  const prompt = `你是HSK六级写作“缩写”任务的评分教师。只依据给出的原文和学生答案评分，不得编造原文信息或学生错误。请用越南语写反馈，保留中文例句。按100分给出内部估分（非官方成绩）：内容/要点40分、忠实准确25分、结构衔接20分、语言表达15分。重点检查是否抓住中心、覆盖关键事件/信息、是否遗漏或歪曲事实、是否加入原文没有的信息、是否符合约400个汉字、是否连贯简洁。评分应公平；同义改写不算错。\n只返回紧凑JSON，不要Markdown。字段格式：{"overallScore":0,"criteria":[{"name":"内容与要点","score":0,"max":40,"feedback":""},{"name":"忠实与准确","score":0,"max":25,"feedback":""},{"name":"结构与衔接","score":0,"max":20,"feedback":""},{"name":"语言表达","score":0,"max":15,"feedback":""}],"overallFeedback":"","missingOrDistortedPoints":[],"corrections":[{"original":"","corrected":"","reason":""}],"referenceSummary":"","actionPlan":[]}.\n限制：missingOrDistortedPoints最多3项；corrections最多4项，只列真实且有代表性的错误；actionPlan最多2项；referenceSummary如确有必要，最多220个汉字，若不能从原文可靠概括则留空。评语简短具体。若答案为空，不得虚构答案或给分，overallScore为0。overallScore应与四项得分之和一致。\n题目：${String(testTitle || '')}\n材料与答案：${JSON.stringify(evidence)}`;
+  const result = parseJson(await requestDeepSeek(prompt, HSK6_WRITING_MAX_TOKENS));
+  const rubric = [
+    ['内容与要点', 40], ['忠实与准确', 25], ['结构与衔接', 20], ['语言表达', 15]
+  ];
+  const suppliedCriteria = Array.isArray(result.criteria) ? result.criteria : [];
+  result.criteria = rubric.map(([name, max], index) => {
+    const item = suppliedCriteria[index] || {};
+    return { name, max, score: Math.max(0, Math.min(max, Math.round(Number(item.score) || 0))), feedback: String(item.feedback || '').slice(0, 280) };
+  });
+  result.overallScore = result.criteria.reduce((sum, item) => sum + item.score, 0);
+  result.missingOrDistortedPoints = Array.isArray(result.missingOrDistortedPoints) ? result.missingOrDistortedPoints.slice(0, 3) : [];
+  result.corrections = Array.isArray(result.corrections) ? result.corrections.slice(0, 4) : [];
+  result.actionPlan = Array.isArray(result.actionPlan) ? result.actionPlan.slice(0, 2) : [];
+  result.referenceSummary = String(result.referenceSummary || '').slice(0, 1200);
+  result.taskReviews = [{ number: String(task.number || '1'), task: '缩写', score: result.overallScore, max: 100, summary: String(result.overallFeedback || ''), strengths: [], improvements: result.actionPlan }];
+  delete result.model;
+  return result;
+}
+
 async function gradeHskTranslation({ tasks, answers, testTitle, volume }) {
   const normalized = cleanTasks(tasks, answers);
   if (!normalized.length) throw new Error('HSK_TRANSLATION_TASKS_EMPTY');
@@ -125,4 +175,4 @@ ${JSON.stringify(normalized)}`;
 }
 
 function isDeepSeekConfigured() { return !!DEEPSEEK_API_KEY(); }
-module.exports = { gradeHskWriting, gradeHskTranslation, DEEPSEEK_MODEL, isDeepSeekConfigured };
+module.exports = { gradeHskWriting, gradeHskTranslation, gradeHsk6SummaryWriting, DEEPSEEK_MODEL, isDeepSeekConfigured };
