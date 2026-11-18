@@ -142,8 +142,9 @@ function setupLearningRail(){
   drawer.querySelector('#eitToolClose').onclick=close;overlay.onclick=close;
 }
 
-function render(){if(TEST.skill==='reading'||TEST.skill==='listening')renderRL();else if(TEST.skill==='writing'&&isHSK5Imported())renderHSK5Writing();else if(TEST.skill==='writing')renderWriting();else renderSpeaking()}
+function render(){if(TEST.skill==='reading'||TEST.skill==='listening')renderRL();else if(TEST.skill==='writing'&&isHSK4Imported())renderHSK4Writing();else if(TEST.skill==='writing'&&isHSK5Imported())renderHSK5Writing();else if(TEST.skill==='writing')renderWriting();else renderSpeaking()}
 function isHSK5Imported(t=TEST){return String(t?.seriesLabel||'').startsWith('HSK5')||String(t?.sourceFile||'').startsWith('HSK5_FULL_PDF_IMPORT_')}
+function isHSK4Imported(t=TEST){return String(t?.sourceFile||'').startsWith('HSK4_20_DE_SIEU_KHO_PDF_IMPORT_')||((Number(t?.volume)===4)&&String(t?.seriesLabel||'').includes('HSK4 · VOL 4 · 20 BỘ ĐỀ SIÊU KHÓ'))}
 window.addEventListener('pagehide',()=>{try{captureActiveAnswers()}catch{}});
 function head(title,sub,time){return `<header class="module-head"><div class="module-brand"><img src="/logo.png"><div><div class="module-title">${esc(title)}</div><div class="module-sub"><span class="time" id="examTimer">${time}</span><span>${esc(sub)}</span></div></div></div><div class="header-actions">${(TEST.skill==='reading'||TEST.skill==='listening')?practicePersonalButtons():''}<button class="icon-btn" onclick="location.href='practice.html?skill=${TEST.skill}&volume=${TEST.volume}'" aria-label="Back"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button></div></header>`}
 function renderRL(){
@@ -510,7 +511,8 @@ function renderQuestionCard(q,mode,shared=''){
   else if(info==='map'){const opts=optionsArray(shared);input=`<select class="match-select" data-q="${esc(q.number)}"><option value="">Choose...</option>${opts.map((o,i)=>`<option value="${esc(o)}" ${current===String(o).trim()?'selected':''}>${esc(String.fromCharCode(65+i))}. ${esc(o)}</option>`).join('')}</select>`}
   else input=`<span class="fill-line"><input data-q="${esc(q.number)}" value="${esc(current)}" placeholder="Answer" autocomplete="off"></span>`;
   const body=info==='completion'&&q.body?inlineBlankHTML(q.body):esc(q.text||'');
-  return `<article class="q-card" id="qcard-${esc(q.number)}"><div class="q-number">QUESTION ${esc(q.number)}</div><div class="q-text">${body}</div>${input}</article>`;
+  const sentenceItems=Array.isArray(q.sentenceItems)&&q.sentenceItems.length?`<div class="hsk4-order-lines" style="display:grid;gap:8px;margin:12px 0 16px">${q.sentenceItems.map(x=>`<div class="hsk4-order-line" style="display:flex;gap:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fbff;line-height:1.65"><b style="color:#2458aa;min-width:22px">${esc(x.label)}.</b><span>${esc(x.text)}</span></div>`).join('')}</div>`:'';
+  return `<article class="q-card" id="qcard-${esc(q.number)}"><div class="q-number">QUESTION ${esc(q.number)}</div><div class="q-text">${body}</div>${sentenceItems}${input}</article>`;
 }
 function TYPE_INFO_CLIENT(t){
  const s=String(t||'').toLowerCase();
@@ -684,12 +686,13 @@ function openSubmitConfirm(auto=false){
   if(auto) return submit(true);
   if(document.getElementById('submitConfirmModal')) return;
   const modal=document.createElement('div'); modal.id='submitConfirmModal'; modal.className='submit-confirm-overlay';
+  const hsk4Write=TEST?.skill==='writing'&&isHSK4Imported();
   const hsk5Write=TEST?.skill==='writing'&&isHSK5Imported();
   modal.innerHTML=`<div class="submit-confirm-card" role="dialog" aria-modal="true" aria-labelledby="submitConfirmTitle">
     <button class="submit-confirm-close" id="submitConfirmClose" aria-label="Close">×</button>
-    <h2 id="submitConfirmTitle">${hsk5Write?'Nộp bài HSK5 Writing?':'Are you ready to submit<br>your test?'}</h2>
-    <div class="submit-confirm-copy"><p>- Sau khi nộp, bạn sẽ không thể chỉnh sửa bài làm này.</p><p>- Hãy kiểm tra lại câu trả lời trước khi tiếp tục.</p><p>- ${hsk5Write?'Câu 91–98 lưu đáp án để đối chiếu; bài viết 99–100 cần giáo viên xem xét.':'Bài sẽ được lưu và gửi tới hệ thống chấm bài.'}</p></div>
-    <div class="submit-confirm-actions"><button class="submit-now" id="submitNowBtn">${hsk5Write?'Nộp bài':'Submit & AI Grade'}</button><button class="check-again" id="checkAgainBtn">Kiểm tra lại</button></div>
+    <h2 id="submitConfirmTitle">${hsk4Write?'Nộp bài HSK4 Writing?':hsk5Write?'Nộp bài HSK5 Writing?':'Are you ready to submit<br>your test?'}</h2>
+    <div class="submit-confirm-copy"><p>- Sau khi nộp, bạn sẽ không thể chỉnh sửa bài làm này.</p><p>- Hãy kiểm tra lại câu trả lời trước khi tiếp tục.</p><p>- ${hsk4Write?'Bài sẽ được đối chiếu với đáp án và hiện giải thích chi tiết theo tài liệu.':hsk5Write?'Câu 91–98 lưu đáp án để đối chiếu; bài viết 99–100 cần giáo viên xem xét.':'Bài sẽ được lưu và gửi tới hệ thống chấm bài.'}</p></div>
+    <div class="submit-confirm-actions"><button class="submit-now" id="submitNowBtn">${(hsk4Write||hsk5Write)?'Nộp bài':'Submit & AI Grade'}</button><button class="check-again" id="checkAgainBtn">Kiểm tra lại</button></div>
   </div>`;
   document.body.appendChild(modal);
   const close=()=>modal.remove();
@@ -703,7 +706,7 @@ async function submit(auto){
   window.__eitSubmitting=true;
   clearInterval(timer);
   if(typeof prepTimer!=='undefined'&&prepTimer)clearInterval(prepTimer);
-  if(TEST.skill==='writing')return isHSK5Imported()?submitHSK5Writing(auto):submitWriting();
+  if(TEST.skill==='writing')return isHSK4Imported()?submitHSK4Writing(auto):(isHSK5Imported()?submitHSK5Writing(auto):submitWriting());
   if(TEST.skill==='speaking')return submitSpeaking();
   try{
     // Always take a final snapshot from the live form before grading/submitting.
@@ -748,7 +751,9 @@ function isHsk79WritingTest(){
 }
 async function saveSubmission(extra){
   const payload={testId:TEST.id,testTitle:TEST.title,skill:TEST.skill,answers:extra.answers,total:extra.total,score:extra.score,autoSubmitted:!!extra.autoSubmitted,elapsedSeconds:Number(extra.elapsedSeconds||0)};
-  if(TEST.skill==='writing'&&isHSK5Imported()){
+  if(TEST.skill==='writing'&&isHSK4Imported()){
+    payload.hsk4Mode=true;
+  }else if(TEST.skill==='writing'&&isHSK5Imported()){
     payload.hsk5Mode=true;
   }else if(TEST.skill==='writing'){
     const qs=TEST.content?.questions||[];
@@ -799,6 +804,56 @@ function openReview(groupIndex,itemIndex){
 function closeReview(){document.getElementById('reviewDetail')?.classList.add('hidden')}
 function prevReview(){const st=window.__eitReview;const g=st.groups[st.detailGroup];openReview(st.detailGroup,Math.max(0,st.detailIndex-1))}
 function nextReview(){const st=window.__eitReview;const g=st.groups[st.detailGroup];if(st.detailIndex<g.items.length-1)return openReview(st.detailGroup,st.detailIndex+1);if(st.detailGroup<st.groups.length-1)return openReview(st.detailGroup+1,0);scrollToReview()}
+function renderHSK4Writing(){
+ const qs=TEST.content?.questions||[];
+ const cards=qs.map(q=>{
+   const n=Number(q.number),bank=Array.isArray(q.wordBank)?q.wordBank:[];
+   return `<article class="hsk5-writing-card hsk4-writing-card"><div class="hsk5-writing-kicker">QUESTION ${n} · 词语排序</div><h2>请将下列词语组成正确、通顺的句子。</h2><div class="hsk4-word-bank">${bank.map((w,i)=>`<span class="hsk4-word-chip">${esc(w)}</span>`).join('')}</div><textarea class="hsk5-short-write hsk4-sentence-input" rows="2" data-hsk4-write="${n}" placeholder="请在这里写出完整的中文句子……">${esc(answers[n]||'')}</textarea></article>`;
+ }).join('');
+ document.body.innerHTML=head(`WRITING · ${testSeriesLabel(TEST)} · ${esc(TEST.displayTestLabel||TEST.testNo)}`,'HSK4 Writing · 10 câu sắp xếp từ','15:00')+`<style>
+ .hsk4-writing-shell{max-width:1120px;margin:24px auto;padding:0 18px 110px}.hsk4-writing-intro{background:#fff;border:1px solid #dbe5f2;border-radius:16px;padding:22px;margin-bottom:16px}.hsk4-writing-intro h1{margin:0 0 8px;font-size:24px}.hsk4-writing-intro p{margin:0;color:#64748b;line-height:1.65}.hsk4-writing-card{background:#fff;border:1px solid #dbe5f2;border-radius:16px;padding:20px;margin:14px 0}.hsk4-word-bank{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 16px}.hsk4-word-chip{display:inline-flex;padding:8px 12px;border:1px solid #d7e3f4;border-radius:10px;background:#f3f7ff;color:#193d78;font-size:16px}.hsk4-sentence-input{width:100%;min-height:58px;resize:vertical;box-sizing:border-box}.hsk4-order-lines{display:grid;gap:8px;margin:12px 0 16px}.hsk4-order-line{display:flex;gap:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fbff;line-height:1.65}.hsk4-order-line b{color:#2458aa;min-width:22px}.hsk4-progress{font-size:13px;color:#64748b;margin-left:auto;margin-right:12px}@media(max-width:700px){.hsk4-writing-shell{padding:0 10px 100px}.hsk4-writing-card{padding:15px}.hsk4-writing-intro h1{font-size:20px}}
+ </style><main class="hsk4-writing-shell"><section class="hsk4-writing-intro"><h1>HSK4 · 写作第一部分</h1><p>${esc(TEST.content?.instructions||'Sắp xếp các từ/cụm từ cho trước thành câu tiếng Trung hoàn chỉnh.')}</p><p>Thời gian tham khảo: 15 phút · 10 câu. Hãy nhập câu hoàn chỉnh vào ô bên dưới mỗi nhóm từ.</p></section><div class="hsk5-writing-list">${cards}</div></main><footer class="question-nav-bottom"><span style="font-weight:900">HSK4 Writing</span><span class="hsk4-progress" id="hsk4-writing-progress">0/${qs.length} 已填写</span><button class="bottom-submit" id="submitBtn" title="Nộp bài" aria-label="Nộp bài"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 8-10"/></svg></button></footer>`;
+ const sync=()=>{
+   document.querySelectorAll('[data-hsk4-write]').forEach(el=>{answers[String(el.dataset.hsk4Write)]=String(el.value||'')});
+   persistAnswerSnapshot();
+   const filled=qs.filter(q=>String(answers[q.number]||'').trim()).length;
+   const p=$('#hsk4-writing-progress');if(p)p.textContent=`${filled}/${qs.length} 已填写`;
+ };
+ document.querySelectorAll('[data-hsk4-write]').forEach(el=>el.addEventListener('input',sync));
+ $('#submitBtn').onclick=()=>openSubmitConfirm(false);
+ sync();startTimer(Number(TEST.durationMinutes||15)*60);
+}
+function normalizeHSK4Sentence(value){
+ return String(value??'').normalize('NFKC').replace(/\s+/g,'').replace(/[，。！？、；：,.!?;:'"“”‘’（）()【】\[\]《》〈〉…·]/g,'');
+}
+async function submitHSK4Writing(auto=false){
+ const btn=$('#submitBtn');
+ try{
+   clearInterval(timer);
+   if(btn){btn.disabled=true;btn.classList.add('is-loading');btn.setAttribute('aria-busy','true')}
+   document.querySelectorAll('[data-hsk4-write]').forEach(el=>{answers[String(el.dataset.hsk4Write)]=String(el.value||'').trim()});
+   persistAnswerSnapshot();
+   const qs=TEST.content?.questions||[],key=TEST.answerKey||{},exp=TEST.explanations||{};
+   const rows=[];let score=0;
+   for(const q of qs){
+     const n=String(q.number),a=String(answers[n]||'').trim(),k=String(key[n]||'').trim();
+     const ok=!!a&&normalizeHSK4Sentence(a)===normalizeHSK4Sentence(k);
+     if(ok)score++;
+     rows.push({n:q.number,a,key:k,ok,exp:exp[n]||''});
+   }
+   const elapsed=Math.max(0,(Number(TEST.durationMinutes||15)*60)-Number(seconds||0));
+   await saveSubmission({answers,score,total:qs.length||10,autoSubmitted:!!auto,elapsedSeconds:elapsed});
+   try{rememberPracticeHistory(score,qs.length||10)}catch{}
+   try{localStorage.removeItem(practiceDraftKey())}catch{}
+   clearTestTimer();showRLResult(score,qs.length||10,null,rows);
+ }catch(e){
+   window.__eitSubmitting=false;
+   if(btn){btn.disabled=false;btn.classList.remove('is-loading');btn.removeAttribute('aria-busy')}
+   startTimer(Number(TEST.durationMinutes||15)*60);
+   alert('Không thể nộp bài HSK4 Writing: '+(e?.message||'Lỗi không xác định')+'\n\nBài làm có thể đã được lưu nếu máy chủ đã nhận yêu cầu.');
+ }
+}
+
 function renderHSK5Writing(){
  const qs=TEST.content?.questions||[];const code=TEST.displayTestLabel||TEST.testNo;
  const taskHtml=qs.map(q=>{
