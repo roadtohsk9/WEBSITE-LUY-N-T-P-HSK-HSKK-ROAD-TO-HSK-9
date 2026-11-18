@@ -15,7 +15,8 @@ const BAND=[[39,40,9],[37,38,8.5],[35,36,8],[33,34,7.5],[30,32,7],[27,29,6.5],[2
 function band(n){if(n<=0)return 0;if(n<3)return 1;return BAND.find(r=>n>=r[0]&&n<=r[1])?.[2]??null}
 function typeInfo(t){const s=String(t||'').toLowerCase();if(s.includes('multiple select'))return'multi';if(s.includes('multiple choice'))return'choice';if(s.includes('true/false')||s.includes('tfng'))return'tfng';if(s.includes('yes/no'))return'ynng';if(s.includes('heading')||s.includes('information')||s.includes('name')||s==='matching')return'matching';if(s.includes('date'))return'dates';if(s.includes('drag')&&s.includes('summary'))return'dragdrop';if(s.includes('summary')||s.includes('completion')||s.includes('table')||s.includes('note')||s.includes('form')||s.includes('sentence'))return'completion';if(s.includes('map')||s.includes('plan')||s.includes('diagram'))return'map';return'short'}
 function questionGroups(test,rows){
- const qs=test.content?.questions||[], source=test.content?.question_groups||[], skill=String(test.skill||'').toLowerCase(), unitKey=skill==='reading'?'passage':'section', units=skill==='reading'?3:4;
+ const qs=test.content?.questions||[], source=test.content?.question_groups||[], skill=String(test.skill||'').toLowerCase(), unitKey=skill==='reading'?'passage':'section';
+ const units=skill==='reading'?Math.max(1,(test.content?.passages||[]).length,...qs.map(q=>Number(q[unitKey]||1))):Math.max(4,...qs.map(q=>Number(q[unitKey]||1)));
  const byUnit=[];
  for(let unit=1;unit<=units;unit++){
    const unitRows=rows.filter(r=>{const q=qs.find(x=>Number(x.number)===Number(r.n));return Number(q?.[unitKey]||1)===unit});
@@ -24,7 +25,10 @@ function questionGroups(test,rows){
      return items.length?{title:g.title||`Questions ${items[0].n}–${items.at(-1).n}`,instruction:g.instruction||'',explanation:g.explanation||g.groupExplanation||'',body:g.body||'',type:g.type||'',items}:null
    }).filter(Boolean);
    if(!subs.length)subs.push({title:unitRows.length?`Questions ${unitRows[0].n}–${unitRows.at(-1).n}`:`Questions —`,instruction:'',explanation:'',body:'',type:'',items:unitRows});
-   byUnit.push({index:unit,label:skill==='reading'?`PASSAGE ${unit}`:`SECTION ${unit}`,title:unitRows.length?(subs.length===1?subs[0].title:`Questions ${unitRows[0].n}–${unitRows.at(-1).n}`):`No questions added`,items:unitRows,subgroups:subs});
+   const passageMeta=skill==='reading'?(test.content?.passages||[])[unit-1]:null;
+   const unitLabel=skill==='reading'?(passageMeta?.sectionLabel||`PASSAGE ${unit}`):`SECTION ${unit}`;
+   const unitTitle=unitRows.length?(subs.length===1?subs[0].title:(passageMeta?.title||`Questions ${unitRows[0].n}–${unitRows.at(-1).n}`)):(passageMeta?.title||'No questions added');
+   byUnit.push({index:unit,label:unitLabel,title:unitTitle,items:unitRows,subgroups:subs});
  }
  if(byUnit.length)return byUnit;
  return [{index:1,label:skill==='reading'?'PASSAGE 1':'SECTION 1',title:`Questions ${rows[0]?.n||1}–${rows.at(-1)?.n||1}`,items:rows,subgroups:[{title:`Questions ${rows[0]?.n||1}–${rows.at(-1)?.n||1}`,instruction:'',explanation:'',body:'',type:'',items:rows}]}];
@@ -34,7 +38,9 @@ function optionIsCorrect(key,o,letter){const k=String(key||'').trim();return nor
 function renderChoice(q,r){
  const info=typeInfo(q.type),opts=info==='tfng'?['TRUE','FALSE','NOT GIVEN']:info==='ynng'?['YES','NO','NOT GIVEN']:(q.options||[]), key=String(r.key||'');
  if(info==='matching'||info==='dates'){
-   return `<div class="rv-answer-line ${r.ok?'is-good':'is-bad'}"><span class="rv-line-label">Câu trả lời của bạn</span><strong class="${r.ok?'answer-green':'answer-red'}">${esc(r.a||'Chưa trả lời')}</strong>${!r.ok?`<span class="rv-arrow">→</span><span class="rv-line-label">Đáp án đúng</span><strong class="answer-green">${esc(key||'—')}</strong>`:''}</div>`
+   const km=key.match(/^([A-H])(?:[.)])?$/i),ki=km?km[1].toUpperCase().charCodeAt(0)-65:-1;
+   const correctText=km&&q?.options?.[ki]?`${km[1].toUpperCase()}. ${q.options[ki]}`:key;
+   return `<div class="rv-answer-line ${r.ok?'is-good':'is-bad'}"><span class="rv-line-label">Câu trả lời của bạn</span><strong class="${r.ok?'answer-green':'answer-red'}">${esc(r.a||'Chưa trả lời')}</strong>${!r.ok?`<span class="rv-arrow">→</span><span class="rv-line-label">Đáp án đúng</span><strong class="answer-green">${esc(correctText||'—')}</strong>`:''}</div>`
  }
  return `<div class="rv-choice-list">${opts.map((o,i)=>{const letter=String.fromCharCode(65+i),sel=optionIsSelected(r.a,o,letter),right=optionIsCorrect(key,o,letter);let cls='rv-choice';if(right)cls+=' right-option';if(sel&&!right)cls+=' wrong-option';if(sel&&right)cls+=' selected-right';return `<div class="${cls}"><span class="rv-radio ${right?'radio-right':''} ${sel?'radio-selected':''}"></span><span class="rv-option-text ${sel&&!right?'wrong-text':''} ${right?'right-text':''}">${esc(o)}</span>${sel&&!right?'<del class="rv-you">Câu trả lời của bạn</del>':''}${right?'<span class="rv-correct-tag">CORRECT</span>':''}</div>`}).join('')}</div>`
 }
@@ -161,7 +167,9 @@ function renderExplanationPage(test,payload){
      }).join('');
      return `<section class="explanation-subgroup"><div class="review-subgroup-head"><div><h3>${esc(sg.title)}</h3></div><strong>${sg.items.filter(x=>x.ok).length}/${sg.items.length}</strong></div>${sg.instruction?`<div class="review-instruction">${esc(sg.instruction)}</div>`:''}${groupExp?`<section class="group-explanation-v31"><div class="explanation-label">GIẢI THÍCH · ${esc(sg.title)}</div><p>${esc(groupExp)}</p></section>`:''}<div class="explanation-question-list">${qhtml}</div></section>`;
    }).join('');
-   $('#explainBody').innerHTML=`<div class="review-exam-layout"><section class="review-source-pane"><div class="review-source-head"><span>${isReading?'PASSAGE':'TRANSCRIPT'}</span><h2>${isReading?`PASSAGE ${g.index}`:'LISTENING TRANSCRIPT'}</h2></div><div class="review-source-body">${groupSource}</div></section><section class="review-question-pane"><div class="review-question-head"><span>${g.label}</span><h2>${esc(g.title)}</h2></div><div class="review-question-body"><div class="review-section-title"><div><span>${g.label}</span><h2>Answers & explanations</h2></div><strong>${g.items.filter(x=>x.ok).length}/${g.items.length} đúng</strong></div>${subHtml}</div></section></div>`;
+   const sourceMeta=isReading?(test.content?.passages||[])[g.index-1]:null;
+   const sourceTitle=sourceMeta?.title||g.label;
+   $('#explainBody').innerHTML=`<div class="review-exam-layout"><section class="review-source-pane"><div class="review-source-head"><span>${isReading?esc(g.label):'TRANSCRIPT'}</span><h2>${isReading?esc(sourceTitle):'LISTENING TRANSCRIPT'}</h2></div><div class="review-source-body">${groupSource}</div></section><section class="review-question-pane"><div class="review-question-head"><span>${g.label}</span><h2>${esc(g.title)}</h2></div><div class="review-question-body"><div class="review-section-title"><div><span>${g.label}</span><h2>Answers & explanations</h2></div><strong>${g.items.filter(x=>x.ok).length}/${g.items.length} đúng</strong></div>${subHtml}</div></section></div>`;
  };
  shell.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{active=Math.max(0,groups.findIndex(g=>g.index===Number(b.dataset.g)));render();window.scrollTo({top:0,behavior:'smooth'})});
  shell.addEventListener('click',e=>{const b=e.target.closest('.ex-toggle-v31');if(!b)return;const box=document.getElementById('exp-'+b.dataset.exp);if(!box)return;const open=box.classList.toggle('hidden')===false;b.classList.toggle('open',open);b.setAttribute('aria-expanded',String(open));b.querySelector('span').textContent=open?'−':'+'});

@@ -164,8 +164,8 @@ function renderReadingPassage(){
  const count=Math.max(1,ps.length); const idx=Math.min(count,Math.max(1,Number(activeReadingPassage||1)))-1; activeReadingPassage=idx+1;
  const pane=$('#passagePane'), qpane=$('#questionPane'); if(!pane||!qpane)return;
  const p=ps[idx]||''; const pText=(p&&typeof p==='object')?String(p.text||''):String(p||''); const lines=pText.split(/\n+/).filter(Boolean);
- const title=(p&&typeof p==='object'&&p.title)||'';
- let h=`<div class="reading-passage-head"><div class="passage-head-row"><div><div class="passage-kicker">READING · PASSAGE ${idx+1}</div><div class="passage-title">${esc(title)}</div><div class="passage-meta">Read the text and answer the questions for Passage ${idx+1}</div></div></div></div>`;
+ const title=(p&&typeof p==='object'&&p.title)||''; const sectionLabel=(p&&typeof p==='object'&&p.sectionLabel)||`READING · PASSAGE ${idx+1}`;
+ let h=`<div class="reading-passage-head"><div class="passage-head-row"><div><div class="passage-kicker">${esc(sectionLabel)}</div><div class="passage-title">${esc(title)}</div><div class="passage-meta">${esc(sectionLabel)} · ${esc(title||'Reading')}</div></div></div></div>`;
  h+=pText?`<div class="passage-text">${lines.map(x=>`<p>${esc(x.trim())}</p>`).join('')}</div>`:'<div class="empty">Chưa có nội dung Passage.</div>';
  pane.innerHTML=h;
  pane.querySelectorAll('[data-top-passage]').forEach(b=>b.onclick=()=>{activeReadingPassage=Number(b.dataset.topPassage);renderReadingPassage();requestAnimationFrame(()=>{pane.scrollTop=0;qpane.scrollTop=0;});});
@@ -181,7 +181,7 @@ function renderReadingGroup(g,pqs,gi){const title=g.title||`Questions ${g.start}
  if(info==='completion'||info==='dragdrop'){let src=g.body||'';if(!src&&g.completionRows?.length)src=g.completionRows.map(r=>`${r.before||''} {{${r.number}}} ${r.after||''}`).join('<br>');
    if(info==='dragdrop') parts.push(renderDragDropGroup(g,src)); else parts.push(renderSummarySheet('reading',g,src,pqs))}
  else if(info==='map'){if(g.body){parts.push(`<div class="group-body-preview map-group-summary">${inlineBlankHTML(g.body,g)}</div>`)}if(g.mapImageUrl)parts.push(`<div class="reading-map-wrap"><img src="${esc(g.mapImageUrl)}" alt="Map / Plan / Diagram"></div>`);parts.push((g.questions||[]).map(q=>renderQuestionCard(q,g.type,shared)).join(''))}
- else {if(/matching\s+(names|information)/i.test(g.type||'')) parts.push(renderMatchingReference(g)); parts.push((g.questions||[]).map(q=>renderQuestionCard(q,g.type,shared)).join(''));}
+ else {if(/matching/i.test(g.type||'')) parts.push(renderMatchingReference(g)); parts.push((g.questions||[]).map(q=>renderQuestionCard(q,g.type,shared)).join(''));}
  return parts.join('')+'</section>'}
 function dragWords(v){return String(v||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).map((x,i)=>({letter:String.fromCharCode(65+i),text:x.replace(/^[A-J][.)\-:]\s*/i,'')}));}
 function renderDragDropGroup(g,src){const words=dragWords(g.dragOptions||'');return `<div class="dragdrop-exam-sheet"><div class="dragdrop-title-row"><div class="drag-wordbank-title">Complete the summary using the list of words, A–${words.length?words[words.length-1].letter:'J'}, below.</div></div><div class="drag-wordbank">${words.map(w=>`<button type="button" class="drag-chip" data-drag-word="${esc(w.text)}"><b>${w.letter}</b> ${esc(w.text)}</button>`).join('')}</div><div class="dragdrop-body">${src?inlineDragBlankHTML(src, g):''}</div></div>`}
@@ -339,7 +339,7 @@ function renderReadingNav(){
  const btns=Array.from({length:passageCount},(_,j)=>j+1).map(i=>{
    const list=qs.filter(q=>Number(q.passage||1)===i).sort((a,b)=>Number(a.number)-Number(b.number));
    const done=list.filter(q=>isAnswered(q.number)).length;
-   return `<button class="nav-section ${i===Number(activeReadingPassage)?'active':''}" data-reading-passage="${i}">PASSAGE ${i} <small>${list.length?`${done}/${list.length}`:'0/0'}</small></button>`;
+   const label=(ps[i-1]&&typeof ps[i-1]==='object'&&ps[i-1].sectionLabel)||`PASSAGE ${i}`; return `<button class="nav-section ${i===Number(activeReadingPassage)?'active':''}" data-reading-passage="${i}">${esc(label)} <small>${list.length?`${done}/${list.length}`:'0/0'}</small></button>`;
  }).join('');
  nav.innerHTML=btns+pqs.map(q=>`<button class="nav-q ${isAnswered(q.number)?'answered':''}" data-nav="${esc(q.number)}" data-nav-passage="${Number(q.passage||activeReadingPassage)}">${esc(q.number)}</button>`).join('')+
    `<button class="bottom-submit" id="submitBtn" title="Submit" aria-label="Submit test"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 8-10"/></svg></button>`;
@@ -769,8 +769,7 @@ function bandTable(current){return `<div class="band-table-wrap"><div class="ban
 
 function reviewGroups(rows){
  const skill=(TEST.skill||'').toLowerCase();
- const readingUnits=(TEST.content?.questions||[]).map(q=>Number(q.passage||q.section||q.unit||q.part||1)).filter(n=>Number.isFinite(n)&&n>0);
- const count=skill==='reading'?Math.max(3,...readingUnits):4;
+ const count=skill==='reading'?3:4;
  const groups=[];
  for(let i=1;i<=count;i++){
    const key=skill==='reading'?'passage':'section';
@@ -791,7 +790,7 @@ function scrollToReview(){document.getElementById('reviewArea')?.scrollIntoView(
 function openReview(groupIndex,itemIndex){
  const st=window.__eitReview;st.detailGroup=groupIndex;st.detailIndex=itemIndex;
  const g=st.groups[groupIndex]; const r=g.items[itemIndex];
- const left=TEST.skill==='reading'?`PASSAGE ${g.index}`:`SECTION ${g.index}`;
+ const reviewPassage=(TEST.content?.passages||[])[Math.max(0,Number(g.index||1)-1)]; const left=TEST.skill==='reading'?((reviewPassage&&typeof reviewPassage==='object'&&reviewPassage.sectionLabel)||`PASSAGE ${g.index}`):`SECTION ${g.index}`;
  const detail=document.getElementById('reviewDetail');
  detail.classList.remove('hidden');
  detail.innerHTML=`<div class="detail-panel"><div class="detail-top"><div><div class="result-kicker">${left}</div><h2>Question ${esc(r.n)}</h2></div><button class="close-detail" onclick="closeReview()">×</button></div><div class="detail-progress"><div class="detail-tabs">${st.groups.map((x,i)=>`<button class="${i===groupIndex?'active':''}" onclick="openReview(${i},0)">${x.label}</button>`).join('')}</div><div class="detail-qnav">${g.items.map((x,i)=>`<button class="${i===itemIndex?'active':''} ${x.ok?'ok':'bad'}" onclick="openReview(${groupIndex},${i})">${x.n}</button>`).join('')}</div></div><div class="answer-compare"><div class="answer-box ${r.ok?'good':'wrong'}"><span>Your answer</span><strong>${esc(r.a||'—')}</strong></div><div class="answer-box correct"><span>Correct answer</span><strong>${esc(r.key||'—')}</strong></div></div>${r.exp?`<div class="explanation-card"><div class="explanation-tag">? Explanation</div><p><strong>${esc(r.key||'Answer')}:</strong> ${esc(r.exp)}</p></div>`:`<div class="explanation-card empty-exp"><div class="explanation-tag">? Explanation</div><p>Explanation has not been added for this question yet.</p></div>`}<div class="detail-actions"><button class="secondary-detail" onclick="closeReview()">← Danh sách câu hỏi</button><div><button class="secondary-detail" onclick="prevReview()">← Câu trước</button><button class="primary-detail" onclick="nextReview()">Câu tiếp theo →</button></div></div></div>`;
