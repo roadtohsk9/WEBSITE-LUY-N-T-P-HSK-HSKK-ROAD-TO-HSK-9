@@ -769,7 +769,8 @@ function bandTable(current){return `<div class="band-table-wrap"><div class="ban
 
 function reviewGroups(rows){
  const skill=(TEST.skill||'').toLowerCase();
- const count=skill==='reading'?3:4;
+ const readingUnits=(TEST.content?.questions||[]).map(q=>Number(q.passage||q.section||q.unit||q.part||1)).filter(n=>Number.isFinite(n)&&n>0);
+ const count=skill==='reading'?Math.max(3,...readingUnits):4;
  const groups=[];
  for(let i=1;i<=count;i++){
    const key=skill==='reading'?'passage':'section';
