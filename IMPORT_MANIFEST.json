@@ -1,0 +1,157 @@
+{
+  "source": "Đề 5-đã gộp.pdf",
+  "codes": [
+    "H51005",
+    "H51004",
+    "H51003",
+    "H51002",
+    "H51001"
+  ],
+  "internalTestNumbers": [
+    106,
+    107,
+    108,
+    109,
+    110
+  ],
+  "newRecordCount": 15,
+  "cumulativeSeedRecordCount": 50,
+  "audioUrlsBlank": true,
+  "newTests": [
+    {
+      "skill": "listening",
+      "volume": 5,
+      "testNo": 106,
+      "code": "H51005",
+      "questions": 45,
+      "answerKeyCount": 45,
+      "passages": 0
+    },
+    {
+      "skill": "reading",
+      "volume": 5,
+      "testNo": 106,
+      "code": "H51005",
+      "questions": 45,
+      "answerKeyCount": 45,
+      "passages": 19
+    },
+    {
+      "skill": "writing",
+      "volume": 5,
+      "testNo": 106,
+      "code": "H51005",
+      "questions": 10,
+      "answerKeyCount": 8,
+      "passages": 0
+    },
+    {
+      "skill": "listening",
+      "volume": 5,
+      "testNo": 107,
+      "code": "H51004",
+      "questions": 45,
+      "answerKeyCount": 45,
+      "passages": 0
+    },
+    {
+      "skill": "reading",
+      "volume": 5,
+      "testNo": 107,
+      "code": "H51004",
+      "questions": 45,
+      "answerKeyCount": 45,
+      "passages": 19
+    },
+    {
+      "skill": "writing",
+      "volume": 5,
+      "testNo": 107,
+      "code": "H51004",
+      "questions": 10,
+      "answerKeyCount": 8,
+      "passages": 0
+    },
+    {
+      "skill": "listening",
+      "volume": 5,
+      "testNo": 108,
+      "code": "H51003",
+      "questions": 45,
+      "answerKeyCount": 45,
+      "passages": 0
+    },
+    {
+      "skill": "reading",
+      "volume": 5,
+      "testNo": 108,
+      "code": "H51003",
+      "questions": 45,
+      "answerKeyCount": 45,
+      "passages": 19
+    },
+    {
+      "skill": "writing",
+      "volume": 5,
+      "testNo": 108,
+      "code": "H51003",
+      "questions": 10,
+      "answerKeyCount": 8,
+      "passages": 0
+    },
+    {
+      "skill": "listening",
+      "volume": 5,
+      "testNo": 109,
+      "code": "H51002",
+      "questions": 45,
+      "answerKeyCount": 45,
+      "passages": 0
+    },
+    {
+      "skill": "reading",
+      "volume": 5,
+      "testNo": 109,
+      "code": "H51002",
+      "questions": 45,
+      "answerKeyCount": 45,
+      "passages": 19
+    },
+    {
+      "skill": "writing",
+      "volume": 5,
+      "testNo": 109,
+      "code": "H51002",
+      "questions": 10,
+      "answerKeyCount": 8,
+      "passages": 0
+    },
+    {
+      "skill": "listening",
+      "volume": 5,
+      "testNo": 110,
+      "code": "H51001",
+      "questions": 45,
+      "answerKeyCount": 45,
+      "passages": 0
+    },
+    {
+      "skill": "reading",
+      "volume": 5,
+      "testNo": 110,
+      "code": "H51001",
+      "questions": 45,
+      "answerKeyCount": 45,
+      "passages": 19
+    },
+    {
+      "skill": "writing",
+      "volume": 5,
+      "testNo": 110,
+      "code": "H51001",
+      "questions": 10,
+      "answerKeyCount": 8,
+      "passages": 0
+    }
+  ]
+}

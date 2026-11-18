@@ -1,62 +1,36 @@
-# BÁO CÁO CHUYỂN ĐỔI – HSK4 VOL 4 (PDF → WEBSITE)
+# Báo cáo nhập 5 đề HANBAN HSK5
 
-## Nguồn
-- File nguồn: `HSK4_20_de_sieu_kho_2.0.pdf`
-- Số trang: 327
-- Phương pháp trích xuất: lấy text trực tiếp từ PDF, không OCR.
-- Phạm vi: HSK4 hệ 2.0, Đọc và Viết phần 1.
+## Nguồn và phạm vi
+- PDF nguồn: `Đề 5-đã gộp.pdf` do người dùng cung cấp và xác nhận quyền sử dụng.
+- Năm mã đề phát hiện trên bìa: **H51005, H51004, H51003, H51002, H51001**.
+- Mỗi mã được tách thành ba bài độc lập: Listening, Reading, Writing.
+- Audio Listening được để trống (`audioUrl: ""`) để Admin upload sau.
 
-## Tổng quan dữ liệu
+## Dữ liệu được chuyển đổi
+| Mã đề | Listening | Reading | Writing | Bài đọc | Đáp án nghe | Đáp án đọc | Đáp án viết 91–98 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| H51005 | 45 | 45 | 10 | 19 | 45 | 45 | 8 |
+| H51004 | 45 | 45 | 10 | 19 | 45 | 45 | 8 |
+| H51003 | 45 | 45 | 10 | 19 | 45 | 45 | 8 |
+| H51002 | 45 | 45 | 10 | 19 | 45 | 45 | 8 |
+| H51001 | 45 | 45 | 10 | 19 | 45 | 45 | 8 |
 
-| Phân loại | Số bộ | Số câu/bộ | Tổng câu |
-|---|---:|---:|---:|
-| Reading | 20 | 40 | 800 |
-| Writing Part 1 | 20 | 10 | 200 |
-| **Tổng** | **40 bài luyện độc lập** |  | **1.000** |
+Tổng số của 5 mã mới: **15 bài tương tác** (5 Listening + 5 Reading + 5 Writing), **500 câu/nhiệm vụ** (225 câu nghe, 225 câu đọc, 50 nhiệm vụ viết), **95 đoạn/bài đọc**, 25 ảnh minh họa Reading và 5 ảnh câu Writing 100.
 
-Mỗi đề Reading gồm:
-- Phần 1: 10 câu chọn từ điền chỗ trống.
-- Phần 2: 10 câu sắp xếp ba câu A/B/C.
-- Phần 3: 20 câu đọc hiểu, gồm 10 đoạn gốc và 2 câu hỏi cho mỗi đoạn.
+- Listening: 45 câu mỗi đề; các trường `audioUrl` ở cả cấp bài và `content` đều để trống. Không đính kèm transcript vào dữ liệu làm bài.
+- Reading: 45 câu mỗi đề; giữ các đoạn văn, lựa chọn và đáp án từ PDF. Bao gồm bốn nhóm ở phần 46–60, mười đoạn ngắn ở phần 61–70 và năm bài đọc dài ở phần 71–90. Mã H51001 có ranh giới nhóm đọc 71–73, 74–77, 78–81, 82–86, 87–90 đúng theo PDF.
+- Writing: 10 nhiệm vụ mỗi đề; câu 91–98 có đáp án mẫu trong PDF, câu 99–100 là bài viết mở nên không tạo đáp án giả. Từ gợi ý câu 99 và ảnh gốc câu 100 được giữ.
+- PDF không cung cấp lời giải chi tiết cho từng câu; patch không tự tạo lời giải thay thế.
 
-Mỗi đề Writing gồm 10 câu sắp xếp từ/cụm từ thành câu hoàn chỉnh.
+## Bảo toàn dữ liệu HSK5 trước đó
+File seed trong patch là bản tích lũy, gồm:
+- 5 bộ HSK5 đầy đủ đã có (15 bản ghi Listening/Reading/Writing, testNo 101–105).
+- 20 đề dự đoán HSK5 Reading đã nhập trước đó (testNo 5101–5120).
+- 5 mã HANBAN mới (15 bản ghi Listening/Reading/Writing, testNo 106–110).
 
-## Nội dung nguồn được giữ lại
+**Tổng trong file seed sau cập nhật: 50 bản ghi.** Không có xung đột khóa `(skill, volume, testNo)` trong seed tích lũy.
 
-- Câu hỏi tiếng Trung và các lựa chọn tiếng Trung.
-- 10 đoạn văn gốc ở phần Reading 3 của mỗi đề; tổng 200 đoạn văn.
-- Ba câu A/B/C của từng câu hỏi sắp xếp thứ tự.
-- Word bank của 200 câu Writing.
-- Đáp án 1.000 câu.
-- Giải thích, từ vựng, pinyin, bản dịch và ghi chú tiếng Việt có trong PDF.
-
-Phần Reading 2 trong PDF trình bày ba câu A/B/C và thứ tự đúng (ví dụ `BCA`); giao diện chuyển phần thứ tự thành lựa chọn trong sáu hoán vị có thể có để học viên làm trực tiếp.
-
-## Kiểm tra dữ liệu
-
-- 20/20 đề Reading: mỗi đề có 40 câu, 40 đáp án, 40 lời giải và 10 đoạn đọc gốc.
-- 20/20 đề Writing: mỗi đề có 10 câu, 10 đáp án mẫu và 10 lời giải.
-- Các câu Reading trắc nghiệm có đủ lựa chọn; câu A/B/C có đủ ba câu nguồn và sáu lựa chọn thứ tự.
-- Mọi đề được đưa vào `volume = 4`, với `test_no = 401–420` tách riêng cho từng kỹ năng.
-- JavaScript: `node --check` thành công cho `server.js`, `hsk-writing-grading.js`, `js/practice.js`, `js/practice-test.js`, `js/practice-result.js`.
-- JSON seed đã parse và kiểm tra số lượng bằng script xác thực.
-
-## Hành vi website
-
-- Reading dùng bố cục Passage + Questions hiện có; 10 đoạn văn gốc hiển thị riêng theo từng passage.
-- Writing dùng giao diện nhập câu dựa trên word bank; so sánh câu trả lời với câu mẫu, chuẩn hóa khoảng trắng/dấu câu cơ bản.
-- Review hiển thị câu trả lời, đáp án và giải thích; trang giải thích Writing có bảng word bank.
-- `hsk4Mode` ngăn hai nhánh AI Writing tổng quát chấm nhầm dạng sắp xếp câu HSK4.
-- Danh sách trang luyện tập được gắn nhãn `HSK4 · VOL 4` cho cả Đọc và Viết.
-
-## Ánh xạ lưu trữ
-
-- Seed: `data/hsk4_vol4_20_papers_seed.json`
-- Skill: `reading`, `writing`
-- Volume: `4`
-- Test numbers: `401–420` mỗi kỹ năng
-- Source marker: `HSK4_20_DE_SIEU_KHO_PDF_IMPORT_...`
-
-## Giới hạn
-
-Đây là bộ đề luyện tập tự biên soạn theo PDF người dùng cung cấp, không phải đề chính thức. Patch đã kiểm tra ở mức source/JSON; chưa kết nối hoặc deploy lên PostgreSQL/Render production nên việc seed vào website chỉ xảy ra sau khi người dùng cập nhật GitHub và redeploy.
+## Audio và ảnh
+- Audio của năm đề mới được để rỗng, sẵn sàng cho Admin upload sau.
+- Các ảnh gốc được lưu trong `tests/hsk5/`; không xóa các ảnh HSK5 đã có. Hãy gộp thư mục ảnh mới vào thư mục hiện tại.
+- Seeder HSK5 hiện có giữ `audio_url` trong database nếu bản seed mới gửi `audioUrl` rỗng, vì vậy audio của các đề HSK5 cũ không bị reset khi redeploy.
