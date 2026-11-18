@@ -1,42 +1,49 @@
-PATCH FIX HSK 6 WRITING — HIỂN THỊ VĂN BẢN NGUỒN + AI CHẤM
+# PATCH HSK6 – 20 ĐỀ MÔ PHỎNG THÁNG 11 · READING
 
-Trong ZIP này chỉ có 3 file source cần thay thế:
-1. hsk-exam.html
-2. server.js
-3. hsk-writing-grading.js
+## 1. File có trong patch
 
-ĐƯỜNG DẪN
-Cả 3 file đều nằm ở thư mục gốc (root) của source website, cùng cấp với package.json.
-Không tải các file này vào một thư mục con mới.
+Patch chỉ gồm các file cần thêm/thay thế:
 
-CÁCH THAY THẾ
-1. Tải ZIP patch và giải nén trên máy tính.
-2. Mở source website hiện tại của bạn.
-3. Sao lưu 3 file cũ: hsk-exam.html, server.js, hsk-writing-grading.js.
-4. Chép 3 file trong patch vào thư mục gốc source website và chọn Replace/Overwrite.
-5. Upload/commit 3 file đã thay thế lên đúng GitHub repository.
-6. Chờ Render deploy commit mới (hoặc bấm Manual Deploy → Deploy latest commit).
+| File trong ZIP | Thao tác trên source GitHub |
+|---|---|
+| `server.js` | Thay thế file `server.js` ở thư mục gốc |
+| `js/practice-test.js` | Thay thế `js/practice-test.js` |
+| `js/practice-result.js` | Thay thế `js/practice-result.js` |
+| `data/hsk6_november_reading_seed.json` | Thêm file mới vào thư mục `data/` (không ghi đè seed HSK6 cũ) |
 
-KHÔNG CẦN
-- Không thay toàn bộ source website.
-- Không xóa dữ liệu/database.
-- Không tạo bảng database mới.
-- Không đưa API key vào frontend.
-- Không cần thêm Environment Variable mới để chạy. Hệ thống dùng DEEPSEEK_API_KEY hiện có.
+## 2. Cách cập nhật GitHub
 
-TỐI ƯU TOKEN
-- HSK6 Writing dùng prompt chuyên biệt cho bài 缩写.
-- Đầu ra bị giới hạn mặc định tối đa 1.300 tokens; có thể đặt HSK6_WRITING_MAX_TOKENS (700–2.000) nếu muốn đổi giới hạn, nhưng không bắt buộc.
-- Văn bản nguồn và bài làm chỉ được gửi một lần trong một request chấm.
-- Bài trống được trả 0 điểm ở backend mà không gọi AI.
-- HSK7–9 Writing và Translation tiếp tục dùng luồng chấm cũ.
+1. Tải ZIP và giải nén.
+2. Sao lưu 3 file cũ `server.js`, `js/practice-test.js`, `js/practice-result.js`.
+3. Upload/ghi đè đúng 3 file trên vào đúng đường dẫn trong repository.
+4. Thêm file mới `data/hsk6_november_reading_seed.json` vào thư mục `data/`.
+5. Commit changes và push lên GitHub.
+6. Mở Render → chọn service website → **Manual Deploy** → **Deploy latest commit**.
 
-SAU KHI DEPLOY, KIỂM TRA
-1. Vào Admin → kho đề → mở đề HSK 6 Writing.
-2. Kiểm tra trường “Văn bản nguồn / 阅读材料” có nội dung và lưu/publish đề.
-3. Mở đề ở tài khoản học viên: văn bản nguồn phải hiện phía trên đề bài; ô trả lời là khung nhập nhiều dòng.
-4. Nhập bài và bấm một trong hai nút “Nộp bài”.
-5. Trang sẽ báo “AI đang chấm bài Writing”, sau đó hiển thị điểm /100, 4 tiêu chí, ý chính thiếu/sai, sửa lỗi, hướng cải thiện và bản tóm tắt tham khảo nếu có.
+Không thay `data/hsk6_papers_seed.json`, không xóa các đề HSK6 đang có và không cần thêm Environment Variable mới. Website phải đang kết nối PostgreSQL bằng `DATABASE_URL`/`POSTGRES_URL`.
 
-GHI CHÚ
-Điểm hiển thị là mức đánh giá tham khảo theo rubric nội bộ bám dạng HSK6 缩写, không phải điểm thi chính thức. Frontend chỉ hiển thị “AI chấm”; không hiển thị tên nhà cung cấp/mô hình.
+## 3. Cách tìm bộ đề sau khi deploy
+
+1. Mở trang chủ website.
+2. Đến khu vực **Kho đề thi**.
+3. Mở bộ lọc cấp độ; trong nhóm **Đề mục tùy chỉnh**, chọn đúng tên:
+   `BỘ ĐỀ MÔ PHỎNG THÁNG 11 - ĐỌC`
+4. Ở bộ lọc kỹ năng, chọn **Reading**.
+5. Danh sách sẽ hiển thị 20 đề từ **THÁNG 11 · ĐỌC 01** đến **THÁNG 11 · ĐỌC 20**.
+
+Backend tự tạo đề mục nếu chưa tồn tại và tự nhập 20 đề khi khởi động. Nếu redeploy lần sau, seed nhận diện các bản ghi thuộc chính gói này để cập nhật nội dung; không ghi đè đề HSK6 khác. Số đề dùng trong database là 61101–61120 để tránh trùng dải đề 101–109 đang có trong seed HSK6 ban đầu.
+
+## 4. Kiểm tra nếu chưa thấy danh mục
+
+- Kiểm tra Render Logs có dòng `HSK6 November Reading seed`.
+- Kiểm tra file seed đã nằm đúng đường dẫn `data/hsk6_november_reading_seed.json` trên GitHub.
+- Kiểm tra `DATABASE_URL`/`POSTGRES_URL` vẫn kết nối được PostgreSQL.
+- Tải lại trang chủ sau khi deploy xong để danh mục được tải lại từ API.
+
+Nếu log báo đề bị skipped, có thể số đề 61101–61120 đã được dùng bởi một đề Reading HSK6 khác trong database. Seed cố ý không ghi đè các bản ghi không thuộc gói import này.
+
+## 5. Lưu ý
+
+- Đây là patch source để bạn đưa lên GitHub/Render; mình không đăng nhập trực tiếp vào GitHub hoặc Render production của bạn.
+- Nội dung câu hỏi, bài đọc, đáp án và giải thích được lấy từ PDF bạn gửi. Patch nhập phần đề thi/đáp án/giải thích; các bảng từ vựng và cấu trúc ôn tập ở phụ lục PDF không được chuyển thành một trang tài liệu riêng.
+- Tài liệu là đề mô phỏng tự biên soạn, không phải đề thi chính thức.
