@@ -1,0 +1,21 @@
+--- a/server.js
++++ b/server.js
+@@ -6,6 +6,7 @@
+ const AdmZip = require('adm-zip');
+ const { URL } = require('url');
+ const { Pool } = require('pg');
++const { applyHanbanHsk6Labels } = require('./hsk6-hanban-labels');
+ const { gradeWriting, gradeSpeaking, isProWriting, isProSpeaking, DEEPSEEK_MODEL } = require('./ai-grading');
+ const { gradeHskkWithGemini, GEMINI_MODEL, isGeminiConfigured } = require('./hskk-gemini');
+ 
+@@ -638,6 +639,10 @@
+   await seedStoreProducts();
+   await seedPracticeDemos();
+   await seedHsk6Papers();
++  if (pool) {
++    const hanbanUpdated = await applyHanbanHsk6Labels(dbQuery);
++    if (hanbanUpdated) console.log(`HANBAN HSK6 labels: ${hanbanUpdated} practice rows updated; audio and exam content preserved.`);
++  }
+   await seedHsk5Papers();
+   await migrateLegacySubmissions();
+ }

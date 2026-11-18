@@ -1,0 +1,18 @@
+{
+  "seriesLabel": "HANBAN",
+  "volume": 6,
+  "codes": [
+    "H61328",
+    "H61327",
+    "H61006",
+    "H61005",
+    "H61003",
+    "H61001"
+  ],
+  "existingPracticeTests": 12,
+  "skills": [
+    "listening",
+    "reading"
+  ],
+  "audioUploadAfterDeploy": true
+}

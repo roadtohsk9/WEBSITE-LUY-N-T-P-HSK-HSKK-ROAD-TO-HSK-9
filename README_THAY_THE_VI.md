@@ -1,31 +1,57 @@
-# PATCH: Thêm 5 đề HANBAN HSK5 (H51005–H51001)
+# PATCH HANBAN cho HSK6
 
-## File cần cập nhật
-1. **Ghi đè** `data/hsk5_full_papers_seed.json` bằng file trong PATCH. Đây là bản seed tích lũy đã giữ lại 5 đề HSK5 đầy đủ trước đó và 20 đề dự đoán Reading HSK5 đã nhập ở patch trước, đồng thời bổ sung 5 đề HANBAN mới.
-2. **Gộp thêm** toàn bộ ảnh trong `tests/hsk5/` vào thư mục `tests/hsk5/` trên GitHub. Không xóa các ảnh cũ trong thư mục này.
+Patch này đối chiếu file PDF `H61328-đã gộp.pdf` với source website bạn đã cung cấp. Sáu mã H61328, H61327, H61006, H61005, H61003 và H61001 đã có sẵn trong `data/hsk6_papers_seed.json` dưới dạng 12 bài Listening/Reading. Vì vậy patch chỉ thêm nhãn `HANBAN`, không tạo bản trùng.
 
-Không cần thay `server.js`, JavaScript frontend hoặc Environment Variables. Source website đã có `seedHsk5Papers()` và seeder chấp nhận `sourceFile` dạng `HSK5_FULL_PDF_IMPORT_...`.
+## Cách áp dụng (khuyên dùng - tự động theo mỗi lần server khởi động)
 
-## Nội dung mới
-- 5 mã đề HANBAN: H51005, H51004, H51003, H51002, H51001.
-- Mỗi mã có Listening 45 câu, Reading 45 câu, Writing 10 nhiệm vụ.
-- Tổng 15 bài mới, 500 câu/nhiệm vụ.
-- Đề hiển thị nhãn `HANBAN · HSK5 · <mã đề>`; mã đề được hiển thị riêng trên card.
-- Listening `audioUrl` để trống để Admin upload sau.
+1. Giải nén ZIP.
+2. Chép `hsk6-hanban-labels.js` vào thư mục gốc dự án, cùng cấp với `server.js`.
+3. Mở `server.js`, tìm dòng:
 
-## Cài đặt trên GitHub và Render
-1. Sao lưu file `data/hsk5_full_papers_seed.json` hiện tại.
-2. Thay file seed bằng bản trong PATCH.
-3. Upload/gộp các ảnh mới vào `tests/hsk5/`.
-4. Commit changes lên GitHub.
-5. Vào Render → Manual Deploy → Deploy latest commit.
-6. Mở Render Logs, tìm `HSK5 full papers seed` để xem số bản ghi inserted/updated/skipped.
-7. Vào HSK5 → Listening / Reading / Writing, tìm nhãn HANBAN và các mã H51005–H51001.
-8. Khi có audio, mở từng đề Listening trong Admin và upload audio như các đề khác.
+   ```js
+   const { Pool } = require('pg');
+   ```
 
-## Lưu ý quan trọng
-- File seed trong PATCH có **50 bản ghi**: 15 bản ghi full exams cũ, 20 bản ghi dự đoán Reading đã có, và 15 bản ghi mới HANBAN. Không dùng lại seed rút gọn chỉ có 15 bài mới, vì sẽ làm mất các đề HSK5 trước đó.
-- Các ảnh mới có tên `H5100x_...`; khi gộp thư mục, không ghi đè ảnh khác cùng tên.
-- Bản seed gửi audio rỗng. Seeder hiện có giữ lại `audio_url` của bài cũ nếu đã có audio trong database.
-- PDF không có lời giải chi tiết cho từng câu; chỉ có đáp án và các bản văn nguồn. Câu Viết 99–100 là bài viết mở, không có đáp án mẫu trong PDF.
-- Mình đã chuẩn bị file patch và kiểm tra dữ liệu offline; chưa truy cập hoặc triển khai trực tiếp vào database/Render production của bạn.
+   Thêm ngay dưới dòng đó:
+
+   ```js
+   const { applyHanbanHsk6Labels } = require('./hsk6-hanban-labels');
+   ```
+
+4. Tìm đoạn:
+
+   ```js
+   await seedHsk6Papers();
+   await seedHsk5Papers();
+   ```
+
+   Đổi thành:
+
+   ```js
+   await seedHsk6Papers();
+   if (pool) {
+     const hanbanUpdated = await applyHanbanHsk6Labels(dbQuery);
+     if (hanbanUpdated) console.log(`HANBAN HSK6 labels: ${hanbanUpdated} practice rows updated; audio and exam content preserved.`);
+   }
+   await seedHsk5Papers();
+   ```
+
+5. Commit lên GitHub rồi Render → Manual Deploy → Deploy latest commit.
+
+File `server.js.diff` ghi đúng hai thay đổi trên để bạn đối chiếu.
+
+## Cách khác: chạy SQL một lần
+
+Nếu bạn muốn tự chạy trong SQL Editor của PostgreSQL, mở `HANBAN_HSK6_LABELS.sql` và chạy toàn bộ câu lệnh. Khi dùng cách này, không cần thêm file JS hoặc sửa server.js. Không chạy cả hai cách là bắt buộc; migration tự động là lựa chọn dễ duy trì hơn.
+
+## Sau khi áp dụng
+
+- Các thẻ Reading và Listening của sáu mã trên sẽ bắt đầu bằng `HANBAN`.
+- Dòng series trên trang làm bài cũng sẽ hiện `HANBAN`.
+- Các mã khác H61329, H61330, H61333 không bị đổi vì không nằm trong PDF gộp bạn vừa gửi.
+- Audio không bị chỉnh sửa; `audio_url` hiện có (kể cả URL Admin đã upload) được giữ nguyên. Nếu đang trống, Admin có thể upload sau.
+- Câu hỏi, đáp án và lời giải hiện tại được giữ nguyên.
+
+## Lưu ý về phạm vi
+
+PDF có phần Writing câu 101 (bài tóm tắt), nhưng source seed hiện tại chỉ có 6 Listening và 6 Reading tương ứng; patch này không tạo đề Writing placeholder. Báo cáo chi tiết nằm trong `BAO_CAO_KIEM_TRA.md`.
