@@ -8,7 +8,7 @@ const { URL } = require('url');
 const { Pool } = require('pg');
 const { gradeWriting, gradeSpeaking, isProWriting, isProSpeaking } = require('./ai-grading');
 const { gradeHskkWithDeepSeek, isDeepSeekConfigured: isHskkAiConfigured } = require('./hskk-deepseek');
-const { gradeHskWriting, gradeHskTranslation, gradeHsk6SummaryWriting } = require('./hsk-writing-grading');
+const { gradeHskWriting, gradeHskTranslation } = require('./hsk-writing-grading');
 
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT || 3000);
@@ -77,6 +77,56 @@ async function seedHsk6Papers(){
   if(inserted||skipped) console.log(`HSK6 papers seed: ${inserted} inserted, ${skipped} existing rows skipped.`);
 }
 
+
+async function seedHsk6NovemberReadingPapers(){
+  const seedPath=path.join(DATA_DIR,'hsk6_november_reading_seed.json');
+  if(!pool || !fs.existsSync(seedPath)) return;
+  let pack;
+  try{pack=JSON.parse(fs.readFileSync(seedPath,'utf8'));}
+  catch(e){console.error('HSK6 November Reading seed read failed:',e);return;}
+  const categoryName=String(pack.categoryName||'BỘ ĐỀ MÔ PHỎNG THÁNG 11 - ĐỌC').trim();
+  if(!categoryName) return;
+  let categoryId=(await dbQuery('SELECT id FROM test_categories WHERE LOWER(name)=LOWER($1) LIMIT 1',[categoryName])).rows[0]?.id;
+  if(!categoryId){
+    const created=await dbQuery('INSERT INTO test_categories(id,name) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING id',[crypto.randomUUID(),categoryName]);
+    categoryId=created.rows[0]?.id || (await dbQuery('SELECT id FROM test_categories WHERE LOWER(name)=LOWER($1) LIMIT 1',[categoryName])).rows[0]?.id;
+  }
+  if(!categoryId){console.error('HSK6 November Reading seed: category could not be created.');return;}
+  let processed=0,skipped=0;
+  for(const t of (pack.tests||[])){
+    try{
+      const sourceFile=String(t.sourceFile||'');
+      const questionCount=Array.isArray(t.content?.questions)?t.content.questions.length:0;
+      if(!/^HSK6_NOVEMBER_READING_IMPORT_\d{2}_PDF_IMPORT$/.test(sourceFile) || String(t.skill||'').toLowerCase()!=='reading' || Number(t.volume)!==6 || questionCount!==50 || Object.keys(t.answerKey||{}).length!==50 || Object.keys(t.explanations||{}).length!==50){
+        skipped++;
+        console.warn('HSK6 November Reading seed skipped invalid source marker:',sourceFile);
+        continue;
+      }
+      const result=await dbQuery(`INSERT INTO practice_tests(
+        id,skill,volume,test_no,title,question_type,duration_minutes,total_questions,
+        content,answer_key,explanations,audio_url,source_file,source_url,
+        series_label,display_test_label,card_label,card_subtitle,status_label,button_label,cover_url,category_id,published
+      ) VALUES($1,'reading',6,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9::jsonb,'',$10,'',$11,$12,$13,$14,$15,$16,'',$17,TRUE)
+      ON CONFLICT(skill,volume,test_no) DO UPDATE SET
+        title=EXCLUDED.title,question_type=EXCLUDED.question_type,duration_minutes=EXCLUDED.duration_minutes,
+        total_questions=EXCLUDED.total_questions,content=EXCLUDED.content,answer_key=EXCLUDED.answer_key,
+        explanations=EXCLUDED.explanations,source_file=EXCLUDED.source_file,series_label=EXCLUDED.series_label,
+        display_test_label=EXCLUDED.display_test_label,card_label=EXCLUDED.card_label,card_subtitle=EXCLUDED.card_subtitle,
+        status_label=EXCLUDED.status_label,button_label=EXCLUDED.button_label,category_id=EXCLUDED.category_id,
+        published=TRUE,updated_at=NOW()
+      WHERE LEFT(practice_tests.source_file,LENGTH('HSK6_NOVEMBER_READING_IMPORT_'))='HSK6_NOVEMBER_READING_IMPORT_'`,[
+        crypto.randomUUID(),Number(t.testNo),String(t.title||''),String(t.questionType||'HSK6 Reading · Four Sections'),
+        Number(t.durationMinutes||50),Number(t.totalQuestions||50),JSON.stringify(t.content||{}),
+        JSON.stringify(t.answerKey||{}),JSON.stringify(t.explanations||{}),sourceFile,
+        String(t.seriesLabel||categoryName),String(t.displayTestLabel||`THÁNG 11 · ĐỌC ${String(t.testNo).slice(-2)}`),
+        String(t.cardLabel||'THÁNG 11 · ĐỌC'),String(t.cardSubtitle||'50 câu · 50 phút · 4 phần Reading'),
+        String(t.statusLabel||'Sẵn sàng luyện tập'),String(t.buttonLabel||'Làm bài'),categoryId
+      ]);
+      if(result.rowCount) processed++; else skipped++;
+    }catch(e){console.error('HSK6 November Reading seed failed for',t.title||t.testNo,e?.message||e);}
+  }
+  if(processed||skipped) console.log(`HSK6 November Reading seed: ${processed} imported (inserted/updated), ${skipped} skipped. Category: ${categoryName}`);
+}
 
 async function seedHsk5Papers(){
   const seedPath=path.join(DATA_DIR,'hsk5_full_papers_seed.json');
@@ -640,6 +690,7 @@ async function initDB(){
   await seedPracticeDemos();
   await seedHsk6Papers();
   await seedHsk5Papers();
+  await seedHsk6NovemberReadingPapers();
   await migrateLegacySubmissions();
 }
 
@@ -1507,7 +1558,7 @@ async function api(req,res,url){
     const row=(await dbQuery(`SELECT r.*,s.user_id,s.test_id,s.test_title,s.skill,s.submitted_at FROM ai_skill_reviews r JOIN submissions s ON s.id=r.submission_id WHERE r.submission_id=$1`,[id])).rows[0];
     if(!row || String(row.user_id)!==String(u.id)) return json(res,404,{ok:false,message:'AI review not found.'});
     let ent=null; try{await grantCoursePro(u); ent=await getEntitlement(u.id)}catch{}
-    const isMockTest=['WRITING-TEST-1','SPEAKING-TEST-1'].includes(String(row.test_id||'')) || String(row.test_id||'').startsWith('HSK6-WRITING-');
+    const isMockTest=['WRITING-TEST-1','SPEAKING-TEST-1'].includes(String(row.test_id||''));
     const reviewSkill=String(row.skill).toLowerCase();
     const detailAllowed=isMockTest || (['writing','translation'].includes(reviewSkill)?isProWriting(ent):isProSpeaking(ent));
     const result=typeof row.result==='object'?row.result:{};
@@ -1569,9 +1620,7 @@ async function api(req,res,url){
         await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,status,error_message,result) VALUES($1,$2,$3,'writing','AI','pending','','{}'::jsonb) ON CONFLICT(submission_id) DO UPDATE SET model='AI',status='pending',error_message='',result='{}'::jsonb,overall_band=NULL,updated_at=NOW()`,[rid,sid,u.id]);
         setImmediate(async()=>{
           try{
-            const feedback=(Number(b.volume)===6 && b.hsk6Writing===true)
-              ? await gradeHsk6SummaryWriting({tasks,answers,testTitle})
-              : await gradeHskWriting({tasks,answers,testTitle,volume:b.volume||7});
+            const feedback=await gradeHskWriting({tasks,answers,testTitle,volume:b.volume||7});
             await dbQuery(`UPDATE ai_skill_reviews SET model='AI',overall_band=$1,result=$2::jsonb,status='completed',error_message='',updated_at=NOW() WHERE submission_id=$3`,[feedback.overallScore,JSON.stringify(feedback),sid]);
           }catch(err){
             console.error('HSK Writing AI grading failed:',err);
