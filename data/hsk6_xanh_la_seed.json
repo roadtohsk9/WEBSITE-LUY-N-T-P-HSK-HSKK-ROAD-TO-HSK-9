@@ -1,0 +1,4507 @@
+{
+  "version": 1,
+  "seriesLabel": "XANH LÁ · HSK6",
+  "description": "10 bộ luyện tập HSK6 biên soạn mới. Mỗi bộ gồm Listening 5 câu, Reading 5 câu và Writing 1 bài rút gọn. Đây là bộ luyện tập rút gọn, không phải bản sao hoặc đề thi chính thức. Listening audio_url để trống để Admin upload sau.",
+  "tests": [
+    {
+      "skill": "listening",
+      "volume": 6,
+      "testNo": 201,
+      "title": "XANH LÁ · HSK6 · ĐỀ 01 · LISTENING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 8,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu. Audio đang chờ Admin tải lên. Không có audio trong gói patch.",
+        "sections": [
+          "第一部分 · 请根据录音内容选择正确答案。"
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_listen_1",
+            "unit": 1,
+            "section": 1,
+            "start": 1,
+            "end": 5,
+            "title": "听力练习 · Questions 1–5",
+            "instruction": "请根据录音内容选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "1",
+                "text": "图书馆为什么延长部分日期的开放时间？",
+                "type": "Multiple Choice",
+                "options": [
+                  "为了减少白天的工作人员",
+                  "为了把阅览室改成教室",
+                  "为了方便上班族下班后阅读",
+                  "为了增加藏书数量"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "材料指出，白天上班的人难以利用原有开放时间，因此延长周三、周五的开放时间。"
+              },
+              {
+                "number": "2",
+                "text": "图书馆新增了什么设备？",
+                "type": "Multiple Choice",
+                "options": [
+                  "电子售票机",
+                  "自动售餐机",
+                  "打印身份证的机器",
+                  "自助借还设备"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "原文明确提到在一楼设置自助借还设备。"
+              },
+              {
+                "number": "3",
+                "text": "试行两个月后，哪类读者增加较明显？",
+                "type": "Multiple Choice",
+                "options": [
+                  "晚间读者",
+                  "退休教师",
+                  "游客",
+                  "外地研究人员"
+                ],
+                "section": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "材料说晚间读者明显增加，其中包括年轻父母。"
+              },
+              {
+                "number": "4",
+                "text": "志愿者主要在哪些时段提供帮助？",
+                "type": "Multiple Choice",
+                "options": [
+                  "每天闭馆以后",
+                  "读者较多的时段",
+                  "读者较少的时段",
+                  "只在周末上午"
+                ],
+                "section": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "负责人把志愿者安排在读者较多的时段，帮助老人使用电子目录。"
+              },
+              {
+                "number": "5",
+                "text": "负责人认为公共文化空间最重要的是什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "藏书数量最多",
+                  "所有活动都免费",
+                  "让不同年龄的人方便使用",
+                  "建筑面积足够大"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "负责人强调，公共文化空间的价值在于不同年龄的人能否方便地使用。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "1",
+            "text": "图书馆为什么延长部分日期的开放时间？",
+            "type": "Multiple Choice",
+            "options": [
+              "为了减少白天的工作人员",
+              "为了把阅览室改成教室",
+              "为了方便上班族下班后阅读",
+              "为了增加藏书数量"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "材料指出，白天上班的人难以利用原有开放时间，因此延长周三、周五的开放时间。"
+          },
+          {
+            "number": "2",
+            "text": "图书馆新增了什么设备？",
+            "type": "Multiple Choice",
+            "options": [
+              "电子售票机",
+              "自动售餐机",
+              "打印身份证的机器",
+              "自助借还设备"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "原文明确提到在一楼设置自助借还设备。"
+          },
+          {
+            "number": "3",
+            "text": "试行两个月后，哪类读者增加较明显？",
+            "type": "Multiple Choice",
+            "options": [
+              "晚间读者",
+              "退休教师",
+              "游客",
+              "外地研究人员"
+            ],
+            "section": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "材料说晚间读者明显增加，其中包括年轻父母。"
+          },
+          {
+            "number": "4",
+            "text": "志愿者主要在哪些时段提供帮助？",
+            "type": "Multiple Choice",
+            "options": [
+              "每天闭馆以后",
+              "读者较多的时段",
+              "读者较少的时段",
+              "只在周末上午"
+            ],
+            "section": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "负责人把志愿者安排在读者较多的时段，帮助老人使用电子目录。"
+          },
+          {
+            "number": "5",
+            "text": "负责人认为公共文化空间最重要的是什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "藏书数量最多",
+              "所有活动都免费",
+              "让不同年龄的人方便使用",
+              "建筑面积足够大"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "负责人强调，公共文化空间的价值在于不同年龄的人能否方便地使用。"
+          }
+        ]
+      },
+      "answerKey": {
+        "1": "C",
+        "2": "D",
+        "3": "A",
+        "4": "B",
+        "5": "C"
+      },
+      "explanations": {
+        "1": "材料指出，白天上班的人难以利用原有开放时间，因此延长周三、周五的开放时间。",
+        "2": "原文明确提到在一楼设置自助借还设备。",
+        "3": "材料说晚间读者明显增加，其中包括年轻父母。",
+        "4": "负责人把志愿者安排在读者较多的时段，帮助老人使用电子目录。",
+        "5": "负责人强调，公共文化空间的价值在于不同年龄的人能否方便地使用。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 01",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Listening · 5 câu · Chờ Admin tải audio",
+      "statusLabel": "Chờ Admin tải audio",
+      "buttonLabel": "Làm bài sau khi có audio",
+      "coverUrl": "/achievement-2.png"
+    },
+    {
+      "skill": "reading",
+      "volume": 6,
+      "testNo": 201,
+      "title": "XANH LÁ · HSK6 · ĐỀ 01 · READING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 12,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu đọc hiểu. Đoạn văn được biên soạn mới cho bộ luyện tập này.",
+        "passages": [
+          {
+            "title": "社区图书馆与公共空间",
+            "text": "一座城市的公共图书馆，曾经被不少居民看作安静借书的地方。近几年，随着社区人口结构发生变化，图书馆开始重新思考自己的角色。年轻家庭希望有适合儿童的阅读活动，老年人需要有人帮助他们使用数字设备，而学生则希望在放学后找到稳定的自习空间。管理者没有简单地增加电脑或桌椅，而是先通过访谈了解不同群体的真实需要，再把一部分区域改造成多功能空间。改造完成后，图书馆仍保留安静阅览区，同时在隔壁设置可预约的小组讨论室。为了避免活动互相干扰，工作人员制定了分时使用制度，并定期收集意见。实践表明，公共空间并不是功能越多越好，关键在于设计是否考虑到使用者之间的差异，以及管理规则能否灵活回应实际情况。"
+          }
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_read_1",
+            "unit": 1,
+            "passage": 1,
+            "start": 81,
+            "end": 85,
+            "title": "阅读理解 · Questions 81–85",
+            "instruction": "请阅读文章并选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "81",
+                "text": "图书馆为什么重新思考自己的角色？",
+                "type": "Multiple Choice",
+                "options": [
+                  "社区人口结构发生了变化",
+                  "城市准备拆除旧建筑",
+                  "纸质书籍已经停止出版",
+                  "附近学校全部搬迁"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "第一段指出，社区人口结构变化，使居民对图书馆提出了不同需求。"
+              },
+              {
+                "number": "82",
+                "text": "管理者改造前先做了什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "把所有活动移到网上",
+                  "访谈居民了解真实需要",
+                  "购买大量电脑",
+                  "取消安静阅览区"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "原文说明管理者先通过访谈了解不同群体的真实需要。"
+              },
+              {
+                "number": "83",
+                "text": "改造后的空间有什么特点？",
+                "type": "Multiple Choice",
+                "options": [
+                  "全部变成开放办公室",
+                  "只允许学生使用",
+                  "同时有安静阅览区和讨论室",
+                  "只保留儿童活动区"
+                ],
+                "passage": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "材料明确说保留安静阅览区，并在隔壁设置小组讨论室。"
+              },
+              {
+                "number": "84",
+                "text": "图书馆如何减少活动之间的干扰？",
+                "type": "Multiple Choice",
+                "options": [
+                  "禁止居民提出意见",
+                  "缩短所有开放时间",
+                  "取消小组讨论",
+                  "实行分时使用制度"
+                ],
+                "passage": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "工作人员制定了分时使用制度，并定期收集意见。"
+              },
+              {
+                "number": "85",
+                "text": "作者认为公共空间设计的关键是什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "考虑使用者差异并灵活管理",
+                  "追求功能数量",
+                  "使用最昂贵的设备",
+                  "完全按照管理者喜好安排"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "文章结尾强调使用者差异和能否灵活回应实际情况。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "81",
+            "text": "图书馆为什么重新思考自己的角色？",
+            "type": "Multiple Choice",
+            "options": [
+              "社区人口结构发生了变化",
+              "城市准备拆除旧建筑",
+              "纸质书籍已经停止出版",
+              "附近学校全部搬迁"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "第一段指出，社区人口结构变化，使居民对图书馆提出了不同需求。"
+          },
+          {
+            "number": "82",
+            "text": "管理者改造前先做了什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "把所有活动移到网上",
+              "访谈居民了解真实需要",
+              "购买大量电脑",
+              "取消安静阅览区"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "原文说明管理者先通过访谈了解不同群体的真实需要。"
+          },
+          {
+            "number": "83",
+            "text": "改造后的空间有什么特点？",
+            "type": "Multiple Choice",
+            "options": [
+              "全部变成开放办公室",
+              "只允许学生使用",
+              "同时有安静阅览区和讨论室",
+              "只保留儿童活动区"
+            ],
+            "passage": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "材料明确说保留安静阅览区，并在隔壁设置小组讨论室。"
+          },
+          {
+            "number": "84",
+            "text": "图书馆如何减少活动之间的干扰？",
+            "type": "Multiple Choice",
+            "options": [
+              "禁止居民提出意见",
+              "缩短所有开放时间",
+              "取消小组讨论",
+              "实行分时使用制度"
+            ],
+            "passage": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "工作人员制定了分时使用制度，并定期收集意见。"
+          },
+          {
+            "number": "85",
+            "text": "作者认为公共空间设计的关键是什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "考虑使用者差异并灵活管理",
+              "追求功能数量",
+              "使用最昂贵的设备",
+              "完全按照管理者喜好安排"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "文章结尾强调使用者差异和能否灵活回应实际情况。"
+          }
+        ]
+      },
+      "answerKey": {
+        "81": "A",
+        "82": "B",
+        "83": "C",
+        "84": "D",
+        "85": "A"
+      },
+      "explanations": {
+        "81": "第一段指出，社区人口结构变化，使居民对图书馆提出了不同需求。",
+        "82": "原文说明管理者先通过访谈了解不同群体的真实需要。",
+        "83": "材料明确说保留安静阅览区，并在隔壁设置小组讨论室。",
+        "84": "工作人员制定了分时使用制度，并定期收集意见。",
+        "85": "文章结尾强调使用者差异和能否灵活回应实际情况。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 01",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Reading · 5 câu",
+      "statusLabel": "Sẵn sàng luyện tập",
+      "buttonLabel": "Làm bài",
+      "coverUrl": "/achievement-1.png"
+    },
+    {
+      "skill": "writing",
+      "volume": 6,
+      "testNo": 201,
+      "title": "XANH LÁ · HSK6 · ĐỀ 01 · WRITING",
+      "questionType": "Summary Writing",
+      "durationMinutes": 45,
+      "totalQuestions": 1,
+      "content": {
+        "instructions": "HSK6 缩写练习 · 约400字。提交后由 AI 按内容忠实度、信息完整度、结构连贯性和语言准确性给出反馈。",
+        "questions": [
+          {
+            "number": "1",
+            "task": "缩写作文",
+            "text": "请仔细阅读下面的文章，然后将其缩写成一篇约400字的短文。\n要求：保留主要事实、原因、过程和结论；不要加入个人观点；语言简洁、连贯。\n\n【题目】把闲置空间变成社区课堂\n【原文】\n某社区有一间长期闲置的旧活动室。起初，居民提出了许多不同意见：有人希望把它改成健身房，有人想放置儿童玩具，也有人认为应该保留为会议室。居委会没有立即作出决定，而是邀请不同年龄的居民参加讨论，并记录他们一周中最需要使用活动室的时间。调查发现，白天在家的老人希望有地方学习手机操作，放学后的孩子需要安全的阅读空间，而年轻居民则希望周末能参加实用讲座。于是，社区决定把房间分成三个区域，并用可移动的书架和桌椅保持空间的灵活性。活动室开放后，志愿者每周安排两次数字技能指导，附近教师也主动组织儿童阅读。为了避免资源只被少数人使用，社区实行预约登记，同时为临时活动保留一定时间。几个月后，居民发现，活动室最重要的变化并不是增加了多少设备，而是大家开始主动交流、互相帮助。原本彼此不熟悉的邻居，因为共同参与活动而逐渐建立起信任。社区负责人认为，公共空间的建设不应只考虑硬件，更应该重视居民参与和持续管理。",
+            "sourceText": "某社区有一间长期闲置的旧活动室。起初，居民提出了许多不同意见：有人希望把它改成健身房，有人想放置儿童玩具，也有人认为应该保留为会议室。居委会没有立即作出决定，而是邀请不同年龄的居民参加讨论，并记录他们一周中最需要使用活动室的时间。调查发现，白天在家的老人希望有地方学习手机操作，放学后的孩子需要安全的阅读空间，而年轻居民则希望周末能参加实用讲座。于是，社区决定把房间分成三个区域，并用可移动的书架和桌椅保持空间的灵活性。活动室开放后，志愿者每周安排两次数字技能指导，附近教师也主动组织儿童阅读。为了避免资源只被少数人使用，社区实行预约登记，同时为临时活动保留一定时间。几个月后，居民发现，活动室最重要的变化并不是增加了多少设备，而是大家开始主动交流、互相帮助。原本彼此不熟悉的邻居，因为共同参与活动而逐渐建立起信任。社区负责人认为，公共空间的建设不应只考虑硬件，更应该重视居民参与和持续管理。",
+            "min": 350,
+            "max": 450,
+            "direction": "Giữ nguyên ý chính, không thêm quan điểm cá nhân."
+          }
+        ]
+      },
+      "answerKey": {},
+      "explanations": {
+        "1": "Bài viết được đánh giá theo độ trung thành với văn bản nguồn, mức độ đầy đủ ý, mạch lạc và độ chính xác ngôn ngữ."
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 01",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Writing · 缩写作文 · 约400字",
+      "statusLabel": "AI chấm bài",
+      "buttonLabel": "Viết bài",
+      "coverUrl": "/achievement-3.png"
+    },
+    {
+      "skill": "listening",
+      "volume": 6,
+      "testNo": 202,
+      "title": "XANH LÁ · HSK6 · ĐỀ 02 · LISTENING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 8,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu. Audio đang chờ Admin tải lên. Không có audio trong gói patch.",
+        "sections": [
+          "第一部分 · 请根据录音内容选择正确答案。"
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_listen_1",
+            "unit": 1,
+            "section": 1,
+            "start": 1,
+            "end": 5,
+            "title": "听力练习 · Questions 1–5",
+            "instruction": "请根据录音内容选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "1",
+                "text": "工作室过去怎样安排新学徒？",
+                "type": "Multiple Choice",
+                "options": [
+                  "先参加设计交流",
+                  "立即独立接单",
+                  "只学习销售技巧",
+                  "先练习基础工序"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "材料说过去先连续几个月练习同一种基础工序。"
+              },
+              {
+                "number": "2",
+                "text": "现在学徒每周要做什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "参与一次小型项目",
+                  "参加一次市场调查",
+                  "负责工作室财务",
+                  "只观看师傅工作"
+                ],
+                "section": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "现在每周参与一次小型项目，并完成从测量到打磨的流程。"
+              },
+              {
+                "number": "3",
+                "text": "师傅要求学徒项目后记录什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "每天的工作时长",
+                  "遇到的问题和选择工具的理由",
+                  "客户的家庭地址",
+                  "工具的市场价格"
+                ],
+                "section": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "项目结束后要记录问题，并解释为什么选择某种工具。"
+              },
+              {
+                "number": "4",
+                "text": "负责人认为手工艺还包括哪种能力？",
+                "type": "Multiple Choice",
+                "options": [
+                  "完全依赖机器",
+                  "减少与客户沟通",
+                  "判断材料和处理意外",
+                  "快速扩大产量"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "负责人指出手工艺包含材料判断、理解使用者及处理意外的能力。"
+              },
+              {
+                "number": "5",
+                "text": "半年试行后出现了什么变化？",
+                "type": "Multiple Choice",
+                "options": [
+                  "作品速度大幅提高",
+                  "基础训练被取消",
+                  "学徒不再需要师傅指导",
+                  "返工次数下降"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "原文指出完成速度没有明显加快，但返工次数下降。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "1",
+            "text": "工作室过去怎样安排新学徒？",
+            "type": "Multiple Choice",
+            "options": [
+              "先参加设计交流",
+              "立即独立接单",
+              "只学习销售技巧",
+              "先练习基础工序"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "材料说过去先连续几个月练习同一种基础工序。"
+          },
+          {
+            "number": "2",
+            "text": "现在学徒每周要做什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "参与一次小型项目",
+              "参加一次市场调查",
+              "负责工作室财务",
+              "只观看师傅工作"
+            ],
+            "section": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "现在每周参与一次小型项目，并完成从测量到打磨的流程。"
+          },
+          {
+            "number": "3",
+            "text": "师傅要求学徒项目后记录什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "每天的工作时长",
+              "遇到的问题和选择工具的理由",
+              "客户的家庭地址",
+              "工具的市场价格"
+            ],
+            "section": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "项目结束后要记录问题，并解释为什么选择某种工具。"
+          },
+          {
+            "number": "4",
+            "text": "负责人认为手工艺还包括哪种能力？",
+            "type": "Multiple Choice",
+            "options": [
+              "完全依赖机器",
+              "减少与客户沟通",
+              "判断材料和处理意外",
+              "快速扩大产量"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "负责人指出手工艺包含材料判断、理解使用者及处理意外的能力。"
+          },
+          {
+            "number": "5",
+            "text": "半年试行后出现了什么变化？",
+            "type": "Multiple Choice",
+            "options": [
+              "作品速度大幅提高",
+              "基础训练被取消",
+              "学徒不再需要师傅指导",
+              "返工次数下降"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "原文指出完成速度没有明显加快，但返工次数下降。"
+          }
+        ]
+      },
+      "answerKey": {
+        "1": "D",
+        "2": "A",
+        "3": "B",
+        "4": "C",
+        "5": "D"
+      },
+      "explanations": {
+        "1": "材料说过去先连续几个月练习同一种基础工序。",
+        "2": "现在每周参与一次小型项目，并完成从测量到打磨的流程。",
+        "3": "项目结束后要记录问题，并解释为什么选择某种工具。",
+        "4": "负责人指出手工艺包含材料判断、理解使用者及处理意外的能力。",
+        "5": "原文指出完成速度没有明显加快，但返工次数下降。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 02",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Listening · 5 câu · Chờ Admin tải audio",
+      "statusLabel": "Chờ Admin tải audio",
+      "buttonLabel": "Làm bài sau khi có audio",
+      "coverUrl": "/achievement-2.png"
+    },
+    {
+      "skill": "reading",
+      "volume": 6,
+      "testNo": 202,
+      "title": "XANH LÁ · HSK6 · ĐỀ 02 · READING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 12,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu đọc hiểu. Đoạn văn được biên soạn mới cho bộ luyện tập này.",
+        "passages": [
+          {
+            "title": "传统手工艺与学徒培养",
+            "text": "传统手工艺的传承常被理解为师傅把一套固定技术教给学徒。然而，真正成熟的工匠不仅记住步骤，还要知道在不同条件下如何调整方法。例如，同一种木材在湿度、纹理和保存状态不同的情况下，适合使用的工具和加工力度也可能不同。某地的竹编合作社因此把课堂训练与真实订单结合起来：学徒先完成基本编织，再根据客户需求设计尺寸和结构。师傅会要求他们说明设计依据，而不是只判断成品是否漂亮。合作社还建立作品档案，记录材料来源、制作时间和修改过程，以便下一代了解每件作品背后的经验。这种方式需要更多沟通，也不一定能立即提高产量，但它使技术不再只是个人手中的诀窍，而逐渐成为可以讨论、记录和继续发展的知识。传承的核心并非原样复制过去，而是在尊重基本技法的前提下，让新一代具备判断和创新的能力。"
+          }
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_read_1",
+            "unit": 1,
+            "passage": 1,
+            "start": 81,
+            "end": 85,
+            "title": "阅读理解 · Questions 81–85",
+            "instruction": "请阅读文章并选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "81",
+                "text": "作者认为成熟工匠需要什么能力？",
+                "type": "Multiple Choice",
+                "options": [
+                  "完全按照客户照片复制",
+                  "根据条件调整方法",
+                  "只记住固定步骤",
+                  "尽量避免使用工具"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "文章指出工匠还要懂得在不同条件下调整方法。"
+              },
+              {
+                "number": "82",
+                "text": "竹编合作社怎样安排训练？",
+                "type": "Multiple Choice",
+                "options": [
+                  "把所有工作交给机器",
+                  "先学习经营再学习编织",
+                  "课堂训练与真实订单结合",
+                  "只练习理论知识"
+                ],
+                "passage": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "原文明确说明把课堂训练与真实订单结合。"
+              },
+              {
+                "number": "83",
+                "text": "合作社建立作品档案的目的是什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "宣传价格",
+                  "限制学徒参与",
+                  "减少客户数量",
+                  "记录材料和制作经验"
+                ],
+                "passage": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "作品档案记录材料来源、制作时间和修改过程，供下一代学习。"
+              },
+              {
+                "number": "84",
+                "text": "这种传承方式的一个特点是什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "需要更多沟通",
+                  "马上提高产量",
+                  "不再需要师傅",
+                  "完全改变传统技法"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "材料指出这种方式需要更多沟通，且不一定立即提高产量。"
+              },
+              {
+                "number": "85",
+                "text": "作者如何理解手工艺传承？",
+                "type": "Multiple Choice",
+                "options": [
+                  "只保存作品不保存经验",
+                  "尊重技法并培养判断和创新",
+                  "原样复制过去",
+                  "尽快淘汰旧工具"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "文章结尾强调在尊重基本技法的前提下培养新一代的判断和创新能力。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "81",
+            "text": "作者认为成熟工匠需要什么能力？",
+            "type": "Multiple Choice",
+            "options": [
+              "完全按照客户照片复制",
+              "根据条件调整方法",
+              "只记住固定步骤",
+              "尽量避免使用工具"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "文章指出工匠还要懂得在不同条件下调整方法。"
+          },
+          {
+            "number": "82",
+            "text": "竹编合作社怎样安排训练？",
+            "type": "Multiple Choice",
+            "options": [
+              "把所有工作交给机器",
+              "先学习经营再学习编织",
+              "课堂训练与真实订单结合",
+              "只练习理论知识"
+            ],
+            "passage": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "原文明确说明把课堂训练与真实订单结合。"
+          },
+          {
+            "number": "83",
+            "text": "合作社建立作品档案的目的是什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "宣传价格",
+              "限制学徒参与",
+              "减少客户数量",
+              "记录材料和制作经验"
+            ],
+            "passage": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "作品档案记录材料来源、制作时间和修改过程，供下一代学习。"
+          },
+          {
+            "number": "84",
+            "text": "这种传承方式的一个特点是什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "需要更多沟通",
+              "马上提高产量",
+              "不再需要师傅",
+              "完全改变传统技法"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "材料指出这种方式需要更多沟通，且不一定立即提高产量。"
+          },
+          {
+            "number": "85",
+            "text": "作者如何理解手工艺传承？",
+            "type": "Multiple Choice",
+            "options": [
+              "只保存作品不保存经验",
+              "尊重技法并培养判断和创新",
+              "原样复制过去",
+              "尽快淘汰旧工具"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "文章结尾强调在尊重基本技法的前提下培养新一代的判断和创新能力。"
+          }
+        ]
+      },
+      "answerKey": {
+        "81": "B",
+        "82": "C",
+        "83": "D",
+        "84": "A",
+        "85": "B"
+      },
+      "explanations": {
+        "81": "文章指出工匠还要懂得在不同条件下调整方法。",
+        "82": "原文明确说明把课堂训练与真实订单结合。",
+        "83": "作品档案记录材料来源、制作时间和修改过程，供下一代学习。",
+        "84": "材料指出这种方式需要更多沟通，且不一定立即提高产量。",
+        "85": "文章结尾强调在尊重基本技法的前提下培养新一代的判断和创新能力。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 02",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Reading · 5 câu",
+      "statusLabel": "Sẵn sàng luyện tập",
+      "buttonLabel": "Làm bài",
+      "coverUrl": "/achievement-1.png"
+    },
+    {
+      "skill": "writing",
+      "volume": 6,
+      "testNo": 202,
+      "title": "XANH LÁ · HSK6 · ĐỀ 02 · WRITING",
+      "questionType": "Summary Writing",
+      "durationMinutes": 45,
+      "totalQuestions": 1,
+      "content": {
+        "instructions": "HSK6 缩写练习 · 约400字。提交后由 AI 按内容忠实度、信息完整度、结构连贯性和语言准确性给出反馈。",
+        "questions": [
+          {
+            "number": "1",
+            "task": "缩写作文",
+            "text": "请仔细阅读下面的文章，然后将其缩写成一篇约400字的短文。\n要求：保留主要事实、原因、过程和结论；不要加入个人观点；语言简洁、连贯。\n\n【题目】一门手艺如何在变化中延续\n【原文】\n某地的陶艺村过去依靠家庭作坊维持生产。年轻人离开村庄后，许多制作经验只掌握在少数老师傅手中。当地文化中心曾尝试举办短期体验活动，游客可以在工作人员指导下制作简单器皿。活动受到欢迎，但组织者发现，体验课程虽然增加了收入，却没有解决技艺传承的问题。于是，文化中心与职业学校合作，设计了为期一年的学习计划。学生不仅学习拉坯、修坯和烧制，还要了解泥土来源、窑炉变化以及不同器型的使用场景。老师傅负责讲解传统方法，设计专业教师则帮助学生把传统纹样转化为现代产品。每个学生都要完成一个从构思到成品的项目，并记录失败的原因。村里还建立共享工作室，让毕业生能够继续使用设备。项目开始时，有人担心现代设计会改变传统风格，但经过讨论，大家逐渐认识到，传统并不是不能变化，而是需要清楚哪些核心技法和文化意义必须得到尊重。两年后，一部分学生留在村里开设工作室，另一部分人则与城市品牌合作，使陶器进入新的销售渠道。",
+            "sourceText": "某地的陶艺村过去依靠家庭作坊维持生产。年轻人离开村庄后，许多制作经验只掌握在少数老师傅手中。当地文化中心曾尝试举办短期体验活动，游客可以在工作人员指导下制作简单器皿。活动受到欢迎，但组织者发现，体验课程虽然增加了收入，却没有解决技艺传承的问题。于是，文化中心与职业学校合作，设计了为期一年的学习计划。学生不仅学习拉坯、修坯和烧制，还要了解泥土来源、窑炉变化以及不同器型的使用场景。老师傅负责讲解传统方法，设计专业教师则帮助学生把传统纹样转化为现代产品。每个学生都要完成一个从构思到成品的项目，并记录失败的原因。村里还建立共享工作室，让毕业生能够继续使用设备。项目开始时，有人担心现代设计会改变传统风格，但经过讨论，大家逐渐认识到，传统并不是不能变化，而是需要清楚哪些核心技法和文化意义必须得到尊重。两年后，一部分学生留在村里开设工作室，另一部分人则与城市品牌合作，使陶器进入新的销售渠道。",
+            "min": 350,
+            "max": 450,
+            "direction": "Giữ nguyên ý chính, không thêm quan điểm cá nhân."
+          }
+        ]
+      },
+      "answerKey": {},
+      "explanations": {
+        "1": "Bài viết được đánh giá theo độ trung thành với văn bản nguồn, mức độ đầy đủ ý, mạch lạc và độ chính xác ngôn ngữ."
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 02",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Writing · 缩写作文 · 约400字",
+      "statusLabel": "AI chấm bài",
+      "buttonLabel": "Viết bài",
+      "coverUrl": "/achievement-3.png"
+    },
+    {
+      "skill": "listening",
+      "volume": 6,
+      "testNo": 203,
+      "title": "XANH LÁ · HSK6 · ĐỀ 03 · LISTENING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 8,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu. Audio đang chờ Admin tải lên. Không có audio trong gói patch.",
+        "sections": [
+          "第一部分 · 请根据录音内容选择正确答案。"
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_listen_1",
+            "unit": 1,
+            "section": 1,
+            "start": 1,
+            "end": 5,
+            "title": "听力练习 · Questions 1–5",
+            "instruction": "请根据录音内容选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "1",
+                "text": "研究团队观察了什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "不同街区的夏季温度",
+                  "冬季降雪量",
+                  "居民的购物习惯",
+                  "建筑物的销售价格"
+                ],
+                "section": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "材料说明团队连续三年观察城市不同街区的夏季温度。"
+              },
+              {
+                "number": "2",
+                "text": "影响街区温度的因素有哪些？",
+                "type": "Multiple Choice",
+                "options": [
+                  "居民的年龄结构",
+                  "树冠、地面材料和空气流动",
+                  "只有树木数量",
+                  "街区的商业租金"
+                ],
+                "section": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "录音列出树冠连续性、地面材料和空气流动空间等因素。"
+              },
+              {
+                "number": "3",
+                "text": "研究发现小型绿地有什么作用？",
+                "type": "Multiple Choice",
+                "options": [
+                  "只适合儿童使用",
+                  "只能改善夜间温度",
+                  "分布均匀也能帮助降温",
+                  "完全代替大型公园"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "材料指出面积较小但分布均匀的绿地也有明显降温帮助。"
+              },
+              {
+                "number": "4",
+                "text": "团队建议优先改善哪些地方的遮阴？",
+                "type": "Multiple Choice",
+                "options": [
+                  "购物中心内部",
+                  "地下停车场",
+                  "远离居民区的山地",
+                  "步行路线、公交站和学校周围"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "研究团队建议改善步行路线、公交站附近和学校周围。"
+              },
+              {
+                "number": "5",
+                "text": "为什么种树后仍然需要维护？",
+                "type": "Multiple Choice",
+                "options": [
+                  "树木缺水或树坑硬化会影响降温",
+                  "树木会自动改变道路",
+                  "树木越高温度越高",
+                  "维护会增加空气流动"
+                ],
+                "section": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "报告提醒缺水和树坑硬化都会削弱降温效果。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "1",
+            "text": "研究团队观察了什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "不同街区的夏季温度",
+              "冬季降雪量",
+              "居民的购物习惯",
+              "建筑物的销售价格"
+            ],
+            "section": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "材料说明团队连续三年观察城市不同街区的夏季温度。"
+          },
+          {
+            "number": "2",
+            "text": "影响街区温度的因素有哪些？",
+            "type": "Multiple Choice",
+            "options": [
+              "居民的年龄结构",
+              "树冠、地面材料和空气流动",
+              "只有树木数量",
+              "街区的商业租金"
+            ],
+            "section": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "录音列出树冠连续性、地面材料和空气流动空间等因素。"
+          },
+          {
+            "number": "3",
+            "text": "研究发现小型绿地有什么作用？",
+            "type": "Multiple Choice",
+            "options": [
+              "只适合儿童使用",
+              "只能改善夜间温度",
+              "分布均匀也能帮助降温",
+              "完全代替大型公园"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "材料指出面积较小但分布均匀的绿地也有明显降温帮助。"
+          },
+          {
+            "number": "4",
+            "text": "团队建议优先改善哪些地方的遮阴？",
+            "type": "Multiple Choice",
+            "options": [
+              "购物中心内部",
+              "地下停车场",
+              "远离居民区的山地",
+              "步行路线、公交站和学校周围"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "研究团队建议改善步行路线、公交站附近和学校周围。"
+          },
+          {
+            "number": "5",
+            "text": "为什么种树后仍然需要维护？",
+            "type": "Multiple Choice",
+            "options": [
+              "树木缺水或树坑硬化会影响降温",
+              "树木会自动改变道路",
+              "树木越高温度越高",
+              "维护会增加空气流动"
+            ],
+            "section": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "报告提醒缺水和树坑硬化都会削弱降温效果。"
+          }
+        ]
+      },
+      "answerKey": {
+        "1": "A",
+        "2": "B",
+        "3": "C",
+        "4": "D",
+        "5": "A"
+      },
+      "explanations": {
+        "1": "材料说明团队连续三年观察城市不同街区的夏季温度。",
+        "2": "录音列出树冠连续性、地面材料和空气流动空间等因素。",
+        "3": "材料指出面积较小但分布均匀的绿地也有明显降温帮助。",
+        "4": "研究团队建议改善步行路线、公交站附近和学校周围。",
+        "5": "报告提醒缺水和树坑硬化都会削弱降温效果。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 03",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Listening · 5 câu · Chờ Admin tải audio",
+      "statusLabel": "Chờ Admin tải audio",
+      "buttonLabel": "Làm bài sau khi có audio",
+      "coverUrl": "/achievement-2.png"
+    },
+    {
+      "skill": "reading",
+      "volume": 6,
+      "testNo": 203,
+      "title": "XANH LÁ · HSK6 · ĐỀ 03 · READING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 12,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu đọc hiểu. Đoạn văn được biên soạn mới cho bộ luyện tập này.",
+        "passages": [
+          {
+            "title": "城市绿地与热岛现象",
+            "text": "近年来，越来越多城市把增加绿地作为应对夏季高温的重要措施。不过，绿地建设并不是简单地在地图上增加绿色面积。研究人员发现，同样面积的绿地，如果被道路和停车场分割成许多小块，实际降温效果可能不如连续的树荫带。树木通过遮挡阳光和蒸腾作用影响周围环境，而土壤能够储存雨水，缓慢释放水分。相反，大面积使用深色硬质材料会吸收并储存热量，使夜间温度下降得更慢。因此，一些城市开始把绿地、透水路面和通风廊道一起规划。规划人员还注意到，居民是否愿意步行也与绿地位置有关：如果树荫只集中在公园内部，却没有覆盖通往车站和学校的道路，日常出行者仍然难以受益。由此可见，城市降温需要从整体空间关系出发，而不是只看单个项目的面积或外观。"
+          }
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_read_1",
+            "unit": 1,
+            "passage": 1,
+            "start": 81,
+            "end": 85,
+            "title": "阅读理解 · Questions 81–85",
+            "instruction": "请阅读文章并选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "81",
+                "text": "文章认为绿地建设不能只看什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "游客人数",
+                  "建筑高度",
+                  "绿色面积的数量",
+                  "树木的市场价格"
+                ],
+                "passage": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "第一段指出绿地建设并非只是在地图上增加绿色面积。"
+              },
+              {
+                "number": "82",
+                "text": "为什么连续树荫带效果可能更好？",
+                "type": "Multiple Choice",
+                "options": [
+                  "减少道路长度",
+                  "增加商业广告",
+                  "方便车辆停车",
+                  "避免绿地被硬质空间分割"
+                ],
+                "passage": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "原文比较了连续树荫带与被道路分割的小块绿地。"
+              },
+              {
+                "number": "83",
+                "text": "土壤在城市降温中有什么作用？",
+                "type": "Multiple Choice",
+                "options": [
+                  "储存雨水并缓慢释放水分",
+                  "制造热量",
+                  "阻止树木生长",
+                  "代替建筑通风"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "材料说明土壤能够储存雨水，缓慢释放水分。"
+              },
+              {
+                "number": "84",
+                "text": "居民为什么可能无法从公园绿地中受益？",
+                "type": "Multiple Choice",
+                "options": [
+                  "绿地不允许步行",
+                  "通往车站和学校的道路缺少树荫",
+                  "公园里没有树",
+                  "公园开放时间太长"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "文章举例说明树荫若只在公园内部，日常路线仍缺乏遮阴。"
+              },
+              {
+                "number": "85",
+                "text": "作者主张怎样规划城市降温？",
+                "type": "Multiple Choice",
+                "options": [
+                  "只使用深色铺装",
+                  "优先建设地下商业设施",
+                  "考虑整体空间关系",
+                  "只扩大单个公园"
+                ],
+                "passage": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "结尾强调应从整体空间关系出发。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "81",
+            "text": "文章认为绿地建设不能只看什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "游客人数",
+              "建筑高度",
+              "绿色面积的数量",
+              "树木的市场价格"
+            ],
+            "passage": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "第一段指出绿地建设并非只是在地图上增加绿色面积。"
+          },
+          {
+            "number": "82",
+            "text": "为什么连续树荫带效果可能更好？",
+            "type": "Multiple Choice",
+            "options": [
+              "减少道路长度",
+              "增加商业广告",
+              "方便车辆停车",
+              "避免绿地被硬质空间分割"
+            ],
+            "passage": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "原文比较了连续树荫带与被道路分割的小块绿地。"
+          },
+          {
+            "number": "83",
+            "text": "土壤在城市降温中有什么作用？",
+            "type": "Multiple Choice",
+            "options": [
+              "储存雨水并缓慢释放水分",
+              "制造热量",
+              "阻止树木生长",
+              "代替建筑通风"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "材料说明土壤能够储存雨水，缓慢释放水分。"
+          },
+          {
+            "number": "84",
+            "text": "居民为什么可能无法从公园绿地中受益？",
+            "type": "Multiple Choice",
+            "options": [
+              "绿地不允许步行",
+              "通往车站和学校的道路缺少树荫",
+              "公园里没有树",
+              "公园开放时间太长"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "文章举例说明树荫若只在公园内部，日常路线仍缺乏遮阴。"
+          },
+          {
+            "number": "85",
+            "text": "作者主张怎样规划城市降温？",
+            "type": "Multiple Choice",
+            "options": [
+              "只使用深色铺装",
+              "优先建设地下商业设施",
+              "考虑整体空间关系",
+              "只扩大单个公园"
+            ],
+            "passage": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "结尾强调应从整体空间关系出发。"
+          }
+        ]
+      },
+      "answerKey": {
+        "81": "C",
+        "82": "D",
+        "83": "A",
+        "84": "B",
+        "85": "C"
+      },
+      "explanations": {
+        "81": "第一段指出绿地建设并非只是在地图上增加绿色面积。",
+        "82": "原文比较了连续树荫带与被道路分割的小块绿地。",
+        "83": "材料说明土壤能够储存雨水，缓慢释放水分。",
+        "84": "文章举例说明树荫若只在公园内部，日常路线仍缺乏遮阴。",
+        "85": "结尾强调应从整体空间关系出发。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 03",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Reading · 5 câu",
+      "statusLabel": "Sẵn sàng luyện tập",
+      "buttonLabel": "Làm bài",
+      "coverUrl": "/achievement-1.png"
+    },
+    {
+      "skill": "writing",
+      "volume": 6,
+      "testNo": 203,
+      "title": "XANH LÁ · HSK6 · ĐỀ 03 · WRITING",
+      "questionType": "Summary Writing",
+      "durationMinutes": 45,
+      "totalQuestions": 1,
+      "content": {
+        "instructions": "HSK6 缩写练习 · 约400字。提交后由 AI 按内容忠实度、信息完整度、结构连贯性和语言准确性给出反馈。",
+        "questions": [
+          {
+            "number": "1",
+            "task": "缩写作文",
+            "text": "请仔细阅读下面的文章，然后将其缩写成一篇约400字的短文。\n要求：保留主要事实、原因、过程和结论；不要加入个人观点；语言简洁、连贯。\n\n【题目】城市空间如何适应持续高温\n【原文】\n过去，城市应对高温时，常常把重点放在增加大型公园和种植树木上。随着监测技术进步，规划人员逐渐发现，居民感受到的热并不只取决于城市拥有多少绿地，还与每天经过的道路、建筑之间的距离以及地面材料有关。一条没有遮阴的通勤路线，即使附近有一座很大的公园，也无法让步行者在最需要的时候得到帮助。因此，一些城市开始把降温措施放进街区更新计划中：在学校门口设置连续树荫，在公交站旁增加可停留的绿地，使用透水铺装替代部分不透水材料，并保留风能够通过的空间。与此同时，种植后的管理也受到重视。树木需要适当的土壤空间和稳定的水分，如果树坑被水泥覆盖，或者长期缺乏照料，树木很难发挥预期作用。规划部门还通过居民调查了解哪些道路在中午最难行走，再决定改造顺序。专家认为，城市降温不可能依靠单一工程完成，而需要交通、绿化、建筑和社区管理共同参与。只有把措施安排在居民真实生活的路径上，城市环境改善才能转化为日常体验。",
+            "sourceText": "过去，城市应对高温时，常常把重点放在增加大型公园和种植树木上。随着监测技术进步，规划人员逐渐发现，居民感受到的热并不只取决于城市拥有多少绿地，还与每天经过的道路、建筑之间的距离以及地面材料有关。一条没有遮阴的通勤路线，即使附近有一座很大的公园，也无法让步行者在最需要的时候得到帮助。因此，一些城市开始把降温措施放进街区更新计划中：在学校门口设置连续树荫，在公交站旁增加可停留的绿地，使用透水铺装替代部分不透水材料，并保留风能够通过的空间。与此同时，种植后的管理也受到重视。树木需要适当的土壤空间和稳定的水分，如果树坑被水泥覆盖，或者长期缺乏照料，树木很难发挥预期作用。规划部门还通过居民调查了解哪些道路在中午最难行走，再决定改造顺序。专家认为，城市降温不可能依靠单一工程完成，而需要交通、绿化、建筑和社区管理共同参与。只有把措施安排在居民真实生活的路径上，城市环境改善才能转化为日常体验。",
+            "min": 350,
+            "max": 450,
+            "direction": "Giữ nguyên ý chính, không thêm quan điểm cá nhân."
+          }
+        ]
+      },
+      "answerKey": {},
+      "explanations": {
+        "1": "Bài viết được đánh giá theo độ trung thành với văn bản nguồn, mức độ đầy đủ ý, mạch lạc và độ chính xác ngôn ngữ."
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 03",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Writing · 缩写作文 · 约400字",
+      "statusLabel": "AI chấm bài",
+      "buttonLabel": "Viết bài",
+      "coverUrl": "/achievement-3.png"
+    },
+    {
+      "skill": "listening",
+      "volume": 6,
+      "testNo": 204,
+      "title": "XANH LÁ · HSK6 · ĐỀ 04 · LISTENING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 8,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu. Audio đang chờ Admin tải lên. Không có audio trong gói patch.",
+        "sections": [
+          "第一部分 · 请根据录音内容选择正确答案。"
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_listen_1",
+            "unit": 1,
+            "section": 1,
+            "start": 1,
+            "end": 5,
+            "title": "听力练习 · Questions 1–5",
+            "instruction": "请根据录音内容选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "1",
+                "text": "项目首先整理哪类资料？",
+                "type": "Multiple Choice",
+                "options": [
+                  "商业合同",
+                  "地方民俗资料",
+                  "现代建筑图纸",
+                  "外国邮票"
+                ],
+                "section": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "录音明确说明首先整理地方民俗资料。"
+              },
+              {
+                "number": "2",
+                "text": "工作人员扫描照片前先做什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "公开所有个人资料",
+                  "把照片卖给收藏者",
+                  "核对时间、地点和人物信息",
+                  "删除旧照片"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "材料强调先核对照片背景信息，再进行后续整理。"
+              },
+              {
+                "number": "3",
+                "text": "负责人为什么强调背景说明？",
+                "type": "Multiple Choice",
+                "options": [
+                  "背景说明会增加文件大小",
+                  "研究者只看照片颜色",
+                  "资料越少越容易保存",
+                  "没有说明就无法判断资料意义"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "负责人指出缺少背景说明，研究者难以判断资料意义。"
+              },
+              {
+                "number": "4",
+                "text": "哪些内容需要经过同意才能使用？",
+                "type": "Multiple Choice",
+                "options": [
+                  "涉及个人隐私的内容",
+                  "所有公开资料",
+                  "博物馆建筑照片",
+                  "已经公开的展览时间"
+                ],
+                "section": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "录音说涉及个人隐私的内容需经过同意才能使用。"
+              },
+              {
+                "number": "5",
+                "text": "团队怎样保证长期保存？",
+                "type": "Multiple Choice",
+                "options": [
+                  "把资料全部打印出来",
+                  "多份备份并检查格式",
+                  "只保存一份文件",
+                  "定期删除旧格式"
+                ],
+                "section": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "材料说明采用多份备份，并定期检查文件格式。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "1",
+            "text": "项目首先整理哪类资料？",
+            "type": "Multiple Choice",
+            "options": [
+              "商业合同",
+              "地方民俗资料",
+              "现代建筑图纸",
+              "外国邮票"
+            ],
+            "section": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "录音明确说明首先整理地方民俗资料。"
+          },
+          {
+            "number": "2",
+            "text": "工作人员扫描照片前先做什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "公开所有个人资料",
+              "把照片卖给收藏者",
+              "核对时间、地点和人物信息",
+              "删除旧照片"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "材料强调先核对照片背景信息，再进行后续整理。"
+          },
+          {
+            "number": "3",
+            "text": "负责人为什么强调背景说明？",
+            "type": "Multiple Choice",
+            "options": [
+              "背景说明会增加文件大小",
+              "研究者只看照片颜色",
+              "资料越少越容易保存",
+              "没有说明就无法判断资料意义"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "负责人指出缺少背景说明，研究者难以判断资料意义。"
+          },
+          {
+            "number": "4",
+            "text": "哪些内容需要经过同意才能使用？",
+            "type": "Multiple Choice",
+            "options": [
+              "涉及个人隐私的内容",
+              "所有公开资料",
+              "博物馆建筑照片",
+              "已经公开的展览时间"
+            ],
+            "section": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "录音说涉及个人隐私的内容需经过同意才能使用。"
+          },
+          {
+            "number": "5",
+            "text": "团队怎样保证长期保存？",
+            "type": "Multiple Choice",
+            "options": [
+              "把资料全部打印出来",
+              "多份备份并检查格式",
+              "只保存一份文件",
+              "定期删除旧格式"
+            ],
+            "section": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "材料说明采用多份备份，并定期检查文件格式。"
+          }
+        ]
+      },
+      "answerKey": {
+        "1": "B",
+        "2": "C",
+        "3": "D",
+        "4": "A",
+        "5": "B"
+      },
+      "explanations": {
+        "1": "录音明确说明首先整理地方民俗资料。",
+        "2": "材料强调先核对照片背景信息，再进行后续整理。",
+        "3": "负责人指出缺少背景说明，研究者难以判断资料意义。",
+        "4": "录音说涉及个人隐私的内容需经过同意才能使用。",
+        "5": "材料说明采用多份备份，并定期检查文件格式。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 04",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Listening · 5 câu · Chờ Admin tải audio",
+      "statusLabel": "Chờ Admin tải audio",
+      "buttonLabel": "Làm bài sau khi có audio",
+      "coverUrl": "/achievement-2.png"
+    },
+    {
+      "skill": "reading",
+      "volume": 6,
+      "testNo": 204,
+      "title": "XANH LÁ · HSK6 · ĐỀ 04 · READING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 12,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu đọc hiểu. Đoạn văn được biên soạn mới cho bộ luyện tập này.",
+        "passages": [
+          {
+            "title": "博物馆数字档案",
+            "text": "数字技术为博物馆保存和展示文化资料提供了新的方法，但技术本身并不能自动产生可靠的档案。过去，一些机构把资料扫描后便认为数字化已经完成，结果几年后发现，文件虽然还在，却缺少来源、时间和使用条件等信息。研究者无法确认资料是否经过修改，也不知道它与其他材料之间有什么关系。为解决这些问题，档案人员开始建立统一的描述标准，把采集过程、整理者、授权范围和版本变化一并记录。与此同时，数字档案也带来隐私与权利问题。口述记录可能包含家庭经历，老照片中也可能出现尚未同意公开的人物。机构需要在公共教育价值与个人权益之间作出审慎判断。专家指出，数字化的目标不是让每一份资料都立即公开，而是使资料在安全、可追溯的条件下得到保存，并在适当的时候供研究和教育使用。"
+          }
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_read_1",
+            "unit": 1,
+            "passage": 1,
+            "start": 81,
+            "end": 85,
+            "title": "阅读理解 · Questions 81–85",
+            "instruction": "请阅读文章并选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "81",
+                "text": "文章认为数字技术不能自动带来什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "更大的屏幕",
+                  "更多游客",
+                  "更便宜的设备",
+                  "可靠的档案"
+                ],
+                "passage": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "首句指出技术本身并不能自动产生可靠的档案。"
+              },
+              {
+                "number": "82",
+                "text": "统一描述标准记录哪些内容？",
+                "type": "Multiple Choice",
+                "options": [
+                  "采集过程、整理者、授权和版本变化",
+                  "仅记录文件大小",
+                  "只记录博物馆地址",
+                  "只记录游客数量"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "文章列举了采集过程、整理者、授权范围和版本变化。"
+              },
+              {
+                "number": "83",
+                "text": "数字档案为什么涉及隐私问题？",
+                "type": "Multiple Choice",
+                "options": [
+                  "博物馆没有工作人员",
+                  "资料可能包含家庭经历和未授权人物",
+                  "档案只能存储声音",
+                  "数字文件无法复制"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "原文举出口述记录和老照片可能涉及个人隐私。"
+              },
+              {
+                "number": "84",
+                "text": "机构需要在什么之间作出判断？",
+                "type": "Multiple Choice",
+                "options": [
+                  "旧建筑与新建筑",
+                  "游客和员工数量",
+                  "公共教育价值与个人权益",
+                  "保存成本和门票价格"
+                ],
+                "passage": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "材料明确提出公共教育价值与个人权益之间的平衡。"
+              },
+              {
+                "number": "85",
+                "text": "作者如何理解数字化的目标？",
+                "type": "Multiple Choice",
+                "options": [
+                  "所有资料立即公开",
+                  "尽快销毁纸质资料",
+                  "让研究完全依赖电脑",
+                  "让资料安全、可追溯地保存并适时使用"
+                ],
+                "passage": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "结尾强调安全、可追溯保存，并在适当时候用于研究和教育。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "81",
+            "text": "文章认为数字技术不能自动带来什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "更大的屏幕",
+              "更多游客",
+              "更便宜的设备",
+              "可靠的档案"
+            ],
+            "passage": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "首句指出技术本身并不能自动产生可靠的档案。"
+          },
+          {
+            "number": "82",
+            "text": "统一描述标准记录哪些内容？",
+            "type": "Multiple Choice",
+            "options": [
+              "采集过程、整理者、授权和版本变化",
+              "仅记录文件大小",
+              "只记录博物馆地址",
+              "只记录游客数量"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "文章列举了采集过程、整理者、授权范围和版本变化。"
+          },
+          {
+            "number": "83",
+            "text": "数字档案为什么涉及隐私问题？",
+            "type": "Multiple Choice",
+            "options": [
+              "博物馆没有工作人员",
+              "资料可能包含家庭经历和未授权人物",
+              "档案只能存储声音",
+              "数字文件无法复制"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "原文举出口述记录和老照片可能涉及个人隐私。"
+          },
+          {
+            "number": "84",
+            "text": "机构需要在什么之间作出判断？",
+            "type": "Multiple Choice",
+            "options": [
+              "旧建筑与新建筑",
+              "游客和员工数量",
+              "公共教育价值与个人权益",
+              "保存成本和门票价格"
+            ],
+            "passage": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "材料明确提出公共教育价值与个人权益之间的平衡。"
+          },
+          {
+            "number": "85",
+            "text": "作者如何理解数字化的目标？",
+            "type": "Multiple Choice",
+            "options": [
+              "所有资料立即公开",
+              "尽快销毁纸质资料",
+              "让研究完全依赖电脑",
+              "让资料安全、可追溯地保存并适时使用"
+            ],
+            "passage": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "结尾强调安全、可追溯保存，并在适当时候用于研究和教育。"
+          }
+        ]
+      },
+      "answerKey": {
+        "81": "D",
+        "82": "A",
+        "83": "B",
+        "84": "C",
+        "85": "D"
+      },
+      "explanations": {
+        "81": "首句指出技术本身并不能自动产生可靠的档案。",
+        "82": "文章列举了采集过程、整理者、授权范围和版本变化。",
+        "83": "原文举出口述记录和老照片可能涉及个人隐私。",
+        "84": "材料明确提出公共教育价值与个人权益之间的平衡。",
+        "85": "结尾强调安全、可追溯保存，并在适当时候用于研究和教育。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 04",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Reading · 5 câu",
+      "statusLabel": "Sẵn sàng luyện tập",
+      "buttonLabel": "Làm bài",
+      "coverUrl": "/achievement-1.png"
+    },
+    {
+      "skill": "writing",
+      "volume": 6,
+      "testNo": 204,
+      "title": "XANH LÁ · HSK6 · ĐỀ 04 · WRITING",
+      "questionType": "Summary Writing",
+      "durationMinutes": 45,
+      "totalQuestions": 1,
+      "content": {
+        "instructions": "HSK6 缩写练习 · 约400字。提交后由 AI 按内容忠实度、信息完整度、结构连贯性和语言准确性给出反馈。",
+        "questions": [
+          {
+            "number": "1",
+            "task": "缩写作文",
+            "text": "请仔细阅读下面的文章，然后将其缩写成一篇约400字的短文。\n要求：保留主要事实、原因、过程和结论；不要加入个人观点；语言简洁、连贯。\n\n【题目】数字技术与文化记忆的保存\n【原文】\n随着数字设备普及，许多博物馆和地方文化机构开始把纸质文件、照片和口述记录转化为电子资料。人们通常认为，只要完成扫描和上传，资料便能够永久保存。然而，实际工作远比这一过程复杂。首先，工作人员必须确认资料的来源、形成时间和相关背景，否则未来的研究者即使打开文件，也可能无法判断其真实性和价值。其次，数字档案需要记录授权情况，尤其是涉及个人生活、未公开访谈或私人照片时，不能因为技术上可以传播，就忽视当事人的意愿。再次，文件格式和存储设备都会随着时间变化，因此机构需要建立备份制度，并定期检查资料是否能够读取。数字档案还应方便使用者查找，清晰的分类和关键词能够减少重复劳动。专家认为，技术只是工具，真正重要的是建立长期管理制度，让资料既能得到保护，又能在合适的条件下服务教育和研究。数字化并不是简单地把过去搬到屏幕上，而是重新组织文化记忆，使其能够被准确理解并传递给下一代。",
+            "sourceText": "随着数字设备普及，许多博物馆和地方文化机构开始把纸质文件、照片和口述记录转化为电子资料。人们通常认为，只要完成扫描和上传，资料便能够永久保存。然而，实际工作远比这一过程复杂。首先，工作人员必须确认资料的来源、形成时间和相关背景，否则未来的研究者即使打开文件，也可能无法判断其真实性和价值。其次，数字档案需要记录授权情况，尤其是涉及个人生活、未公开访谈或私人照片时，不能因为技术上可以传播，就忽视当事人的意愿。再次，文件格式和存储设备都会随着时间变化，因此机构需要建立备份制度，并定期检查资料是否能够读取。数字档案还应方便使用者查找，清晰的分类和关键词能够减少重复劳动。专家认为，技术只是工具，真正重要的是建立长期管理制度，让资料既能得到保护，又能在合适的条件下服务教育和研究。数字化并不是简单地把过去搬到屏幕上，而是重新组织文化记忆，使其能够被准确理解并传递给下一代。",
+            "min": 350,
+            "max": 450,
+            "direction": "Giữ nguyên ý chính, không thêm quan điểm cá nhân."
+          }
+        ]
+      },
+      "answerKey": {},
+      "explanations": {
+        "1": "Bài viết được đánh giá theo độ trung thành với văn bản nguồn, mức độ đầy đủ ý, mạch lạc và độ chính xác ngôn ngữ."
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 04",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Writing · 缩写作文 · 约400字",
+      "statusLabel": "AI chấm bài",
+      "buttonLabel": "Viết bài",
+      "coverUrl": "/achievement-3.png"
+    },
+    {
+      "skill": "listening",
+      "volume": 6,
+      "testNo": 205,
+      "title": "XANH LÁ · HSK6 · ĐỀ 05 · LISTENING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 8,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu. Audio đang chờ Admin tải lên. Không có audio trong gói patch.",
+        "sections": [
+          "第一部分 · 请根据录音内容选择正确答案。"
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_listen_1",
+            "unit": 1,
+            "section": 1,
+            "start": 1,
+            "end": 5,
+            "title": "听力练习 · Questions 1–5",
+            "instruction": "请根据录音内容选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "1",
+                "text": "合作社过去主要通过谁销售农产品？",
+                "type": "Multiple Choice",
+                "options": [
+                  "学校食堂",
+                  "旅游公司",
+                  "中间商",
+                  "网络主播"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "材料指出过去主要把农产品卖给中间商。"
+              },
+              {
+                "number": "2",
+                "text": "合作社现在记录哪些信息？",
+                "type": "Multiple Choice",
+                "options": [
+                  "农户的家庭收入",
+                  "消费者的年龄",
+                  "市场广告数量",
+                  "质量、采摘时间和运输条件"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "录音列出质量、采摘时间和运输条件。"
+              },
+              {
+                "number": "3",
+                "text": "合作社为什么保留部分产量？",
+                "type": "Multiple Choice",
+                "options": [
+                  "应对天气影响",
+                  "为了减少包装成本",
+                  "为了停止销售",
+                  "为了提高土地价格"
+                ],
+                "section": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "负责人说调整种植计划时仍保留一部分产量应对天气影响。"
+              },
+              {
+                "number": "4",
+                "text": "成员共同投资了什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "新的办公楼",
+                  "小型冷藏设备",
+                  "大型工厂",
+                  "宣传大屏幕"
+                ],
+                "section": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "为减少运输损耗，成员共同投资小型冷藏设备。"
+              },
+              {
+                "number": "5",
+                "text": "试行后出现了什么效果？",
+                "type": "Multiple Choice",
+                "options": [
+                  "结算变慢",
+                  "农户停止记录信息",
+                  "质量信息更透明、投诉减少",
+                  "投诉增加"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "材料指出质量信息更透明、客户投诉减少且结算更及时。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "1",
+            "text": "合作社过去主要通过谁销售农产品？",
+            "type": "Multiple Choice",
+            "options": [
+              "学校食堂",
+              "旅游公司",
+              "中间商",
+              "网络主播"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "材料指出过去主要把农产品卖给中间商。"
+          },
+          {
+            "number": "2",
+            "text": "合作社现在记录哪些信息？",
+            "type": "Multiple Choice",
+            "options": [
+              "农户的家庭收入",
+              "消费者的年龄",
+              "市场广告数量",
+              "质量、采摘时间和运输条件"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "录音列出质量、采摘时间和运输条件。"
+          },
+          {
+            "number": "3",
+            "text": "合作社为什么保留部分产量？",
+            "type": "Multiple Choice",
+            "options": [
+              "应对天气影响",
+              "为了减少包装成本",
+              "为了停止销售",
+              "为了提高土地价格"
+            ],
+            "section": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "负责人说调整种植计划时仍保留一部分产量应对天气影响。"
+          },
+          {
+            "number": "4",
+            "text": "成员共同投资了什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "新的办公楼",
+              "小型冷藏设备",
+              "大型工厂",
+              "宣传大屏幕"
+            ],
+            "section": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "为减少运输损耗，成员共同投资小型冷藏设备。"
+          },
+          {
+            "number": "5",
+            "text": "试行后出现了什么效果？",
+            "type": "Multiple Choice",
+            "options": [
+              "结算变慢",
+              "农户停止记录信息",
+              "质量信息更透明、投诉减少",
+              "投诉增加"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "材料指出质量信息更透明、客户投诉减少且结算更及时。"
+          }
+        ]
+      },
+      "answerKey": {
+        "1": "C",
+        "2": "D",
+        "3": "A",
+        "4": "B",
+        "5": "C"
+      },
+      "explanations": {
+        "1": "材料指出过去主要把农产品卖给中间商。",
+        "2": "录音列出质量、采摘时间和运输条件。",
+        "3": "负责人说调整种植计划时仍保留一部分产量应对天气影响。",
+        "4": "为减少运输损耗，成员共同投资小型冷藏设备。",
+        "5": "材料指出质量信息更透明、客户投诉减少且结算更及时。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 05",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Listening · 5 câu · Chờ Admin tải audio",
+      "statusLabel": "Chờ Admin tải audio",
+      "buttonLabel": "Làm bài sau khi có audio",
+      "coverUrl": "/achievement-2.png"
+    },
+    {
+      "skill": "reading",
+      "volume": 6,
+      "testNo": 205,
+      "title": "XANH LÁ · HSK6 · ĐỀ 05 · READING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 12,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu đọc hiểu. Đoạn văn được biên soạn mới cho bộ luyện tập này.",
+        "passages": [
+          {
+            "title": "农业合作社与供应链",
+            "text": "农产品从田间到消费者手中，需要经过采摘、分级、包装、运输和销售等多个环节。过去，一些小型农户缺少稳定的客户渠道，只能在收获季节集中出售，容易受到价格波动影响。合作社模式能够把分散的生产者组织起来，共同采购设备、制定质量标准并协商销售安排。不过，合作社并非只要成立组织就能自动提高收益。成员之间需要明确分工，公开成本和订单信息，并建立处理争议的机制。如果少数成员掌握全部市场信息，其他农户便难以判断分配是否合理。近年来，部分合作社开始使用简单的数据平台，记录产品批次和销售情况，使成员能够了解市场反馈。专家认为，数字工具有助于提升透明度，但真正决定合作效果的仍是信任和共同规则。"
+          }
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_read_1",
+            "unit": 1,
+            "passage": 1,
+            "start": 81,
+            "end": 85,
+            "title": "阅读理解 · Questions 81–85",
+            "instruction": "请阅读文章并选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "81",
+                "text": "小型农户过去容易受到什么影响？",
+                "type": "Multiple Choice",
+                "options": [
+                  "价格波动",
+                  "海拔变化",
+                  "学校课程",
+                  "建筑材料价格"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "文章说明农户集中出售，容易受到价格波动影响。"
+              },
+              {
+                "number": "82",
+                "text": "合作社能够帮助生产者做什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "完全取消市场协商",
+                  "共同采购设备并制定质量标准",
+                  "各自制定互不相同的标准",
+                  "停止记录销售情况"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "原文列出共同采购设备、制定标准和协商销售安排。"
+              },
+              {
+                "number": "83",
+                "text": "合作社要提高收益还需要什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "减少信息公开",
+                  "由单一成员决定所有事项",
+                  "明确分工和处理争议的机制",
+                  "只增加成员数量"
+                ],
+                "passage": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "文章指出成员需要明确分工、公开信息并建立争议处理机制。"
+              },
+              {
+                "number": "84",
+                "text": "数据平台有什么作用？",
+                "type": "Multiple Choice",
+                "options": [
+                  "保证价格永远不变",
+                  "替代所有农户劳动",
+                  "自动决定利润分配",
+                  "记录批次和销售情况"
+                ],
+                "passage": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "材料说明数据平台用于记录产品批次和销售情况。"
+              },
+              {
+                "number": "85",
+                "text": "专家认为合作效果主要取决于什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "信任和共同规则",
+                  "设备价格",
+                  "广告数量",
+                  "土地面积"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "结尾强调数字工具之外，信任和共同规则才是关键。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "81",
+            "text": "小型农户过去容易受到什么影响？",
+            "type": "Multiple Choice",
+            "options": [
+              "价格波动",
+              "海拔变化",
+              "学校课程",
+              "建筑材料价格"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "文章说明农户集中出售，容易受到价格波动影响。"
+          },
+          {
+            "number": "82",
+            "text": "合作社能够帮助生产者做什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "完全取消市场协商",
+              "共同采购设备并制定质量标准",
+              "各自制定互不相同的标准",
+              "停止记录销售情况"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "原文列出共同采购设备、制定标准和协商销售安排。"
+          },
+          {
+            "number": "83",
+            "text": "合作社要提高收益还需要什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "减少信息公开",
+              "由单一成员决定所有事项",
+              "明确分工和处理争议的机制",
+              "只增加成员数量"
+            ],
+            "passage": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "文章指出成员需要明确分工、公开信息并建立争议处理机制。"
+          },
+          {
+            "number": "84",
+            "text": "数据平台有什么作用？",
+            "type": "Multiple Choice",
+            "options": [
+              "保证价格永远不变",
+              "替代所有农户劳动",
+              "自动决定利润分配",
+              "记录批次和销售情况"
+            ],
+            "passage": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "材料说明数据平台用于记录产品批次和销售情况。"
+          },
+          {
+            "number": "85",
+            "text": "专家认为合作效果主要取决于什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "信任和共同规则",
+              "设备价格",
+              "广告数量",
+              "土地面积"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "结尾强调数字工具之外，信任和共同规则才是关键。"
+          }
+        ]
+      },
+      "answerKey": {
+        "81": "A",
+        "82": "B",
+        "83": "C",
+        "84": "D",
+        "85": "A"
+      },
+      "explanations": {
+        "81": "文章说明农户集中出售，容易受到价格波动影响。",
+        "82": "原文列出共同采购设备、制定标准和协商销售安排。",
+        "83": "文章指出成员需要明确分工、公开信息并建立争议处理机制。",
+        "84": "材料说明数据平台用于记录产品批次和销售情况。",
+        "85": "结尾强调数字工具之外，信任和共同规则才是关键。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 05",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Reading · 5 câu",
+      "statusLabel": "Sẵn sàng luyện tập",
+      "buttonLabel": "Làm bài",
+      "coverUrl": "/achievement-1.png"
+    },
+    {
+      "skill": "writing",
+      "volume": 6,
+      "testNo": 205,
+      "title": "XANH LÁ · HSK6 · ĐỀ 05 · WRITING",
+      "questionType": "Summary Writing",
+      "durationMinutes": 45,
+      "totalQuestions": 1,
+      "content": {
+        "instructions": "HSK6 缩写练习 · 约400字。提交后由 AI 按内容忠实度、信息完整度、结构连贯性和语言准确性给出反馈。",
+        "questions": [
+          {
+            "number": "1",
+            "task": "缩写作文",
+            "text": "请仔细阅读下面的文章，然后将其缩写成一篇约400字的短文。\n要求：保留主要事实、原因、过程和结论；不要加入个人观点；语言简洁、连贯。\n\n【题目】合作机制如何改善农产品流通\n【原文】\n在一些偏远地区，农户虽然能够生产品质不错的农产品，却常常因为缺少稳定的销售渠道而难以获得合理收入。收获季节集中上市时，中间环节掌握的信息更多，生产者往往只能接受临时价格。为改变这种情况，当地成立了农业合作社，把分散的农户组织起来，共同制定质量标准、安排采摘时间，并与餐饮企业和零售商建立长期联系。合作社还投资冷藏和包装设备，减少运输过程中的损耗。与此同时，成员需要记录产品批次、成本和订单完成情况，使每个人都能了解经营结果。开始时，一些农户认为这些管理工作会增加负担，但随着客户投诉减少、货款结算更加及时，他们逐渐认识到透明信息的重要性。合作社也发现，组织内部必须建立公平的决策制度，不能让少数人垄断订单信息。未来，合作社计划培训年轻成员使用数据工具，并与学校合作研究适合当地气候的品种。由此可见，改善农产品流通不仅需要设备和市场渠道，更需要成员之间的信任、分工与持续合作。",
+            "sourceText": "在一些偏远地区，农户虽然能够生产品质不错的农产品，却常常因为缺少稳定的销售渠道而难以获得合理收入。收获季节集中上市时，中间环节掌握的信息更多，生产者往往只能接受临时价格。为改变这种情况，当地成立了农业合作社，把分散的农户组织起来，共同制定质量标准、安排采摘时间，并与餐饮企业和零售商建立长期联系。合作社还投资冷藏和包装设备，减少运输过程中的损耗。与此同时，成员需要记录产品批次、成本和订单完成情况，使每个人都能了解经营结果。开始时，一些农户认为这些管理工作会增加负担，但随着客户投诉减少、货款结算更加及时，他们逐渐认识到透明信息的重要性。合作社也发现，组织内部必须建立公平的决策制度，不能让少数人垄断订单信息。未来，合作社计划培训年轻成员使用数据工具，并与学校合作研究适合当地气候的品种。由此可见，改善农产品流通不仅需要设备和市场渠道，更需要成员之间的信任、分工与持续合作。",
+            "min": 350,
+            "max": 450,
+            "direction": "Giữ nguyên ý chính, không thêm quan điểm cá nhân."
+          }
+        ]
+      },
+      "answerKey": {},
+      "explanations": {
+        "1": "Bài viết được đánh giá theo độ trung thành với văn bản nguồn, mức độ đầy đủ ý, mạch lạc và độ chính xác ngôn ngữ."
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 05",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Writing · 缩写作文 · 约400字",
+      "statusLabel": "AI chấm bài",
+      "buttonLabel": "Viết bài",
+      "coverUrl": "/achievement-3.png"
+    },
+    {
+      "skill": "listening",
+      "volume": 6,
+      "testNo": 206,
+      "title": "XANH LÁ · HSK6 · ĐỀ 06 · LISTENING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 8,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu. Audio đang chờ Admin tải lên. Không có audio trong gói patch.",
+        "sections": [
+          "第一部分 · 请根据录音内容选择正确答案。"
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_listen_1",
+            "unit": 1,
+            "section": 1,
+            "start": 1,
+            "end": 5,
+            "title": "听力练习 · Questions 1–5",
+            "instruction": "请根据录音内容选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "1",
+                "text": "公司最初认为怎样解决沟通问题？",
+                "type": "Multiple Choice",
+                "options": [
+                  "取消共享文档",
+                  "缩短项目目标",
+                  "减少团队成员",
+                  "增加视频会议次数"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "材料指出公司最初认为增加视频会议次数可以解决沟通问题。"
+              },
+              {
+                "number": "2",
+                "text": "会议数量上升后出现什么问题？",
+                "type": "Multiple Choice",
+                "options": [
+                  "成员缺少连续工作的时间",
+                  "项目周期立刻缩短",
+                  "团队不再需要沟通",
+                  "所有决策都更快"
+                ],
+                "section": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "负责人发现会议增加反而挤压了连续工作的时间。"
+              },
+              {
+                "number": "3",
+                "text": "普通进度通过什么方式更新？",
+                "type": "Multiple Choice",
+                "options": [
+                  "公开社交媒体",
+                  "共享文档",
+                  "电话逐一通知",
+                  "纸质信件"
+                ],
+                "section": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "新规则规定普通进度通过共享文档更新。"
+              },
+              {
+                "number": "4",
+                "text": "每周会议主要讨论什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "公司历史",
+                  "员工个人生活",
+                  "尚未解决的困难",
+                  "所有成员的全部工作"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "会议只讨论尚未解决的困难，不再逐一汇报所有工作。"
+              },
+              {
+                "number": "5",
+                "text": "哪些环节仍适合面对面沟通？",
+                "type": "Multiple Choice",
+                "options": [
+                  "所有普通进度",
+                  "只涉及文件归档的任务",
+                  "不需要讨论的工作",
+                  "复杂操作或需要即时协作的环节"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "负责人指出复杂操作或需要即时协作的环节仍要面对面沟通。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "1",
+            "text": "公司最初认为怎样解决沟通问题？",
+            "type": "Multiple Choice",
+            "options": [
+              "取消共享文档",
+              "缩短项目目标",
+              "减少团队成员",
+              "增加视频会议次数"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "材料指出公司最初认为增加视频会议次数可以解决沟通问题。"
+          },
+          {
+            "number": "2",
+            "text": "会议数量上升后出现什么问题？",
+            "type": "Multiple Choice",
+            "options": [
+              "成员缺少连续工作的时间",
+              "项目周期立刻缩短",
+              "团队不再需要沟通",
+              "所有决策都更快"
+            ],
+            "section": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "负责人发现会议增加反而挤压了连续工作的时间。"
+          },
+          {
+            "number": "3",
+            "text": "普通进度通过什么方式更新？",
+            "type": "Multiple Choice",
+            "options": [
+              "公开社交媒体",
+              "共享文档",
+              "电话逐一通知",
+              "纸质信件"
+            ],
+            "section": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "新规则规定普通进度通过共享文档更新。"
+          },
+          {
+            "number": "4",
+            "text": "每周会议主要讨论什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "公司历史",
+              "员工个人生活",
+              "尚未解决的困难",
+              "所有成员的全部工作"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "会议只讨论尚未解决的困难，不再逐一汇报所有工作。"
+          },
+          {
+            "number": "5",
+            "text": "哪些环节仍适合面对面沟通？",
+            "type": "Multiple Choice",
+            "options": [
+              "所有普通进度",
+              "只涉及文件归档的任务",
+              "不需要讨论的工作",
+              "复杂操作或需要即时协作的环节"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "负责人指出复杂操作或需要即时协作的环节仍要面对面沟通。"
+          }
+        ]
+      },
+      "answerKey": {
+        "1": "D",
+        "2": "A",
+        "3": "B",
+        "4": "C",
+        "5": "D"
+      },
+      "explanations": {
+        "1": "材料指出公司最初认为增加视频会议次数可以解决沟通问题。",
+        "2": "负责人发现会议增加反而挤压了连续工作的时间。",
+        "3": "新规则规定普通进度通过共享文档更新。",
+        "4": "会议只讨论尚未解决的困难，不再逐一汇报所有工作。",
+        "5": "负责人指出复杂操作或需要即时协作的环节仍要面对面沟通。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 06",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Listening · 5 câu · Chờ Admin tải audio",
+      "statusLabel": "Chờ Admin tải audio",
+      "buttonLabel": "Làm bài sau khi có audio",
+      "coverUrl": "/achievement-2.png"
+    },
+    {
+      "skill": "reading",
+      "volume": 6,
+      "testNo": 206,
+      "title": "XANH LÁ · HSK6 · ĐỀ 06 · READING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 12,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu đọc hiểu. Đoạn văn được biên soạn mới cho bộ luyện tập này.",
+        "passages": [
+          {
+            "title": "远程团队与沟通机制",
+            "text": "远程工作让企业能够跨越地理限制组织团队，但它并不会自动带来更高效率。许多团队在刚开始远程合作时，习惯把所有问题都放进视频会议，结果成员需要不断切换任务，真正用于思考和完成工作的时间反而减少。有效的远程协作需要区分信息共享、意见讨论和决策确认三种活动。事实性进度可以通过共享文件更新，存在分歧的问题适合安排讨论，而决定一旦形成，就应记录负责人、时间要求和后续检查方式。与此同时，团队还要建立信息归档规则，避免关键资料散落在私人聊天记录中。研究者指出，远程工作最重要的不是使用多少数字工具，而是让每个人清楚何时需要回应、哪些事项需要共同决定，以及如何找到最新版本的信息。"
+          }
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_read_1",
+            "unit": 1,
+            "passage": 1,
+            "start": 81,
+            "end": 85,
+            "title": "阅读理解 · Questions 81–85",
+            "instruction": "请阅读文章并选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "81",
+                "text": "远程工作为什么不一定自动提高效率？",
+                "type": "Multiple Choice",
+                "options": [
+                  "所有项目都变得简单",
+                  "成员需要切换任务，实际工作时间可能减少",
+                  "网络总是无法使用",
+                  "员工不再需要思考"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "文章指出频繁会议会使成员切换任务，减少连续工作时间。"
+              },
+              {
+                "number": "82",
+                "text": "作者把远程协作活动分为哪几类？",
+                "type": "Multiple Choice",
+                "options": [
+                  "销售、运输和售后",
+                  "计划、旅游和休息",
+                  "信息共享、意见讨论和决策确认",
+                  "招聘、培训和考核"
+                ],
+                "passage": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "第二段明确列出三类活动。"
+              },
+              {
+                "number": "83",
+                "text": "决策形成后应记录什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "会议室号码",
+                  "成员的兴趣爱好",
+                  "所有人的私人聊天记录",
+                  "负责人、时间要求和检查方式"
+                ],
+                "passage": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "原文列出负责人、时间要求和后续检查方式。"
+              },
+              {
+                "number": "84",
+                "text": "建立信息归档规则有什么目的？",
+                "type": "Multiple Choice",
+                "options": [
+                  "避免关键资料散落在私人聊天中",
+                  "减少工具种类",
+                  "让员工停止沟通",
+                  "隐藏项目进度"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "材料明确说明归档是为了避免资料散落在私人聊天记录。"
+              },
+              {
+                "number": "85",
+                "text": "作者认为远程工作的关键是什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "每天举行长时间会议",
+                  "明确回应、决策和信息版本规则",
+                  "工具数量越多越好",
+                  "尽量取消面对面沟通"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "结尾强调清楚何时回应、共同决定和查找最新信息。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "81",
+            "text": "远程工作为什么不一定自动提高效率？",
+            "type": "Multiple Choice",
+            "options": [
+              "所有项目都变得简单",
+              "成员需要切换任务，实际工作时间可能减少",
+              "网络总是无法使用",
+              "员工不再需要思考"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "文章指出频繁会议会使成员切换任务，减少连续工作时间。"
+          },
+          {
+            "number": "82",
+            "text": "作者把远程协作活动分为哪几类？",
+            "type": "Multiple Choice",
+            "options": [
+              "销售、运输和售后",
+              "计划、旅游和休息",
+              "信息共享、意见讨论和决策确认",
+              "招聘、培训和考核"
+            ],
+            "passage": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "第二段明确列出三类活动。"
+          },
+          {
+            "number": "83",
+            "text": "决策形成后应记录什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "会议室号码",
+              "成员的兴趣爱好",
+              "所有人的私人聊天记录",
+              "负责人、时间要求和检查方式"
+            ],
+            "passage": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "原文列出负责人、时间要求和后续检查方式。"
+          },
+          {
+            "number": "84",
+            "text": "建立信息归档规则有什么目的？",
+            "type": "Multiple Choice",
+            "options": [
+              "避免关键资料散落在私人聊天中",
+              "减少工具种类",
+              "让员工停止沟通",
+              "隐藏项目进度"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "材料明确说明归档是为了避免资料散落在私人聊天记录。"
+          },
+          {
+            "number": "85",
+            "text": "作者认为远程工作的关键是什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "每天举行长时间会议",
+              "明确回应、决策和信息版本规则",
+              "工具数量越多越好",
+              "尽量取消面对面沟通"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "结尾强调清楚何时回应、共同决定和查找最新信息。"
+          }
+        ]
+      },
+      "answerKey": {
+        "81": "B",
+        "82": "C",
+        "83": "D",
+        "84": "A",
+        "85": "B"
+      },
+      "explanations": {
+        "81": "文章指出频繁会议会使成员切换任务，减少连续工作时间。",
+        "82": "第二段明确列出三类活动。",
+        "83": "原文列出负责人、时间要求和后续检查方式。",
+        "84": "材料明确说明归档是为了避免资料散落在私人聊天记录。",
+        "85": "结尾强调清楚何时回应、共同决定和查找最新信息。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 06",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Reading · 5 câu",
+      "statusLabel": "Sẵn sàng luyện tập",
+      "buttonLabel": "Làm bài",
+      "coverUrl": "/achievement-1.png"
+    },
+    {
+      "skill": "writing",
+      "volume": 6,
+      "testNo": 206,
+      "title": "XANH LÁ · HSK6 · ĐỀ 06 · WRITING",
+      "questionType": "Summary Writing",
+      "durationMinutes": 45,
+      "totalQuestions": 1,
+      "content": {
+        "instructions": "HSK6 缩写练习 · 约400字。提交后由 AI 按内容忠实度、信息完整度、结构连贯性和语言准确性给出反馈。",
+        "questions": [
+          {
+            "number": "1",
+            "task": "缩写作文",
+            "text": "请仔细阅读下面的文章，然后将其缩写成一篇约400字的短文。\n要求：保留主要事实、原因、过程和结论；不要加入个人观点；语言简洁、连贯。\n\n【题目】远程协作中的效率与规则\n【原文】\n随着通信技术发展，越来越多企业允许员工在不同地点完成工作。远程办公减少了通勤时间，也使企业能够邀请不同地区的专业人员加入项目。然而，一些团队发现，工具增加并不一定意味着沟通更顺畅。为了避免遗漏信息，成员可能不断发送消息或参加视频会议，导致工作被频繁打断。项目管理人员因此开始重新划分沟通任务：普通进度写入共享文档，需要讨论的问题集中安排时间，重要决策则必须记录负责人和完成期限。这样的规则减少了重复汇报，也让成员能够连续完成需要专注的工作。与此同时，远程合作仍然面临信任和关系建立的问题。新成员可能不清楚团队习惯，复杂任务也可能需要现场演示。为此，一些企业会定期安排面对面交流，并为新成员提供清晰的工作指南。专家认为，远程团队的效率并不由会议数量或软件功能决定，而取决于信息是否透明、职责是否明确，以及团队成员能否在需要时获得支持。",
+            "sourceText": "随着通信技术发展，越来越多企业允许员工在不同地点完成工作。远程办公减少了通勤时间，也使企业能够邀请不同地区的专业人员加入项目。然而，一些团队发现，工具增加并不一定意味着沟通更顺畅。为了避免遗漏信息，成员可能不断发送消息或参加视频会议，导致工作被频繁打断。项目管理人员因此开始重新划分沟通任务：普通进度写入共享文档，需要讨论的问题集中安排时间，重要决策则必须记录负责人和完成期限。这样的规则减少了重复汇报，也让成员能够连续完成需要专注的工作。与此同时，远程合作仍然面临信任和关系建立的问题。新成员可能不清楚团队习惯，复杂任务也可能需要现场演示。为此，一些企业会定期安排面对面交流，并为新成员提供清晰的工作指南。专家认为，远程团队的效率并不由会议数量或软件功能决定，而取决于信息是否透明、职责是否明确，以及团队成员能否在需要时获得支持。",
+            "min": 350,
+            "max": 450,
+            "direction": "Giữ nguyên ý chính, không thêm quan điểm cá nhân."
+          }
+        ]
+      },
+      "answerKey": {},
+      "explanations": {
+        "1": "Bài viết được đánh giá theo độ trung thành với văn bản nguồn, mức độ đầy đủ ý, mạch lạc và độ chính xác ngôn ngữ."
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 06",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Writing · 缩写作文 · 约400字",
+      "statusLabel": "AI chấm bài",
+      "buttonLabel": "Viết bài",
+      "coverUrl": "/achievement-3.png"
+    },
+    {
+      "skill": "listening",
+      "volume": 6,
+      "testNo": 207,
+      "title": "XANH LÁ · HSK6 · ĐỀ 07 · LISTENING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 8,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu. Audio đang chờ Admin tải lên. Không có audio trong gói patch.",
+        "sections": [
+          "第一部分 · 请根据录音内容选择正确答案。"
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_listen_1",
+            "unit": 1,
+            "section": 1,
+            "start": 1,
+            "end": 5,
+            "title": "听力练习 · Questions 1–5",
+            "instruction": "请根据录音内容选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "1",
+                "text": "交通部门试行了什么措施？",
+                "type": "Multiple Choice",
+                "options": [
+                  "公交与地铁换乘优惠",
+                  "所有线路免费",
+                  "取消公交站点",
+                  "提高停车费用"
+                ],
+                "section": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "录音开头明确说明试行公交与地铁换乘优惠。"
+              },
+              {
+                "number": "2",
+                "text": "居民对公共交通主要担心什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "司机年龄",
+                  "换乘时间不确定和站点距离",
+                  "车辆颜色",
+                  "车票没有图案"
+                ],
+                "section": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "材料列出换乘时间不确定、站点距离较远两项顾虑。"
+              },
+              {
+                "number": "3",
+                "text": "部门先选择了几条线路调整？",
+                "type": "Multiple Choice",
+                "options": [
+                  "两条",
+                  "十条",
+                  "三条",
+                  "一条"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "原文说选择三条客流较大的线路。"
+              },
+              {
+                "number": "4",
+                "text": "试行期间还记录了什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "乘客身高",
+                  "车站建筑价格",
+                  "司机家庭情况",
+                  "换乘等待时间和投诉内容"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "交通部门记录等待时间和乘客投诉，而不只统计乘客总数。"
+              },
+              {
+                "number": "5",
+                "text": "下一步部门准备怎样调整？",
+                "type": "Multiple Choice",
+                "options": [
+                  "根据不同时段需求调整发车频率",
+                  "所有线路统一增加车辆",
+                  "取消周末服务",
+                  "只改善票价"
+                ],
+                "section": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "材料结尾说明根据不同时间段需求调整发车频率。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "1",
+            "text": "交通部门试行了什么措施？",
+            "type": "Multiple Choice",
+            "options": [
+              "公交与地铁换乘优惠",
+              "所有线路免费",
+              "取消公交站点",
+              "提高停车费用"
+            ],
+            "section": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "录音开头明确说明试行公交与地铁换乘优惠。"
+          },
+          {
+            "number": "2",
+            "text": "居民对公共交通主要担心什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "司机年龄",
+              "换乘时间不确定和站点距离",
+              "车辆颜色",
+              "车票没有图案"
+            ],
+            "section": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "材料列出换乘时间不确定、站点距离较远两项顾虑。"
+          },
+          {
+            "number": "3",
+            "text": "部门先选择了几条线路调整？",
+            "type": "Multiple Choice",
+            "options": [
+              "两条",
+              "十条",
+              "三条",
+              "一条"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "原文说选择三条客流较大的线路。"
+          },
+          {
+            "number": "4",
+            "text": "试行期间还记录了什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "乘客身高",
+              "车站建筑价格",
+              "司机家庭情况",
+              "换乘等待时间和投诉内容"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "交通部门记录等待时间和乘客投诉，而不只统计乘客总数。"
+          },
+          {
+            "number": "5",
+            "text": "下一步部门准备怎样调整？",
+            "type": "Multiple Choice",
+            "options": [
+              "根据不同时段需求调整发车频率",
+              "所有线路统一增加车辆",
+              "取消周末服务",
+              "只改善票价"
+            ],
+            "section": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "材料结尾说明根据不同时间段需求调整发车频率。"
+          }
+        ]
+      },
+      "answerKey": {
+        "1": "A",
+        "2": "B",
+        "3": "C",
+        "4": "D",
+        "5": "A"
+      },
+      "explanations": {
+        "1": "录音开头明确说明试行公交与地铁换乘优惠。",
+        "2": "材料列出换乘时间不确定、站点距离较远两项顾虑。",
+        "3": "原文说选择三条客流较大的线路。",
+        "4": "交通部门记录等待时间和乘客投诉，而不只统计乘客总数。",
+        "5": "材料结尾说明根据不同时间段需求调整发车频率。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 07",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Listening · 5 câu · Chờ Admin tải audio",
+      "statusLabel": "Chờ Admin tải audio",
+      "buttonLabel": "Làm bài sau khi có audio",
+      "coverUrl": "/achievement-2.png"
+    },
+    {
+      "skill": "reading",
+      "volume": 6,
+      "testNo": 207,
+      "title": "XANH LÁ · HSK6 · ĐỀ 07 · READING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 12,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu đọc hiểu. Đoạn văn được biên soạn mới cho bộ luyện tập này.",
+        "passages": [
+          {
+            "title": "公共交通与城市出行",
+            "text": "评价一座城市的交通系统，不能只看道路有多宽或车辆有多少，还要观察居民从出发点到目的地是否方便。过去，一些城市把投资重点放在增加线路和建设大型车站上，却忽略了换乘通道、步行距离和信息提示等细节。对老年人、带孩子的家长以及携带行李的乘客来说，几分钟的额外步行也可能影响出行选择。近年来，部分城市开始把公交、地铁和公共自行车纳入统一规划，并在车站周围改善人行道和指引系统。与此同时，实时到站信息可以帮助乘客安排时间，但如果数据更新不准确，反而会降低信任。因此，交通部门需要定期检查信息系统，并根据不同时间段的客流调整班次。良好的公共交通不是单纯追求速度，而是让更多人能够以稳定、可预测的方式完成日常出行。"
+          }
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_read_1",
+            "unit": 1,
+            "passage": 1,
+            "start": 81,
+            "end": 85,
+            "title": "阅读理解 · Questions 81–85",
+            "instruction": "请阅读文章并选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "81",
+                "text": "评价交通系统时还应关注什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "车辆广告数量",
+                  "车站附近房价",
+                  "居民出行是否方便",
+                  "道路颜色是否统一"
+                ],
+                "passage": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "文章首段强调从出发点到目的地是否方便。"
+              },
+              {
+                "number": "82",
+                "text": "过去部分城市忽略了哪些细节？",
+                "type": "Multiple Choice",
+                "options": [
+                  "大型车站设计",
+                  "道路宽度",
+                  "车辆数量",
+                  "换乘通道、步行距离和信息提示"
+                ],
+                "passage": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "材料指出过去投资重点之外，忽略了换乘、步行和提示细节。"
+              },
+              {
+                "number": "83",
+                "text": "哪些乘客可能更受额外步行影响？",
+                "type": "Multiple Choice",
+                "options": [
+                  "老年人、带孩子的家长和带行李者",
+                  "只开车的人",
+                  "交通工作人员",
+                  "附近商店老板"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "文章具体列出这几类乘客。"
+              },
+              {
+                "number": "84",
+                "text": "实时到站信息有什么潜在问题？",
+                "type": "Multiple Choice",
+                "options": [
+                  "无法显示站点名称",
+                  "数据不准确会降低信任",
+                  "会增加车辆重量",
+                  "一定会延长路程"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "原文提醒信息若更新不准确，反而会降低信任。"
+              },
+              {
+                "number": "85",
+                "text": "作者如何概括良好公共交通？",
+                "type": "Multiple Choice",
+                "options": [
+                  "只服务商业区",
+                  "减少所有换乘",
+                  "让更多人稳定、可预测地出行",
+                  "只追求速度"
+                ],
+                "passage": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "结尾强调稳定和可预测的日常出行。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "81",
+            "text": "评价交通系统时还应关注什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "车辆广告数量",
+              "车站附近房价",
+              "居民出行是否方便",
+              "道路颜色是否统一"
+            ],
+            "passage": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "文章首段强调从出发点到目的地是否方便。"
+          },
+          {
+            "number": "82",
+            "text": "过去部分城市忽略了哪些细节？",
+            "type": "Multiple Choice",
+            "options": [
+              "大型车站设计",
+              "道路宽度",
+              "车辆数量",
+              "换乘通道、步行距离和信息提示"
+            ],
+            "passage": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "材料指出过去投资重点之外，忽略了换乘、步行和提示细节。"
+          },
+          {
+            "number": "83",
+            "text": "哪些乘客可能更受额外步行影响？",
+            "type": "Multiple Choice",
+            "options": [
+              "老年人、带孩子的家长和带行李者",
+              "只开车的人",
+              "交通工作人员",
+              "附近商店老板"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "文章具体列出这几类乘客。"
+          },
+          {
+            "number": "84",
+            "text": "实时到站信息有什么潜在问题？",
+            "type": "Multiple Choice",
+            "options": [
+              "无法显示站点名称",
+              "数据不准确会降低信任",
+              "会增加车辆重量",
+              "一定会延长路程"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "原文提醒信息若更新不准确，反而会降低信任。"
+          },
+          {
+            "number": "85",
+            "text": "作者如何概括良好公共交通？",
+            "type": "Multiple Choice",
+            "options": [
+              "只服务商业区",
+              "减少所有换乘",
+              "让更多人稳定、可预测地出行",
+              "只追求速度"
+            ],
+            "passage": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "结尾强调稳定和可预测的日常出行。"
+          }
+        ]
+      },
+      "answerKey": {
+        "81": "C",
+        "82": "D",
+        "83": "A",
+        "84": "B",
+        "85": "C"
+      },
+      "explanations": {
+        "81": "文章首段强调从出发点到目的地是否方便。",
+        "82": "材料指出过去投资重点之外，忽略了换乘、步行和提示细节。",
+        "83": "文章具体列出这几类乘客。",
+        "84": "原文提醒信息若更新不准确，反而会降低信任。",
+        "85": "结尾强调稳定和可预测的日常出行。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 07",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Reading · 5 câu",
+      "statusLabel": "Sẵn sàng luyện tập",
+      "buttonLabel": "Làm bài",
+      "coverUrl": "/achievement-1.png"
+    },
+    {
+      "skill": "writing",
+      "volume": 6,
+      "testNo": 207,
+      "title": "XANH LÁ · HSK6 · ĐỀ 07 · WRITING",
+      "questionType": "Summary Writing",
+      "durationMinutes": 45,
+      "totalQuestions": 1,
+      "content": {
+        "instructions": "HSK6 缩写练习 · 约400字。提交后由 AI 按内容忠实度、信息完整度、结构连贯性和语言准确性给出反馈。",
+        "questions": [
+          {
+            "number": "1",
+            "task": "缩写作文",
+            "text": "请仔细阅读下面的文章，然后将其缩写成一篇约400字的短文。\n要求：保留主要事实、原因、过程和结论；不要加入个人观点；语言简洁、连贯。\n\n【题目】以使用者体验改善城市交通\n【原文】\n城市交通建设常常需要投入大量资金，因此规划者必须决定先解决哪些问题。过去，一些项目把重点放在修建新道路或扩大车站规模上，但居民实际出行时仍可能遇到换乘距离过长、指示不清楚或到站时间不准确等困难。近年来，交通部门开始通过调查和数据分析了解乘客的真实体验。例如，在公交与地铁衔接处设置清晰标志，把实时车辆信息接入手机应用，并根据早晚高峰和周末的客流调整发车频率。这样的改变不一定需要大规模工程，却可能明显减少等待和寻找路线的时间。与此同时，交通系统还应考虑不同人群的需求。老年人、带孩子的家长和行动不便者可能需要更平缓的通道、更多座位以及容易理解的信息。专家认为，交通建设的目标不只是让车辆移动得更快，而是让乘客能够安全、稳定地完成整个出行过程。因此，城市应把设施投资、信息管理和日常维护结合起来，并持续听取使用者的意见。",
+            "sourceText": "城市交通建设常常需要投入大量资金，因此规划者必须决定先解决哪些问题。过去，一些项目把重点放在修建新道路或扩大车站规模上，但居民实际出行时仍可能遇到换乘距离过长、指示不清楚或到站时间不准确等困难。近年来，交通部门开始通过调查和数据分析了解乘客的真实体验。例如，在公交与地铁衔接处设置清晰标志，把实时车辆信息接入手机应用，并根据早晚高峰和周末的客流调整发车频率。这样的改变不一定需要大规模工程，却可能明显减少等待和寻找路线的时间。与此同时，交通系统还应考虑不同人群的需求。老年人、带孩子的家长和行动不便者可能需要更平缓的通道、更多座位以及容易理解的信息。专家认为，交通建设的目标不只是让车辆移动得更快，而是让乘客能够安全、稳定地完成整个出行过程。因此，城市应把设施投资、信息管理和日常维护结合起来，并持续听取使用者的意见。",
+            "min": 350,
+            "max": 450,
+            "direction": "Giữ nguyên ý chính, không thêm quan điểm cá nhân."
+          }
+        ]
+      },
+      "answerKey": {},
+      "explanations": {
+        "1": "Bài viết được đánh giá theo độ trung thành với văn bản nguồn, mức độ đầy đủ ý, mạch lạc và độ chính xác ngôn ngữ."
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 07",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Writing · 缩写作文 · 约400字",
+      "statusLabel": "AI chấm bài",
+      "buttonLabel": "Viết bài",
+      "coverUrl": "/achievement-3.png"
+    },
+    {
+      "skill": "listening",
+      "volume": 6,
+      "testNo": 208,
+      "title": "XANH LÁ · HSK6 · ĐỀ 08 · LISTENING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 8,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu. Audio đang chờ Admin tải lên. Không có audio trong gói patch.",
+        "sections": [
+          "第一部分 · 请根据录音内容选择正确答案。"
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_listen_1",
+            "unit": 1,
+            "section": 1,
+            "start": 1,
+            "end": 5,
+            "title": "听力练习 · Questions 1–5",
+            "instruction": "请根据录音内容选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "1",
+                "text": "机构检查过去五年的什么记录？",
+                "type": "Multiple Choice",
+                "options": [
+                  "采购合同",
+                  "实验记录",
+                  "财务报表",
+                  "员工考勤"
+                ],
+                "section": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "录音明确说检查过去五年的实验记录。"
+              },
+              {
+                "number": "2",
+                "text": "不同团队结果难以比较的原因是什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "实验时间太短",
+                  "研究人员人数太多",
+                  "数据记录方式不统一",
+                  "设备品牌完全不同"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "材料指出各团队记录数据的方式不统一，且样本筛选说明不足。"
+              },
+              {
+                "number": "3",
+                "text": "新模板要求保存哪些内容？",
+                "type": "Multiple Choice",
+                "options": [
+                  "只保存最后结论",
+                  "只保存设备照片",
+                  "只保存会议纪要",
+                  "原始数据、处理步骤和异常情况"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "负责人要求保存原始数据、处理步骤和异常情况。"
+              },
+              {
+                "number": "4",
+                "text": "哪些资料不能随意传播？",
+                "type": "Multiple Choice",
+                "options": [
+                  "涉及个人信息或未完成验证的内容",
+                  "所有已经公开的数据",
+                  "实验设备名称",
+                  "公开发表的标题"
+                ],
+                "section": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "录音强调这两类内容需要按照规范处理。"
+              },
+              {
+                "number": "5",
+                "text": "新制度实施后有什么变化？",
+                "type": "Multiple Choice",
+                "options": [
+                  "重复实验成本必然上升",
+                  "团队间复核更容易",
+                  "复核更困难",
+                  "记录整理时间减少为零"
+                ],
+                "section": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "材料指出整理时间增加，但复核更容易、重复实验成本下降。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "1",
+            "text": "机构检查过去五年的什么记录？",
+            "type": "Multiple Choice",
+            "options": [
+              "采购合同",
+              "实验记录",
+              "财务报表",
+              "员工考勤"
+            ],
+            "section": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "录音明确说检查过去五年的实验记录。"
+          },
+          {
+            "number": "2",
+            "text": "不同团队结果难以比较的原因是什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "实验时间太短",
+              "研究人员人数太多",
+              "数据记录方式不统一",
+              "设备品牌完全不同"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "材料指出各团队记录数据的方式不统一，且样本筛选说明不足。"
+          },
+          {
+            "number": "3",
+            "text": "新模板要求保存哪些内容？",
+            "type": "Multiple Choice",
+            "options": [
+              "只保存最后结论",
+              "只保存设备照片",
+              "只保存会议纪要",
+              "原始数据、处理步骤和异常情况"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "负责人要求保存原始数据、处理步骤和异常情况。"
+          },
+          {
+            "number": "4",
+            "text": "哪些资料不能随意传播？",
+            "type": "Multiple Choice",
+            "options": [
+              "涉及个人信息或未完成验证的内容",
+              "所有已经公开的数据",
+              "实验设备名称",
+              "公开发表的标题"
+            ],
+            "section": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "录音强调这两类内容需要按照规范处理。"
+          },
+          {
+            "number": "5",
+            "text": "新制度实施后有什么变化？",
+            "type": "Multiple Choice",
+            "options": [
+              "重复实验成本必然上升",
+              "团队间复核更容易",
+              "复核更困难",
+              "记录整理时间减少为零"
+            ],
+            "section": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "材料指出整理时间增加，但复核更容易、重复实验成本下降。"
+          }
+        ]
+      },
+      "answerKey": {
+        "1": "B",
+        "2": "C",
+        "3": "D",
+        "4": "A",
+        "5": "B"
+      },
+      "explanations": {
+        "1": "录音明确说检查过去五年的实验记录。",
+        "2": "材料指出各团队记录数据的方式不统一，且样本筛选说明不足。",
+        "3": "负责人要求保存原始数据、处理步骤和异常情况。",
+        "4": "录音强调这两类内容需要按照规范处理。",
+        "5": "材料指出整理时间增加，但复核更容易、重复实验成本下降。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 08",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Listening · 5 câu · Chờ Admin tải audio",
+      "statusLabel": "Chờ Admin tải audio",
+      "buttonLabel": "Làm bài sau khi có audio",
+      "coverUrl": "/achievement-2.png"
+    },
+    {
+      "skill": "reading",
+      "volume": 6,
+      "testNo": 208,
+      "title": "XANH LÁ · HSK6 · ĐỀ 08 · READING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 12,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu đọc hiểu. Đoạn văn được biên soạn mới cho bộ luyện tập này.",
+        "passages": [
+          {
+            "title": "科学研究与数据可重复性",
+            "text": "科学研究的价值不仅在于提出新结论，也在于让其他研究者能够理解结论是如何产生的。如果实验过程缺少详细记录，即使结果看起来十分重要，也很难判断它是否受到偶然因素影响。近年来，许多研究机构开始重视数据管理，要求研究人员保存原始记录，并说明数据清理、样本排除和统计方法。这样的要求会增加前期工作量，却能够减少后续争议。数据共享也需要明确边界：涉及个人隐私、商业机密或尚未完成审核的资料，不应在缺少授权的情况下公开。对研究者而言，规范记录并不是行政负担，而是保证研究可信度的一部分。只有当方法、数据和分析过程都能够被追踪，学术讨论才有可靠的基础。"
+          }
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_read_1",
+            "unit": 1,
+            "passage": 1,
+            "start": 81,
+            "end": 85,
+            "title": "阅读理解 · Questions 81–85",
+            "instruction": "请阅读文章并选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "81",
+                "text": "科学研究的价值还包括什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "尽量减少实验记录",
+                  "只追求发表速度",
+                  "避免接受同行意见",
+                  "让其他研究者理解结论产生过程"
+                ],
+                "passage": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "首段指出还要让其他研究者理解结论如何产生。"
+              },
+              {
+                "number": "82",
+                "text": "缺少详细记录会带来什么困难？",
+                "type": "Multiple Choice",
+                "options": [
+                  "无法判断结果是否受偶然因素影响",
+                  "设备一定会损坏",
+                  "研究经费自动减少",
+                  "样本数量一定增加"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "文章说明缺少记录难以判断偶然因素的影响。"
+              },
+              {
+                "number": "83",
+                "text": "机构要求研究人员说明哪些步骤？",
+                "type": "Multiple Choice",
+                "options": [
+                  "论文排版方式",
+                  "数据清理、样本排除和统计方法",
+                  "装修和采购步骤",
+                  "个人职业计划"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "材料明确列出数据清理、样本排除和统计方法。"
+              },
+              {
+                "number": "84",
+                "text": "哪些资料不应缺少授权就公开？",
+                "type": "Multiple Choice",
+                "options": [
+                  "公开发表的摘要",
+                  "设备使用说明",
+                  "个人隐私、商业机密或未审核资料",
+                  "已经公开的研究标题"
+                ],
+                "passage": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "文章列出这三类需要谨慎处理的资料。"
+              },
+              {
+                "number": "85",
+                "text": "作者如何看待规范记录？",
+                "type": "Multiple Choice",
+                "options": [
+                  "纯粹的行政负担",
+                  "可以完全由软件代替",
+                  "会阻止学术讨论",
+                  "保证研究可信度的一部分"
+                ],
+                "passage": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "结尾指出规范记录是保证研究可信度的一部分。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "81",
+            "text": "科学研究的价值还包括什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "尽量减少实验记录",
+              "只追求发表速度",
+              "避免接受同行意见",
+              "让其他研究者理解结论产生过程"
+            ],
+            "passage": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "首段指出还要让其他研究者理解结论如何产生。"
+          },
+          {
+            "number": "82",
+            "text": "缺少详细记录会带来什么困难？",
+            "type": "Multiple Choice",
+            "options": [
+              "无法判断结果是否受偶然因素影响",
+              "设备一定会损坏",
+              "研究经费自动减少",
+              "样本数量一定增加"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "文章说明缺少记录难以判断偶然因素的影响。"
+          },
+          {
+            "number": "83",
+            "text": "机构要求研究人员说明哪些步骤？",
+            "type": "Multiple Choice",
+            "options": [
+              "论文排版方式",
+              "数据清理、样本排除和统计方法",
+              "装修和采购步骤",
+              "个人职业计划"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "材料明确列出数据清理、样本排除和统计方法。"
+          },
+          {
+            "number": "84",
+            "text": "哪些资料不应缺少授权就公开？",
+            "type": "Multiple Choice",
+            "options": [
+              "公开发表的摘要",
+              "设备使用说明",
+              "个人隐私、商业机密或未审核资料",
+              "已经公开的研究标题"
+            ],
+            "passage": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "文章列出这三类需要谨慎处理的资料。"
+          },
+          {
+            "number": "85",
+            "text": "作者如何看待规范记录？",
+            "type": "Multiple Choice",
+            "options": [
+              "纯粹的行政负担",
+              "可以完全由软件代替",
+              "会阻止学术讨论",
+              "保证研究可信度的一部分"
+            ],
+            "passage": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "结尾指出规范记录是保证研究可信度的一部分。"
+          }
+        ]
+      },
+      "answerKey": {
+        "81": "D",
+        "82": "A",
+        "83": "B",
+        "84": "C",
+        "85": "D"
+      },
+      "explanations": {
+        "81": "首段指出还要让其他研究者理解结论如何产生。",
+        "82": "文章说明缺少记录难以判断偶然因素的影响。",
+        "83": "材料明确列出数据清理、样本排除和统计方法。",
+        "84": "文章列出这三类需要谨慎处理的资料。",
+        "85": "结尾指出规范记录是保证研究可信度的一部分。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 08",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Reading · 5 câu",
+      "statusLabel": "Sẵn sàng luyện tập",
+      "buttonLabel": "Làm bài",
+      "coverUrl": "/achievement-1.png"
+    },
+    {
+      "skill": "writing",
+      "volume": 6,
+      "testNo": 208,
+      "title": "XANH LÁ · HSK6 · ĐỀ 08 · WRITING",
+      "questionType": "Summary Writing",
+      "durationMinutes": 45,
+      "totalQuestions": 1,
+      "content": {
+        "instructions": "HSK6 缩写练习 · 约400字。提交后由 AI 按内容忠实度、信息完整度、结构连贯性和语言准确性给出反馈。",
+        "questions": [
+          {
+            "number": "1",
+            "task": "缩写作文",
+            "text": "请仔细阅读下面的文章，然后将其缩写成一篇约400字的短文。\n要求：保留主要事实、原因、过程和结论；不要加入个人观点；语言简洁、连贯。\n\n【题目】数据管理与科研可信度\n【原文】\n随着科研项目规模扩大，研究工作越来越依赖不同团队之间的数据交换与结果复核。过去，有些研究人员习惯只保存最终图表和结论，认为实验过程中的记录并不重要。然而，当其他团队试图重复实验时，常常发现缺少样本筛选、数据处理和异常情况说明，因而难以判断结果差异来自方法还是偶然因素。为改善这种状况，一些机构开始制定统一的数据管理规范，要求研究人员保存原始数据、记录修改过程，并说明统计方法。规范化工作会增加项目初期的时间成本，但可以减少后期重复整理和沟通的困难。与此同时，数据共享也不能忽略隐私和授权问题。涉及个人信息或商业机密的资料需要受到保护，尚未完成验证的数据也应明确标注状态。专家认为，科研可信度不仅取决于研究者是否诚实，也取决于记录是否完整、方法是否透明以及其他人能否进行合理复核。数据管理因此不再是项目结束后的整理工作，而应贯穿研究全过程。",
+            "sourceText": "随着科研项目规模扩大，研究工作越来越依赖不同团队之间的数据交换与结果复核。过去，有些研究人员习惯只保存最终图表和结论，认为实验过程中的记录并不重要。然而，当其他团队试图重复实验时，常常发现缺少样本筛选、数据处理和异常情况说明，因而难以判断结果差异来自方法还是偶然因素。为改善这种状况，一些机构开始制定统一的数据管理规范，要求研究人员保存原始数据、记录修改过程，并说明统计方法。规范化工作会增加项目初期的时间成本，但可以减少后期重复整理和沟通的困难。与此同时，数据共享也不能忽略隐私和授权问题。涉及个人信息或商业机密的资料需要受到保护，尚未完成验证的数据也应明确标注状态。专家认为，科研可信度不仅取决于研究者是否诚实，也取决于记录是否完整、方法是否透明以及其他人能否进行合理复核。数据管理因此不再是项目结束后的整理工作，而应贯穿研究全过程。",
+            "min": 350,
+            "max": 450,
+            "direction": "Giữ nguyên ý chính, không thêm quan điểm cá nhân."
+          }
+        ]
+      },
+      "answerKey": {},
+      "explanations": {
+        "1": "Bài viết được đánh giá theo độ trung thành với văn bản nguồn, mức độ đầy đủ ý, mạch lạc và độ chính xác ngôn ngữ."
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 08",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Writing · 缩写作文 · 约400字",
+      "statusLabel": "AI chấm bài",
+      "buttonLabel": "Viết bài",
+      "coverUrl": "/achievement-3.png"
+    },
+    {
+      "skill": "listening",
+      "volume": 6,
+      "testNo": 209,
+      "title": "XANH LÁ · HSK6 · ĐỀ 09 · LISTENING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 8,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu. Audio đang chờ Admin tải lên. Không có audio trong gói patch.",
+        "sections": [
+          "第一部分 · 请根据录音内容选择正确答案。"
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_listen_1",
+            "unit": 1,
+            "section": 1,
+            "start": 1,
+            "end": 5,
+            "title": "听力练习 · Questions 1–5",
+            "instruction": "请根据录音内容选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "1",
+                "text": "过去游客主要集中在哪里？",
+                "type": "Multiple Choice",
+                "options": [
+                  "学校操场",
+                  "城外农田",
+                  "几条商业街",
+                  "居民住宅内部"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "材料指出过去游客主要集中在几条商业街。"
+              },
+              {
+                "number": "2",
+                "text": "新计划邀请哪些人共同设计路线？",
+                "type": "Multiple Choice",
+                "options": [
+                  "只有旅行社",
+                  "只有政府官员",
+                  "只邀请游客",
+                  "手工艺人、居民和导览员"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "录音明确列出这三类参与者。"
+              },
+              {
+                "number": "3",
+                "text": "为什么路线限制每日人数？",
+                "type": "Multiple Choice",
+                "options": [
+                  "避免旅游活动影响居民生活",
+                  "为了提高门票价格",
+                  "因为街区没有历史",
+                  "为了减少讲解内容"
+                ],
+                "section": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "材料说明限制人数是为了避免影响居民生活。"
+              },
+              {
+                "number": "4",
+                "text": "拍摄前需要做什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "购买纪念品",
+                  "征得同意",
+                  "支付额外费用",
+                  "登记家庭收入"
+                ],
+                "section": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "规定拍摄前需要征得同意。"
+              },
+              {
+                "number": "5",
+                "text": "部分旅游收入下一阶段将用于什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "购买私人住宅",
+                  "奖励外地旅行社",
+                  "公共设施维护",
+                  "扩大商业广告"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "负责人表示将把部分收入用于公共设施维护。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "1",
+            "text": "过去游客主要集中在哪里？",
+            "type": "Multiple Choice",
+            "options": [
+              "学校操场",
+              "城外农田",
+              "几条商业街",
+              "居民住宅内部"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "材料指出过去游客主要集中在几条商业街。"
+          },
+          {
+            "number": "2",
+            "text": "新计划邀请哪些人共同设计路线？",
+            "type": "Multiple Choice",
+            "options": [
+              "只有旅行社",
+              "只有政府官员",
+              "只邀请游客",
+              "手工艺人、居民和导览员"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "录音明确列出这三类参与者。"
+          },
+          {
+            "number": "3",
+            "text": "为什么路线限制每日人数？",
+            "type": "Multiple Choice",
+            "options": [
+              "避免旅游活动影响居民生活",
+              "为了提高门票价格",
+              "因为街区没有历史",
+              "为了减少讲解内容"
+            ],
+            "section": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "材料说明限制人数是为了避免影响居民生活。"
+          },
+          {
+            "number": "4",
+            "text": "拍摄前需要做什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "购买纪念品",
+              "征得同意",
+              "支付额外费用",
+              "登记家庭收入"
+            ],
+            "section": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "规定拍摄前需要征得同意。"
+          },
+          {
+            "number": "5",
+            "text": "部分旅游收入下一阶段将用于什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "购买私人住宅",
+              "奖励外地旅行社",
+              "公共设施维护",
+              "扩大商业广告"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "负责人表示将把部分收入用于公共设施维护。"
+          }
+        ]
+      },
+      "answerKey": {
+        "1": "C",
+        "2": "D",
+        "3": "A",
+        "4": "B",
+        "5": "C"
+      },
+      "explanations": {
+        "1": "材料指出过去游客主要集中在几条商业街。",
+        "2": "录音明确列出这三类参与者。",
+        "3": "材料说明限制人数是为了避免影响居民生活。",
+        "4": "规定拍摄前需要征得同意。",
+        "5": "负责人表示将把部分收入用于公共设施维护。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 09",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Listening · 5 câu · Chờ Admin tải audio",
+      "statusLabel": "Chờ Admin tải audio",
+      "buttonLabel": "Làm bài sau khi có audio",
+      "coverUrl": "/achievement-2.png"
+    },
+    {
+      "skill": "reading",
+      "volume": 6,
+      "testNo": 209,
+      "title": "XANH LÁ · HSK6 · ĐỀ 09 · READING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 12,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu đọc hiểu. Đoạn văn được biên soạn mới cho bộ luyện tập này.",
+        "passages": [
+          {
+            "title": "文化旅游与社区参与",
+            "text": "文化旅游常常被视为带动地方经济的方式，但游客数量增加并不一定意味着社区获得了同等收益。如果旅游路线只经过热门商店，历史街区里的普通居民和传统行业可能仍然处于边缘。近年来，一些地方开始邀请居民参与旅游内容设计，让讲解不仅介绍建筑年代，也呈现当地人的生活经验。这样的做法能够增加路线的独特性，也使居民更愿意保护生活环境。不过，参与式旅游需要明确规则，例如限制团队规模、避免在居民休息时间进入巷道，并在拍摄人物前征求同意。地方政府还应公开旅游收入的使用方式，使居民知道公共设施如何得到改善。只有当居民能够参与决策并分享合理收益，文化旅游才可能成为长期的社区发展项目。"
+          }
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_read_1",
+            "unit": 1,
+            "passage": 1,
+            "start": 81,
+            "end": 85,
+            "title": "阅读理解 · Questions 81–85",
+            "instruction": "请阅读文章并选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "81",
+                "text": "游客增加为什么不一定让社区同等受益？",
+                "type": "Multiple Choice",
+                "options": [
+                  "旅游路线可能只经过热门商店",
+                  "游客不需要购买商品",
+                  "历史建筑会自动消失",
+                  "当地居民都搬走了"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "文章指出路线如果只经过热门商店，普通居民和传统行业可能被忽视。"
+              },
+              {
+                "number": "82",
+                "text": "居民参与内容设计有什么作用？",
+                "type": "Multiple Choice",
+                "options": [
+                  "让游客不能提问",
+                  "呈现当地生活经验并增强路线特色",
+                  "只增加门票价格",
+                  "减少历史介绍"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "材料说明参与能够呈现生活经验并增加路线独特性。"
+              },
+              {
+                "number": "83",
+                "text": "参与式旅游需要哪些规则？",
+                "type": "Multiple Choice",
+                "options": [
+                  "禁止居民参与",
+                  "取消公共设施维护",
+                  "避开居民休息时间并征得拍摄同意",
+                  "无限制扩大团队"
+                ],
+                "passage": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "文章列出团队规模、居民休息时间和拍摄同意等规则。"
+              },
+              {
+                "number": "84",
+                "text": "政府为什么应公开旅游收入的使用方式？",
+                "type": "Multiple Choice",
+                "options": [
+                  "为了隐藏项目成本",
+                  "减少居民意见",
+                  "鼓励游客离开",
+                  "让居民了解公共设施如何改善"
+                ],
+                "passage": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "原文说明公开收入使用方式，使居民知道公共设施如何改善。"
+              },
+              {
+                "number": "85",
+                "text": "文化旅游长期发展的条件是什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "居民参与决策并分享合理收益",
+                  "只要游客数量增加",
+                  "只由旅行社决定路线",
+                  "完全不设置管理规则"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "结尾强调居民参与决策和分享合理收益。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "81",
+            "text": "游客增加为什么不一定让社区同等受益？",
+            "type": "Multiple Choice",
+            "options": [
+              "旅游路线可能只经过热门商店",
+              "游客不需要购买商品",
+              "历史建筑会自动消失",
+              "当地居民都搬走了"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "文章指出路线如果只经过热门商店，普通居民和传统行业可能被忽视。"
+          },
+          {
+            "number": "82",
+            "text": "居民参与内容设计有什么作用？",
+            "type": "Multiple Choice",
+            "options": [
+              "让游客不能提问",
+              "呈现当地生活经验并增强路线特色",
+              "只增加门票价格",
+              "减少历史介绍"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "材料说明参与能够呈现生活经验并增加路线独特性。"
+          },
+          {
+            "number": "83",
+            "text": "参与式旅游需要哪些规则？",
+            "type": "Multiple Choice",
+            "options": [
+              "禁止居民参与",
+              "取消公共设施维护",
+              "避开居民休息时间并征得拍摄同意",
+              "无限制扩大团队"
+            ],
+            "passage": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "文章列出团队规模、居民休息时间和拍摄同意等规则。"
+          },
+          {
+            "number": "84",
+            "text": "政府为什么应公开旅游收入的使用方式？",
+            "type": "Multiple Choice",
+            "options": [
+              "为了隐藏项目成本",
+              "减少居民意见",
+              "鼓励游客离开",
+              "让居民了解公共设施如何改善"
+            ],
+            "passage": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "原文说明公开收入使用方式，使居民知道公共设施如何改善。"
+          },
+          {
+            "number": "85",
+            "text": "文化旅游长期发展的条件是什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "居民参与决策并分享合理收益",
+              "只要游客数量增加",
+              "只由旅行社决定路线",
+              "完全不设置管理规则"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "结尾强调居民参与决策和分享合理收益。"
+          }
+        ]
+      },
+      "answerKey": {
+        "81": "A",
+        "82": "B",
+        "83": "C",
+        "84": "D",
+        "85": "A"
+      },
+      "explanations": {
+        "81": "文章指出路线如果只经过热门商店，普通居民和传统行业可能被忽视。",
+        "82": "材料说明参与能够呈现生活经验并增加路线独特性。",
+        "83": "文章列出团队规模、居民休息时间和拍摄同意等规则。",
+        "84": "原文说明公开收入使用方式，使居民知道公共设施如何改善。",
+        "85": "结尾强调居民参与决策和分享合理收益。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 09",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Reading · 5 câu",
+      "statusLabel": "Sẵn sàng luyện tập",
+      "buttonLabel": "Làm bài",
+      "coverUrl": "/achievement-1.png"
+    },
+    {
+      "skill": "writing",
+      "volume": 6,
+      "testNo": 209,
+      "title": "XANH LÁ · HSK6 · ĐỀ 09 · WRITING",
+      "questionType": "Summary Writing",
+      "durationMinutes": 45,
+      "totalQuestions": 1,
+      "content": {
+        "instructions": "HSK6 缩写练习 · 约400字。提交后由 AI 按内容忠实度、信息完整度、结构连贯性和语言准确性给出反馈。",
+        "questions": [
+          {
+            "number": "1",
+            "task": "缩写作文",
+            "text": "请仔细阅读下面的文章，然后将其缩写成一篇约400字的短文。\n要求：保留主要事实、原因、过程和结论；不要加入个人观点；语言简洁、连贯。\n\n【题目】旅游发展与居民生活的平衡\n【原文】\n近年来，许多历史街区通过发展文化旅游增加地方收入。游客可以参观古建筑、购买传统商品，也能了解当地的历史故事。然而，如果旅游开发只关注游客数量和商业收益，居民可能面对噪声、拥挤和生活空间被占用等问题。一些地方因此开始邀请居民、手工艺人和导览人员共同设计路线，并根据街区承载能力限制每日团队人数。拍摄居民或进入仍在使用的工作空间前，也需要征得当事人同意。这样的规则不仅保护居民权益，也使游客能够获得更真实的文化体验。与此同时，旅游收入的使用方式应当公开，部分资金可以用于道路、照明和公共设施维护。专家认为，文化遗产并不是只供游客观看的商品，它首先属于仍然生活在当地的人。只有当社区能够参与决策、分享合理收益，并在旅游活动中保持正常生活，文化旅游才有可能长期发展。地方管理者还需要定期听取居民意见，根据实际变化调整路线和服务方式，而不是把一次规划视为永久不变的方案。",
+            "sourceText": "近年来，许多历史街区通过发展文化旅游增加地方收入。游客可以参观古建筑、购买传统商品，也能了解当地的历史故事。然而，如果旅游开发只关注游客数量和商业收益，居民可能面对噪声、拥挤和生活空间被占用等问题。一些地方因此开始邀请居民、手工艺人和导览人员共同设计路线，并根据街区承载能力限制每日团队人数。拍摄居民或进入仍在使用的工作空间前，也需要征得当事人同意。这样的规则不仅保护居民权益，也使游客能够获得更真实的文化体验。与此同时，旅游收入的使用方式应当公开，部分资金可以用于道路、照明和公共设施维护。专家认为，文化遗产并不是只供游客观看的商品，它首先属于仍然生活在当地的人。只有当社区能够参与决策、分享合理收益，并在旅游活动中保持正常生活，文化旅游才有可能长期发展。地方管理者还需要定期听取居民意见，根据实际变化调整路线和服务方式，而不是把一次规划视为永久不变的方案。",
+            "min": 350,
+            "max": 450,
+            "direction": "Giữ nguyên ý chính, không thêm quan điểm cá nhân."
+          }
+        ]
+      },
+      "answerKey": {},
+      "explanations": {
+        "1": "Bài viết được đánh giá theo độ trung thành với văn bản nguồn, mức độ đầy đủ ý, mạch lạc và độ chính xác ngôn ngữ."
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 09",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Writing · 缩写作文 · 约400字",
+      "statusLabel": "AI chấm bài",
+      "buttonLabel": "Viết bài",
+      "coverUrl": "/achievement-3.png"
+    },
+    {
+      "skill": "listening",
+      "volume": 6,
+      "testNo": 210,
+      "title": "XANH LÁ · HSK6 · ĐỀ 10 · LISTENING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 8,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu. Audio đang chờ Admin tải lên. Không có audio trong gói patch.",
+        "sections": [
+          "第一部分 · 请根据录音内容选择正确答案。"
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_listen_1",
+            "unit": 1,
+            "section": 1,
+            "start": 1,
+            "end": 5,
+            "title": "听力练习 · Questions 1–5",
+            "instruction": "请根据录音内容选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "1",
+                "text": "企业推出了什么服务？",
+                "type": "Multiple Choice",
+                "options": [
+                  "免费更换所有家电",
+                  "停止销售旧产品",
+                  "只提供广告咨询",
+                  "延长产品使用寿命的服务"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "录音开头明确说明推出延长产品使用寿命的服务。"
+              },
+              {
+                "number": "2",
+                "text": "消费者过去为什么常选择更换新产品？",
+                "type": "Multiple Choice",
+                "options": [
+                  "维修价格不透明或缺少零件",
+                  "产品颜色太少",
+                  "维修时间过短",
+                  "家电不能联网"
+                ],
+                "section": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "材料列出维修价格不透明和缺少零件两个原因。"
+              },
+              {
+                "number": "3",
+                "text": "企业现在公布什么信息？",
+                "type": "Multiple Choice",
+                "options": [
+                  "竞争对手销量",
+                  "常见零件价格",
+                  "员工工资",
+                  "消费者住址"
+                ],
+                "section": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "录音说企业公布常见零件价格。"
+              },
+              {
+                "number": "4",
+                "text": "企业在设计产品时增加了哪些指标？",
+                "type": "Multiple Choice",
+                "options": [
+                  "广告是否醒目",
+                  "产品是否一次性使用",
+                  "零件是否容易拆卸和单独更换",
+                  "包装是否豪华"
+                ],
+                "section": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "企业把拆卸便利和零件单独更换纳入设计评估。"
+              },
+              {
+                "number": "5",
+                "text": "回收旧零件前必须做什么？",
+                "type": "Multiple Choice",
+                "options": [
+                  "立即重新销售",
+                  "销毁全部零件",
+                  "只检查外观颜色",
+                  "确认材料是否适合再次使用"
+                ],
+                "section": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "材料明确说回收前要确认材料是否适合再次使用。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "1",
+            "text": "企业推出了什么服务？",
+            "type": "Multiple Choice",
+            "options": [
+              "免费更换所有家电",
+              "停止销售旧产品",
+              "只提供广告咨询",
+              "延长产品使用寿命的服务"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "录音开头明确说明推出延长产品使用寿命的服务。"
+          },
+          {
+            "number": "2",
+            "text": "消费者过去为什么常选择更换新产品？",
+            "type": "Multiple Choice",
+            "options": [
+              "维修价格不透明或缺少零件",
+              "产品颜色太少",
+              "维修时间过短",
+              "家电不能联网"
+            ],
+            "section": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "材料列出维修价格不透明和缺少零件两个原因。"
+          },
+          {
+            "number": "3",
+            "text": "企业现在公布什么信息？",
+            "type": "Multiple Choice",
+            "options": [
+              "竞争对手销量",
+              "常见零件价格",
+              "员工工资",
+              "消费者住址"
+            ],
+            "section": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "录音说企业公布常见零件价格。"
+          },
+          {
+            "number": "4",
+            "text": "企业在设计产品时增加了哪些指标？",
+            "type": "Multiple Choice",
+            "options": [
+              "广告是否醒目",
+              "产品是否一次性使用",
+              "零件是否容易拆卸和单独更换",
+              "包装是否豪华"
+            ],
+            "section": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "企业把拆卸便利和零件单独更换纳入设计评估。"
+          },
+          {
+            "number": "5",
+            "text": "回收旧零件前必须做什么？",
+            "type": "Multiple Choice",
+            "options": [
+              "立即重新销售",
+              "销毁全部零件",
+              "只检查外观颜色",
+              "确认材料是否适合再次使用"
+            ],
+            "section": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "材料明确说回收前要确认材料是否适合再次使用。"
+          }
+        ]
+      },
+      "answerKey": {
+        "1": "D",
+        "2": "A",
+        "3": "B",
+        "4": "C",
+        "5": "D"
+      },
+      "explanations": {
+        "1": "录音开头明确说明推出延长产品使用寿命的服务。",
+        "2": "材料列出维修价格不透明和缺少零件两个原因。",
+        "3": "录音说企业公布常见零件价格。",
+        "4": "企业把拆卸便利和零件单独更换纳入设计评估。",
+        "5": "材料明确说回收前要确认材料是否适合再次使用。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 10",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Listening · 5 câu · Chờ Admin tải audio",
+      "statusLabel": "Chờ Admin tải audio",
+      "buttonLabel": "Làm bài sau khi có audio",
+      "coverUrl": "/achievement-2.png"
+    },
+    {
+      "skill": "reading",
+      "volume": 6,
+      "testNo": 210,
+      "title": "XANH LÁ · HSK6 · ĐỀ 10 · READING",
+      "questionType": "Multiple Choice",
+      "durationMinutes": 12,
+      "totalQuestions": 5,
+      "content": {
+        "instructions": "XANH LÁ · HSK6 · Bài luyện tập rút gọn: 5 câu đọc hiểu. Đoạn văn được biên soạn mới cho bộ luyện tập này.",
+        "passages": [
+          {
+            "title": "维修经济与可持续消费",
+            "text": "现代消费社会中，产品更新速度越来越快，但大量仍可使用的物品也因此被提前丢弃。维修经济试图改变这种习惯，让产品在出现故障后有机会继续使用。它不仅需要维修人员和零件供应，还需要制造企业在设计阶段考虑可拆卸性和材料替换。对于消费者来说，维修是否方便、价格是否透明，会直接影响他们的选择。如果维修费用接近购买新产品的价格，许多人自然会选择更换。因此，企业可以通过公开零件价格、提供维修手册和建立服务网络降低维修门槛。与此同时，并非所有旧零件都适合再次使用，涉及安全和性能的部件必须经过检测。专家认为，维修经济不是要求消费者永远不购买新产品，而是让购买、使用、维修和回收之间形成更合理的循环。"
+          }
+        ],
+        "question_groups": [
+          {
+            "id": "xanh_read_1",
+            "unit": 1,
+            "passage": 1,
+            "start": 81,
+            "end": 85,
+            "title": "阅读理解 · Questions 81–85",
+            "instruction": "请阅读文章并选择正确答案。",
+            "type": "Multiple Choice",
+            "questions": [
+              {
+                "number": "81",
+                "text": "维修经济希望改变什么习惯？",
+                "type": "Multiple Choice",
+                "options": [
+                  "减少产品设计",
+                  "提前丢弃仍可使用的物品",
+                  "购买维修工具",
+                  "分享产品说明书"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "首段指出大量仍可使用的物品被提前丢弃，维修经济希望改变这一习惯。"
+              },
+              {
+                "number": "82",
+                "text": "制造企业应在什么时候考虑可拆卸性？",
+                "type": "Multiple Choice",
+                "options": [
+                  "广告投放阶段",
+                  "售后投诉结束后",
+                  "产品设计阶段",
+                  "产品报废以后"
+                ],
+                "passage": 1,
+                "answer": "C",
+                "correctAnswer": "C",
+                "explanation": "原文说明企业应在设计阶段考虑可拆卸性和材料替换。"
+              },
+              {
+                "number": "83",
+                "text": "维修费用为什么影响消费者选择？",
+                "type": "Multiple Choice",
+                "options": [
+                  "费用越高越容易维修",
+                  "维修价格与选择无关",
+                  "消费者只看包装",
+                  "若接近新产品价格，消费者可能选择更换"
+                ],
+                "passage": 1,
+                "answer": "D",
+                "correctAnswer": "D",
+                "explanation": "材料指出维修费用接近购买新产品时，很多人会选择更换。"
+              },
+              {
+                "number": "84",
+                "text": "哪些旧零件需要经过检测？",
+                "type": "Multiple Choice",
+                "options": [
+                  "所有安全相关部件",
+                  "只有包装材料",
+                  "没有使用过的零件",
+                  "所有外观标签"
+                ],
+                "passage": 1,
+                "answer": "A",
+                "correctAnswer": "A",
+                "explanation": "原文提醒涉及安全和性能的部件必须经过检测。"
+              },
+              {
+                "number": "85",
+                "text": "作者如何理解维修经济？",
+                "type": "Multiple Choice",
+                "options": [
+                  "完全停止产品更新",
+                  "让购买、使用、维修和回收形成循环",
+                  "要求永远不买新产品",
+                  "只增加维修店数量"
+                ],
+                "passage": 1,
+                "answer": "B",
+                "correctAnswer": "B",
+                "explanation": "结尾概括为购买、使用、维修和回收之间形成合理循环。"
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "number": "81",
+            "text": "维修经济希望改变什么习惯？",
+            "type": "Multiple Choice",
+            "options": [
+              "减少产品设计",
+              "提前丢弃仍可使用的物品",
+              "购买维修工具",
+              "分享产品说明书"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "首段指出大量仍可使用的物品被提前丢弃，维修经济希望改变这一习惯。"
+          },
+          {
+            "number": "82",
+            "text": "制造企业应在什么时候考虑可拆卸性？",
+            "type": "Multiple Choice",
+            "options": [
+              "广告投放阶段",
+              "售后投诉结束后",
+              "产品设计阶段",
+              "产品报废以后"
+            ],
+            "passage": 1,
+            "answer": "C",
+            "correctAnswer": "C",
+            "explanation": "原文说明企业应在设计阶段考虑可拆卸性和材料替换。"
+          },
+          {
+            "number": "83",
+            "text": "维修费用为什么影响消费者选择？",
+            "type": "Multiple Choice",
+            "options": [
+              "费用越高越容易维修",
+              "维修价格与选择无关",
+              "消费者只看包装",
+              "若接近新产品价格，消费者可能选择更换"
+            ],
+            "passage": 1,
+            "answer": "D",
+            "correctAnswer": "D",
+            "explanation": "材料指出维修费用接近购买新产品时，很多人会选择更换。"
+          },
+          {
+            "number": "84",
+            "text": "哪些旧零件需要经过检测？",
+            "type": "Multiple Choice",
+            "options": [
+              "所有安全相关部件",
+              "只有包装材料",
+              "没有使用过的零件",
+              "所有外观标签"
+            ],
+            "passage": 1,
+            "answer": "A",
+            "correctAnswer": "A",
+            "explanation": "原文提醒涉及安全和性能的部件必须经过检测。"
+          },
+          {
+            "number": "85",
+            "text": "作者如何理解维修经济？",
+            "type": "Multiple Choice",
+            "options": [
+              "完全停止产品更新",
+              "让购买、使用、维修和回收形成循环",
+              "要求永远不买新产品",
+              "只增加维修店数量"
+            ],
+            "passage": 1,
+            "answer": "B",
+            "correctAnswer": "B",
+            "explanation": "结尾概括为购买、使用、维修和回收之间形成合理循环。"
+          }
+        ]
+      },
+      "answerKey": {
+        "81": "B",
+        "82": "C",
+        "83": "D",
+        "84": "A",
+        "85": "B"
+      },
+      "explanations": {
+        "81": "首段指出大量仍可使用的物品被提前丢弃，维修经济希望改变这一习惯。",
+        "82": "原文说明企业应在设计阶段考虑可拆卸性和材料替换。",
+        "83": "材料指出维修费用接近购买新产品时，很多人会选择更换。",
+        "84": "原文提醒涉及安全和性能的部件必须经过检测。",
+        "85": "结尾概括为购买、使用、维修和回收之间形成合理循环。"
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 10",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Reading · 5 câu",
+      "statusLabel": "Sẵn sàng luyện tập",
+      "buttonLabel": "Làm bài",
+      "coverUrl": "/achievement-1.png"
+    },
+    {
+      "skill": "writing",
+      "volume": 6,
+      "testNo": 210,
+      "title": "XANH LÁ · HSK6 · ĐỀ 10 · WRITING",
+      "questionType": "Summary Writing",
+      "durationMinutes": 45,
+      "totalQuestions": 1,
+      "content": {
+        "instructions": "HSK6 缩写练习 · 约400字。提交后由 AI 按内容忠实度、信息完整度、结构连贯性和语言准确性给出反馈。",
+        "questions": [
+          {
+            "number": "1",
+            "task": "缩写作文",
+            "text": "请仔细阅读下面的文章，然后将其缩写成一篇约400字的短文。\n要求：保留主要事实、原因、过程和结论；不要加入个人观点；语言简洁、连贯。\n\n【题目】从一次性消费走向循环使用\n【原文】\n随着工业生产和物流体系发展，消费者能够以较低成本购买各种新产品，但产品更新速度加快也带来了资源浪费。许多设备出现小故障后，因为维修零件难以获得、价格不透明或维修流程复杂，最终被直接丢弃。维修经济希望通过改善服务和产品设计，让物品尽可能延长使用寿命。制造企业可以在设计阶段考虑零件拆卸和替换，公开常见零件价格，并为维修人员提供必要的技术资料。社区维修点则能够缩短服务距离，使消费者更容易获得帮助。不过，循环使用并不意味着所有旧部件都可以重新投入市场。涉及安全和性能的零件必须经过检测，不符合标准的材料应按规定处理。消费者也需要了解维修与更换的实际成本，作出更合理的选择。专家认为，真正可持续的消费不是简单减少购买，而是让产品从设计、生产、使用到维修和回收形成完整循环。只有企业、维修服务机构和消费者共同承担责任，资源利用效率才会得到持续改善。",
+            "sourceText": "随着工业生产和物流体系发展，消费者能够以较低成本购买各种新产品，但产品更新速度加快也带来了资源浪费。许多设备出现小故障后，因为维修零件难以获得、价格不透明或维修流程复杂，最终被直接丢弃。维修经济希望通过改善服务和产品设计，让物品尽可能延长使用寿命。制造企业可以在设计阶段考虑零件拆卸和替换，公开常见零件价格，并为维修人员提供必要的技术资料。社区维修点则能够缩短服务距离，使消费者更容易获得帮助。不过，循环使用并不意味着所有旧部件都可以重新投入市场。涉及安全和性能的零件必须经过检测，不符合标准的材料应按规定处理。消费者也需要了解维修与更换的实际成本，作出更合理的选择。专家认为，真正可持续的消费不是简单减少购买，而是让产品从设计、生产、使用到维修和回收形成完整循环。只有企业、维修服务机构和消费者共同承担责任，资源利用效率才会得到持续改善。",
+            "min": 350,
+            "max": 450,
+            "direction": "Giữ nguyên ý chính, không thêm quan điểm cá nhân."
+          }
+        ]
+      },
+      "answerKey": {},
+      "explanations": {
+        "1": "Bài viết được đánh giá theo độ trung thành với văn bản nguồn, mức độ đầy đủ ý, mạch lạc và độ chính xác ngôn ngữ."
+      },
+      "audioUrl": "",
+      "sourceFile": "XANH_LA_HSK6_ORIGINAL_PRACTICE_V1",
+      "sourceUrl": "",
+      "seriesLabel": "XANH LÁ · HSK6",
+      "displayTestLabel": "ĐỀ 10",
+      "cardLabel": "XANH LÁ",
+      "cardSubtitle": "HSK6 · Writing · 缩写作文 · 约400字",
+      "statusLabel": "AI chấm bài",
+      "buttonLabel": "Viết bài",
+      "coverUrl": "/achievement-3.png"
+    }
+  ]
+}
