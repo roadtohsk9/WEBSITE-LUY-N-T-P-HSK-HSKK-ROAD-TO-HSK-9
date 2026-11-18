@@ -8,7 +8,7 @@ const { URL } = require('url');
 const { Pool } = require('pg');
 const { gradeWriting, gradeSpeaking, isProWriting, isProSpeaking } = require('./ai-grading');
 const { gradeHskkWithDeepSeek, isDeepSeekConfigured: isHskkAiConfigured } = require('./hskk-deepseek');
-const { gradeHskWriting, gradeHskTranslation } = require('./hsk-writing-grading');
+const { gradeHskWriting, gradeHskTranslation, gradeHsk6SummaryWriting } = require('./hsk-writing-grading');
 
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT || 3000);
@@ -166,6 +166,53 @@ async function seedHsk5Papers(){
     }catch(e){console.error('HSK5 paper seed failed for',t.title||t.testNo,e?.message||e);}
   }
   if(inserted||updated||skipped) console.log(`HSK5 full papers seed: ${inserted} inserted, ${updated} updated, ${skipped} unchanged.`);
+}
+
+async function seedHsk4Volume4Papers(){
+  const seedPath=path.join(DATA_DIR,'hsk4_vol4_20_papers_seed.json');
+  if(!pool || !fs.existsSync(seedPath)) return;
+  let pack;
+  try{pack=JSON.parse(fs.readFileSync(seedPath,'utf8'));}
+  catch(e){console.error('HSK4 VOL4 seed read failed:',e);return;}
+  let processed=0,skipped=0;
+  for(const t of (pack.tests||[])){
+    try{
+      const skill=String(t.skill||'').toLowerCase();
+      const sourceFile=String(t.sourceFile||'');
+      const qCount=Array.isArray(t.content?.questions)?t.content.questions.length:0;
+      const expected=skill==='reading'?40:skill==='writing'?10:0;
+      const validSource=/^HSK4_20_DE_SIEU_KHO_PDF_IMPORT_(READING|WRITING)_\d{2}$/.test(sourceFile);
+      const valid=validSource && ['reading','writing'].includes(skill) && Number(t.volume)===4 && Number(t.testNo)>=401 && Number(t.testNo)<=420 && qCount===expected && Object.keys(t.answerKey||{}).length===expected && Object.keys(t.explanations||{}).length===expected;
+      if(!valid){skipped++;console.warn('HSK4 VOL4 seed skipped invalid item:',sourceFile);continue;}
+      if(skill==='reading' && (!Array.isArray(t.content?.passages)||t.content.passages.length!==12||!Array.isArray(t.content?.question_groups)||t.content.question_groups.length!==12)){
+        skipped++;console.warn('HSK4 Reading seed skipped incomplete passages/groups:',sourceFile);continue;
+      }
+      if(skill==='writing' && (qCount!==10 || (t.content.questions||[]).some(q=>!Array.isArray(q.wordBank)||!q.wordBank.length))){
+        skipped++;console.warn('HSK4 Writing seed skipped incomplete word bank:',sourceFile);continue;
+      }
+      const result=await dbQuery(`INSERT INTO practice_tests(
+        id,skill,volume,test_no,title,question_type,duration_minutes,total_questions,
+        content,answer_key,explanations,audio_url,source_file,source_url,
+        series_label,display_test_label,card_label,card_subtitle,status_label,button_label,cover_url,published
+      ) VALUES($1,$2,4,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb,'',$11,'',$12,$13,$14,$15,$16,$17,'',TRUE)
+      ON CONFLICT(skill,volume,test_no) DO UPDATE SET
+        title=EXCLUDED.title,question_type=EXCLUDED.question_type,duration_minutes=EXCLUDED.duration_minutes,
+        total_questions=EXCLUDED.total_questions,content=EXCLUDED.content,answer_key=EXCLUDED.answer_key,
+        explanations=EXCLUDED.explanations,source_file=EXCLUDED.source_file,source_url=EXCLUDED.source_url,
+        series_label=EXCLUDED.series_label,display_test_label=EXCLUDED.display_test_label,
+        card_label=EXCLUDED.card_label,card_subtitle=EXCLUDED.card_subtitle,status_label=EXCLUDED.status_label,
+        button_label=EXCLUDED.button_label,published=TRUE,updated_at=NOW()
+      WHERE LEFT(practice_tests.source_file,LENGTH('HSK4_20_DE_SIEU_KHO_PDF_IMPORT_'))='HSK4_20_DE_SIEU_KHO_PDF_IMPORT_'`,[
+        crypto.randomUUID(),skill,Number(t.testNo),String(t.title||''),String(t.questionType||''),
+        Number(t.durationMinutes||(skill==='reading'?40:15)),Number(t.totalQuestions||expected),
+        JSON.stringify(t.content||{}),JSON.stringify(t.answerKey||{}),JSON.stringify(t.explanations||{}),
+        sourceFile,String(t.seriesLabel||'HSK4 · VOL 4 · 20 BỘ ĐỀ SIÊU KHÓ'),String(t.displayTestLabel||`ĐỀ ${String(t.testNo).slice(-2)}`),
+        String(t.cardLabel||`HSK4 ${skill.toUpperCase()}`),String(t.cardSubtitle||''),String(t.statusLabel||'Sẵn sàng luyện tập'),String(t.buttonLabel||'Làm bài')
+      ]);
+      if(result.rowCount) processed++; else skipped++;
+    }catch(e){console.error('HSK4 VOL4 seed failed for',t.title||t.testNo,e?.message||e);}
+  }
+  if(processed||skipped) console.log(`HSK4 VOL4 seed: ${processed} inserted/updated, ${skipped} skipped.`);
 }
 
 async function seedCourses(){
@@ -460,6 +507,16 @@ async function initDB(){
     UNIQUE(version,level,test_no)
   )`);
   await dbQuery(`CREATE INDEX IF NOT EXISTS hskk_exams_published_idx ON hskk_exams(published,version,level,updated_at DESC)`);
+  // Store HSKK prompt audio in PostgreSQL so uploads survive Render redeploys/restarts.
+  await dbQuery(`CREATE TABLE IF NOT EXISTS hskk_audio_assets (
+    id UUID PRIMARY KEY,
+    original_name TEXT NOT NULL DEFAULT '',
+    mime_type TEXT NOT NULL DEFAULT 'application/octet-stream',
+    data BYTEA NOT NULL,
+    size_bytes BIGINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`);
+  await dbQuery(`CREATE INDEX IF NOT EXISTS hskk_audio_assets_created_idx ON hskk_audio_assets(created_at DESC)`);
   await dbQuery(`CREATE TABLE IF NOT EXISTS hskk_attempts (
     id UUID PRIMARY KEY,
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -691,6 +748,7 @@ async function initDB(){
   await seedHsk6Papers();
   await seedHsk5Papers();
   await seedHsk6NovemberReadingPapers();
+  await seedHsk4Volume4Papers();
   await migrateLegacySubmissions();
 }
 
@@ -895,6 +953,52 @@ async function api(req,res,url){
   if(url.pathname==='/api/health' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} return json(res,200,{ok:true,service:'HSK Exam API',database:!!pool}); }
   if(url.pathname==='/api/ai/status' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} const keyConfigured=!!String(process.env.DEEPSEEK_API_KEY||'').trim(); return json(res,200,{ok:true,configured:keyConfigured,service:'AI',serverSideKey:keyConfigured,writesToDatabase:!!pool}); }
   if(url.pathname==='/api/hskk/ai-status' && (req.method==='GET'||req.method==='HEAD')){ if(req.method==='HEAD'){res.writeHead(200);return res.end()} return json(res,200,{ok:true,configured:isHskkAiConfigured(),service:'AI'}); }
+
+  // Public, range-capable audio delivery. The UUID URL is stored in the exam JSON.
+  const hskkAudioMatch=url.pathname.match(/^\/api\/hskk\/audio\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
+  if(hskkAudioMatch && (req.method==='GET'||req.method==='HEAD')){
+    const id=hskkAudioMatch[1];
+    const columns=req.method==='HEAD'?'mime_type,original_name,octet_length(data)::bigint AS size_bytes':'mime_type,original_name,data,octet_length(data)::bigint AS size_bytes';
+    const row=(await dbQuery(`SELECT ${columns} FROM hskk_audio_assets WHERE id=$1 LIMIT 1`,[id])).rows[0];
+    if(!row)return json(res,404,{ok:false,message:'Không tìm thấy audio.'});
+    const size=Number(row.size_bytes||0);
+    const headers={
+      'Content-Type':String(row.mime_type||contentType(row.original_name||'')),
+      'Accept-Ranges':'bytes',
+      'Cache-Control':'public, max-age=31536000, immutable',
+      'X-Content-Type-Options':'nosniff'
+    };
+    if(req.method==='HEAD'){
+      res.writeHead(200,{...headers,'Content-Length':size});
+      return res.end();
+    }
+    const audio=Buffer.isBuffer(row.data)?row.data:Buffer.from(row.data||[]);
+    const range=String(req.headers.range||'').trim();
+    if(range){
+      const match=range.match(/^bytes=(\d*)-(\d*)$/i);
+      if(!match||(!match[1]&&!match[2])){
+        res.writeHead(416,{...headers,'Content-Range':`bytes */${size}`,'Content-Length':'0'});
+        return res.end();
+      }
+      let start,end;
+      if(match[1]===''){
+        const suffix=Number(match[2]);
+        if(!Number.isFinite(suffix)||suffix<=0){res.writeHead(416,{...headers,'Content-Range':`bytes */${size}`,'Content-Length':'0'});return res.end();}
+        start=Math.max(0,size-suffix);end=size-1;
+      }else{
+        start=Number(match[1]);end=match[2]===''?size-1:Number(match[2]);
+        if(!Number.isFinite(start)||!Number.isFinite(end)||start<0||start>=size||end<start){
+          res.writeHead(416,{...headers,'Content-Range':`bytes */${size}`,'Content-Length':'0'});return res.end();
+        }
+        end=Math.min(end,size-1);
+      }
+      const length=end-start+1;
+      res.writeHead(206,{...headers,'Content-Range':`bytes ${start}-${end}/${size}`,'Content-Length':length});
+      return res.end(audio.subarray(start,end+1));
+    }
+    res.writeHead(200,{...headers,'Content-Length':size});
+    return res.end(audio);
+  }
 
   if(url.pathname==='/api/hskk/exams' && req.method==='GET'){
     const version=String(url.searchParams.get('version')||'').trim();
@@ -1282,7 +1386,21 @@ async function api(req,res,url){
       try{fs.unlinkSync(f.path)}catch{}
       return json(res,413,{ok:false,message:'Audio phải lớn hơn 0 byte và không vượt quá 80 MB.'});
     }
-    return json(res,201,{ok:true,url:f.url,filename:f.original,mime:f.mime,size:f.size,message:'Đã upload audio cho câu hỏi.'});
+    // The multipart parser writes to a temporary file. Move the durable copy into PostgreSQL.
+    const assetId=crypto.randomUUID();
+    try{
+      const audioBytes=await fs.promises.readFile(f.path);
+      const mimeType=String(f.mime||contentType(f.original)||'application/octet-stream').split(';')[0].trim();
+      await dbQuery(`INSERT INTO hskk_audio_assets(id,original_name,mime_type,data,size_bytes) VALUES($1,$2,$3,$4,$5)`,[
+        assetId,path.basename(String(f.original||'audio')),mimeType,audioBytes,audioBytes.length
+      ]);
+      return json(res,201,{ok:true,url:`/api/hskk/audio/${assetId}`,filename:f.original,mime:mimeType,size:audioBytes.length,message:'Đã upload audio vào kho lưu trữ bền vững.'});
+    }catch(err){
+      console.error('HSKK audio database storage failed:',err);
+      return json(res,500,{ok:false,message:'Không thể lưu audio vào cơ sở dữ liệu. Hãy kiểm tra kết nối và dung lượng database rồi thử lại.'});
+    }finally{
+      try{await fs.promises.unlink(f.path)}catch{}
+    }
   }
   if(url.pathname==='/api/admin/asset/upload' && req.method==='POST'){
     if(!admin(req))return json(res,401,{ok:false,message:'Unauthorized'});
@@ -1558,7 +1676,7 @@ async function api(req,res,url){
     const row=(await dbQuery(`SELECT r.*,s.user_id,s.test_id,s.test_title,s.skill,s.submitted_at FROM ai_skill_reviews r JOIN submissions s ON s.id=r.submission_id WHERE r.submission_id=$1`,[id])).rows[0];
     if(!row || String(row.user_id)!==String(u.id)) return json(res,404,{ok:false,message:'AI review not found.'});
     let ent=null; try{await grantCoursePro(u); ent=await getEntitlement(u.id)}catch{}
-    const isMockTest=['WRITING-TEST-1','SPEAKING-TEST-1'].includes(String(row.test_id||''));
+    const isMockTest=['WRITING-TEST-1','SPEAKING-TEST-1'].includes(String(row.test_id||'')) || String(row.test_id||'').startsWith('HSK6-WRITING-');
     const reviewSkill=String(row.skill).toLowerCase();
     const detailAllowed=isMockTest || (['writing','translation'].includes(reviewSkill)?isProWriting(ent):isProSpeaking(ent));
     const result=typeof row.result==='object'?row.result:{};
@@ -1608,7 +1726,7 @@ async function api(req,res,url){
       const testTitle=String(b.testTitle||'');
       const hskVolume=Number(b.volume||0);
       const hskMode=b.hskMode===true || b.isHsk===true || String(b.examSystem||'').toLowerCase()==='hsk' || /^hsk/i.test(String(b.testId||'')) || (hskVolume>=7 && hskVolume<=9) || /\bHSK\s*(?:7|8|9)(?:\s*[-–]\s*9)?\b/i.test(testTitle);
-      if(skill==='writing' && !b.hsk5Mode && hskMode){
+      if(skill==='writing' && !b.hsk5Mode && !b.hsk4Mode && hskMode){
         const tasks=Array.isArray(b.tasks)?b.tasks:[
           {number:'1',task:'writing',text:String(b.task1Prompt||'')},
           {number:'2',task:'writing',text:String(b.task2Prompt||'')}
@@ -1620,7 +1738,9 @@ async function api(req,res,url){
         await dbQuery(`INSERT INTO ai_skill_reviews(id,submission_id,user_id,skill,model,status,error_message,result) VALUES($1,$2,$3,'writing','AI','pending','','{}'::jsonb) ON CONFLICT(submission_id) DO UPDATE SET model='AI',status='pending',error_message='',result='{}'::jsonb,overall_band=NULL,updated_at=NOW()`,[rid,sid,u.id]);
         setImmediate(async()=>{
           try{
-            const feedback=await gradeHskWriting({tasks,answers,testTitle,volume:b.volume||7});
+            const feedback=(Number(b.volume)===6 && b.hsk6Writing===true)
+              ? await gradeHsk6SummaryWriting({tasks,answers,testTitle})
+              : await gradeHskWriting({tasks,answers,testTitle,volume:b.volume||7});
             await dbQuery(`UPDATE ai_skill_reviews SET model='AI',overall_band=$1,result=$2::jsonb,status='completed',error_message='',updated_at=NOW() WHERE submission_id=$3`,[feedback.overallScore,JSON.stringify(feedback),sid]);
           }catch(err){
             console.error('HSK Writing AI grading failed:',err);
@@ -1630,7 +1750,7 @@ async function api(req,res,url){
         });
         return json(res,202,{ok:true,id:sid,message:'Đã lưu bài viết. AI đang chấm; kết quả sẽ tự động hiển thị khi hoàn tất.',ai:{available:true,status:'pending',label:'AI chấm'}});
       }
-      if(skill==='writing' && !b.hsk5Mode){
+      if(skill==='writing' && !b.hsk5Mode && !b.hsk4Mode){
         const a=b.answers||{};
         const task1Answer=String(a[1]??a['1']??''); const task2Answer=String(a[2]??a['2']??'');
         const wordCount=v=>{const x=v.trim();return x?x.split(/\s+/).length:0};
