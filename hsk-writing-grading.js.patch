@@ -1,0 +1,56 @@
+--- a/hsk-writing-grading.js
++++ b/hsk-writing-grading.js
+@@ -9,7 +9,7 @@
+ const DEEPSEEK_WRITING_MAX_TOKENS = Math.max(3500, Math.min(10000, Number(process.env.DEEPSEEK_WRITING_MAX_TOKENS || 8000)));
+ const DEEPSEEK_API_KEY = () => String(process.env.DEEPSEEK_API_KEY || '').trim();
+ 
+-function requestDeepSeek(prompt) {
++function requestDeepSeek(prompt, maxTokensOverride) {
+   const key = DEEPSEEK_API_KEY();
+   if (!key) return Promise.reject(new Error('AI_NOT_CONFIGURED'));
+   const payload = {
+@@ -21,7 +21,7 @@
+     response_format: { type: 'json_object' },
+     thinking: { type: 'disabled' },
+     temperature: 0.1,
+-    max_tokens: DEEPSEEK_WRITING_MAX_TOKENS
++    max_tokens: Math.max(800, Math.min(10000, Number(maxTokensOverride || DEEPSEEK_WRITING_MAX_TOKENS)))
+   };
+   const body = JSON.stringify(payload);
+   return new Promise((resolve, reject) => {
+@@ -84,23 +84,29 @@
+   });
+ }
+ 
+-function baseInstruction() {
++function baseInstruction(volume) {
++  if (Number(volume) === 6) {
++    return `Bạn là giám khảo luyện viết HSK6 dạng 缩写. Đánh giá nghiêm túc nhưng công bằng, chỉ dựa trên văn bản nguồn và bài làm được cung cấp. Giải thích bằng tiếng Việt tự nhiên, cụ thể; ví dụ tiếng Trung giữ nguyên tiếng Trung. Không bịa chi tiết hoặc lỗi. Phân biệt lỗi ngữ pháp thật với cách diễn đạt chưa tự nhiên. Chấm theo thang 100 và nêu bằng chứng từ bài làm. Đây là rubric luyện tập tham khảo, không tự nhận là thang điểm chính thức. Trả về duy nhất JSON hợp lệ, không markdown.`;
++  }
+   return `Bạn là giám khảo chuyên môn HSK 7–9. Hãy đánh giá nghiêm túc nhưng công bằng, chỉ dựa trên bài làm được cung cấp. Toàn bộ giải thích, nhận xét và hướng dẫn phải viết bằng tiếng Việt tự nhiên, cụ thể; ví dụ tiếng Trung phải giữ nguyên tiếng Trung và có thể kèm nghĩa tiếng Việt. Không bịa lỗi. Phân biệt lỗi ngữ pháp thật với cách diễn đạt chưa tự nhiên. Chấm theo thang 100 điểm, có tiêu chí, bằng chứng cụ thể, điểm mạnh, điểm cần cải thiện, sửa lỗi và kế hoạch luyện tập. Không tự giả định có rubric chính thức nếu đề không cung cấp. Trả về duy nhất JSON hợp lệ, không markdown.`;
+ }
+ 
+ async function gradeHskWriting({ tasks, answers, testTitle, volume }) {
+   const normalized = cleanTasks(tasks, answers);
+   if (!normalized.length) throw new Error('HSK_WRITING_TASKS_EMPTY');
+-  const prompt = `${baseInstruction()}
+-NHIỆM VỤ: Chấm kỹ năng VIẾT HSK ${volume || '7–9'}.
+-Xem từng yêu cầu, độ hoàn thành nhiệm vụ, bố cục, mạch lạc, độ chính xác ngữ pháp, vốn từ và văn phong học thuật/ứng dụng phù hợp với đề. Nếu bài gồm văn bản ứng dụng và bài viết theo chủ đề, đánh giá riêng từng phần rồi tính điểm tổng có trọng số hợp lý; nói rõ trọng số đã dùng.
++  const isHsk6Summary = Number(volume) === 6;
++  const taskGuidance = isHsk6Summary
++    ? `NHIỆM VỤ: Chấm bài 缩写作文 HSK6. Ưu tiên 4 tiêu chí: (1) độ trung thành với văn bản nguồn, giữ đúng sự kiện và quan hệ nguyên nhân-kết quả (40 điểm); (2) độ bao quát các ý chính, không bỏ sót luận điểm quan trọng (25 điểm); (3) bố cục và mạch liên kết (20 điểm); (4) ngôn ngữ, từ vựng và độ chính xác (15 điểm). Bài mục tiêu khoảng 400 chữ Hán; không đếm dấu câu/khoảng trắng thành chữ. Không yêu cầu thí sinh thêm quan điểm cá nhân. Chỉ ra chi tiết bị bỏ sót hoặc thêm sai bằng cách đối chiếu văn bản nguồn. Nếu bài trống, không chấm điểm giả.`
++    : `NHIỆM VỤ: Chấm kỹ năng VIẾT HSK ${volume || '7–9'}. Xem từng yêu cầu, độ hoàn thành nhiệm vụ, bố cục, mạch lạc, độ chính xác ngữ pháp, vốn từ và văn phong học thuật/ứng dụng phù hợp với đề. Nếu bài gồm văn bản ứng dụng và bài viết theo chủ đề, đánh giá riêng từng phần rồi tính điểm tổng có trọng số hợp lý; nói rõ trọng số đã dùng.`;
++  const prompt = `${baseInstruction(volume)}
++${taskGuidance}
+ JSON SHAPE:
+ {"overallScore":0,"levelEstimate":"","criteria":[{"name":"Hoàn thành yêu cầu","score":0,"max":100,"feedback":""},{"name":"Bố cục và liên kết","score":0,"max":100,"feedback":""},{"name":"Từ vựng và diễn đạt","score":0,"max":100,"feedback":""},{"name":"Ngữ pháp và độ chính xác","score":0,"max":100,"feedback":""}],"taskReviews":[{"number":"1","score":0,"max":100,"summary":"","strengths":[],"improvements":[]}],"strengths":[],"improvements":[],"corrections":[{"original":"","corrected":"","category":"","explanation":"","betterOption":"","context":""}],"vocabularyUpgrades":[{"original":"","suggestion":"","meaning":"","usage":""}],"overallFeedback":"","actionPlan":[],"takeNotePrompts":[]}
+-Giới hạn: tối đa 30 corrections và 15 vocabularyUpgrades. Với nội dung bỏ trống, không tự tạo bài làm và không chấm điểm giả; overallScore phải phản ánh bài nộp trống. Bằng chứng và ví dụ phải lấy từ câu trả lời thực tế.
++Giới hạn: ${isHsk6Summary ? 'tối đa 12 corrections và 6 vocabularyUpgrades' : 'tối đa 30 corrections và 15 vocabularyUpgrades'}. Với nội dung bỏ trống, không tự tạo bài làm và không chấm điểm giả; overallScore phải phản ánh bài nộp trống. Bằng chứng và ví dụ phải lấy từ câu trả lời thực tế.
+ ĐỀ: ${String(testTitle || '')}
+ DỮ LIỆU BÀI VIẾT:
+ ${JSON.stringify(normalized)}`;
+-  const result = parseJson(await requestDeepSeek(prompt));
++  const result = parseJson(await requestDeepSeek(prompt, isHsk6Summary ? 1800 : undefined));
+   result.overallScore = Math.max(0, Math.min(100, Math.round(Number(result.overallScore) || 0)));
+   delete result.model;
+   return result;

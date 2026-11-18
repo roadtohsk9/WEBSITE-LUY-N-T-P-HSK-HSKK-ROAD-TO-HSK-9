@@ -1,36 +1,41 @@
-# Báo cáo nhập 5 đề HANBAN HSK5
+# Báo cáo PATCH XANH LÁ · HSK6
 
-## Nguồn và phạm vi
-- PDF nguồn: `Đề 5-đã gộp.pdf` do người dùng cung cấp và xác nhận quyền sử dụng.
-- Năm mã đề phát hiện trên bìa: **H51005, H51004, H51003, H51002, H51001**.
-- Mỗi mã được tách thành ba bài độc lập: Listening, Reading, Writing.
-- Audio Listening được để trống (`audioUrl: ""`) để Admin upload sau.
+## Số lượng
 
-## Dữ liệu được chuyển đổi
-| Mã đề | Listening | Reading | Writing | Bài đọc | Đáp án nghe | Đáp án đọc | Đáp án viết 91–98 |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| H51005 | 45 | 45 | 10 | 19 | 45 | 45 | 8 |
-| H51004 | 45 | 45 | 10 | 19 | 45 | 45 | 8 |
-| H51003 | 45 | 45 | 10 | 19 | 45 | 45 | 8 |
-| H51002 | 45 | 45 | 10 | 19 | 45 | 45 | 8 |
-| H51001 | 45 | 45 | 10 | 19 | 45 | 45 | 8 |
+| Kỹ năng | Số bộ | Số câu/nhiệm vụ | Audio |
+|---|---:|---:|---|
+| Listening | 10 | 50 câu trắc nghiệm | Để trống |
+| Reading | 10 | 50 câu đọc hiểu | Không cần |
+| Writing | 10 | 10 bài tóm tắt | Không cần |
+| **Tổng** | **30 bản ghi** | **100 câu trắc nghiệm + 10 bài viết** | **10 audio chờ Admin** |
 
-Tổng số của 5 mã mới: **15 bài tương tác** (5 Listening + 5 Reading + 5 Writing), **500 câu/nhiệm vụ** (225 câu nghe, 225 câu đọc, 50 nhiệm vụ viết), **95 đoạn/bài đọc**, 25 ảnh minh họa Reading và 5 ảnh câu Writing 100.
+## Cách lưu
 
-- Listening: 45 câu mỗi đề; các trường `audioUrl` ở cả cấp bài và `content` đều để trống. Không đính kèm transcript vào dữ liệu làm bài.
-- Reading: 45 câu mỗi đề; giữ các đoạn văn, lựa chọn và đáp án từ PDF. Bao gồm bốn nhóm ở phần 46–60, mười đoạn ngắn ở phần 61–70 và năm bài đọc dài ở phần 71–90. Mã H51001 có ranh giới nhóm đọc 71–73, 74–77, 78–81, 82–86, 87–90 đúng theo PDF.
-- Writing: 10 nhiệm vụ mỗi đề; câu 91–98 có đáp án mẫu trong PDF, câu 99–100 là bài viết mở nên không tạo đáp án giả. Từ gợi ý câu 99 và ảnh gốc câu 100 được giữ.
-- PDF không cung cấp lời giải chi tiết cho từng câu; patch không tự tạo lời giải thay thế.
+- Cấp độ: HSK6 (`volume=6`).
+- Mã nội bộ: `test_no` 201–210 theo từng kỹ năng. Vì `skill` nằm trong khóa duy nhất, mỗi mã có thể có một bản ghi Listening, Reading và Writing.
+- Nhãn hiển thị: `XANH LÁ · HSK6`.
+- Danh mục database: `XANH LÁ`.
+- Audio: trường `audio_url` rỗng ở cả 10 bài Listening.
+- Seed chỉ thêm bản ghi chưa có, không update bản ghi đã tồn tại.
 
-## Bảo toàn dữ liệu HSK5 trước đó
-File seed trong patch là bản tích lũy, gồm:
-- 5 bộ HSK5 đầy đủ đã có (15 bản ghi Listening/Reading/Writing, testNo 101–105).
-- 20 đề dự đoán HSK5 Reading đã nhập trước đó (testNo 5101–5120).
-- 5 mã HANBAN mới (15 bản ghi Listening/Reading/Writing, testNo 106–110).
+## Nội dung và chấm Writing
 
-**Tổng trong file seed sau cập nhật: 50 bản ghi.** Không có xung đột khóa `(skill, volume, testNo)` trong seed tích lũy.
+- 10 bài đọc và 10 bài nghe được biên soạn mới cho gói luyện tập.
+- Mỗi Writing có một văn bản nguồn và yêu cầu 缩写 khoảng 400 chữ Hán.
+- AI chấm theo rubric luyện tập: trung thành nguồn 40, độ bao quát ý 25, bố cục/liên kết 20, ngôn ngữ 15.
+- Giới hạn đầu ra AI HSK6 trong module này là 1.800 tokens để giảm chi phí; nội dung phản hồi tập trung vào điểm, thiếu/sai ý và sửa lỗi quan trọng.
+- Frontend hiển thị bộ đếm chữ Hán, trạng thái “AI chấm” và không hiện tên nhà cung cấp. Trang kết quả dùng nhãn HSK chung để phục vụ cả HSK6 và HSK7–9, không hiện nhầm HSK7–9 cho bộ này.
 
-## Audio và ảnh
-- Audio của năm đề mới được để rỗng, sẵn sàng cho Admin upload sau.
-- Các ảnh gốc được lưu trong `tests/hsk5/`; không xóa các ảnh HSK5 đã có. Hãy gộp thư mục ảnh mới vào thư mục hiện tại.
-- Seeder HSK5 hiện có giữ `audio_url` trong database nếu bản seed mới gửi `audioUrl` rỗng, vì vậy audio của các đề HSK5 cũ không bị reset khi redeploy.
+## Kiểm tra đã thực hiện
+
+- 30 bản ghi JSON hợp lệ.
+- 10 Listening, 10 Reading, 10 Writing.
+- 5 câu/đề cho mỗi kỹ năng trắc nghiệm; đủ lựa chọn A–D, đáp án và giải thích.
+- 10 bài Writing có `sourceText`, yêu cầu và giới hạn độ dài.
+- 10 `audioUrl` Listening đều rỗng.
+- Các file JavaScript đã được kiểm tra cú pháp Node.js; 5 patch áp dụng thành công lên snapshot source nền.
+- Mô phỏng seed kiểm tra `ON CONFLICT DO NOTHING`, không ghi đè bản ghi/audio hiện có.
+
+## Giới hạn
+
+Đây là bộ luyện tập rút gọn biên soạn mới, không phải bản sao nội dung PDF và không phải đề HSK6 hoàn chỉnh theo thời lượng chính thức. Chưa kết nối vào PostgreSQL hoặc deploy Render production của người dùng.

@@ -1,0 +1,18 @@
+--- a/server.js
++++ b/server.js
+@@ -9,6 +9,7 @@
+ const { gradeWriting, gradeSpeaking, isProWriting, isProSpeaking } = require('./ai-grading');
+ const { gradeHskkWithDeepSeek, isDeepSeekConfigured: isHskkAiConfigured } = require('./hskk-deepseek');
+ const { gradeHskWriting, gradeHskTranslation } = require('./hsk-writing-grading');
++const { seedHsk6XanhLaPapers } = require('./hsk6-xanhla-seed');
+ 
+ const ROOT = __dirname;
+ const PORT = Number(process.env.PORT || 3000);
+@@ -639,6 +640,7 @@
+   await seedStoreProducts();
+   await seedPracticeDemos();
+   await seedHsk6Papers();
++  await seedHsk6XanhLaPapers({ dbQuery, DATA_DIR });
+   await seedHsk5Papers();
+   await migrateLegacySubmissions();
+ }
