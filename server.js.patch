@@ -1,18 +1,25 @@
 --- a/server.js
 +++ b/server.js
-@@ -9,6 +9,7 @@
+@@ -6,6 +6,7 @@
+ const AdmZip = require('adm-zip');
+ const { URL } = require('url');
+ const { Pool } = require('pg');
++const { repairHanbanHsk6Duplicates } = require('./hsk6-hanban-dedupe-v2');
  const { gradeWriting, gradeSpeaking, isProWriting, isProSpeaking } = require('./ai-grading');
  const { gradeHskkWithDeepSeek, isDeepSeekConfigured: isHskkAiConfigured } = require('./hskk-deepseek');
  const { gradeHskWriting, gradeHskTranslation } = require('./hsk-writing-grading');
-+const { seedHsk6XanhLaPapers } = require('./hsk6-xanhla-seed');
- 
- const ROOT = __dirname;
- const PORT = Number(process.env.PORT || 3000);
-@@ -639,6 +640,7 @@
+@@ -639,6 +640,14 @@
    await seedStoreProducts();
    await seedPracticeDemos();
    await seedHsk6Papers();
-+  await seedHsk6XanhLaPapers({ dbQuery, DATA_DIR });
++  if (pool) {
++    const hanbanRepair = await repairHanbanHsk6Duplicates(dbQuery);
++    console.log(
++      `HANBAN HSK6 repair: ${hanbanRepair.labelledRows} canonical rows labelled; ` +
++      `${hanbanRepair.hiddenDuplicates} duplicate rows hidden; ` +
++      `${hanbanRepair.missing.length} code/skill pairs not found.`
++    );
++  }
    await seedHsk5Papers();
    await migrateLegacySubmissions();
  }

@@ -1,18 +1,10 @@
 {
   "seriesLabel": "HANBAN",
   "volume": 6,
-  "codes": [
-    "H61328",
-    "H61327",
-    "H61006",
-    "H61005",
-    "H61003",
-    "H61001"
-  ],
-  "existingPracticeTests": 12,
-  "skills": [
-    "listening",
-    "reading"
-  ],
-  "audioUploadAfterDeploy": true
+  "codes": ["H61328", "H61327", "H61006", "H61005", "H61003", "H61001"],
+  "skills": ["listening", "reading"],
+  "expectedCanonicalRows": 12,
+  "inserts": 0,
+  "deletes": 0,
+  "duplicatePolicy": "Keep the most complete row per code+skill and set published=false on extra copies; never delete content or attempt history."
 }
