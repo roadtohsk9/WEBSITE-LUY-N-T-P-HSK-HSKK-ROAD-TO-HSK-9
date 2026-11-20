@@ -1,25 +1,18 @@
 --- a/server.js
 +++ b/server.js
-@@ -6,6 +6,7 @@
- const AdmZip = require('adm-zip');
- const { URL } = require('url');
- const { Pool } = require('pg');
-+const { repairHanbanHsk6Duplicates } = require('./hsk6-hanban-dedupe-v2');
+@@ -9,6 +9,7 @@
  const { gradeWriting, gradeSpeaking, isProWriting, isProSpeaking } = require('./ai-grading');
  const { gradeHskkWithDeepSeek, isDeepSeekConfigured: isHskkAiConfigured } = require('./hskk-deepseek');
- const { gradeHskWriting, gradeHskTranslation } = require('./hsk-writing-grading');
-@@ -639,6 +640,14 @@
-   await seedStoreProducts();
+ const { gradeHskWriting, gradeHskTranslation, gradeHsk6SummaryWriting } = require('./hsk-writing-grading');
++const { seedHsk6JanPredictionReading } = require('./hsk6-jan-reading-seed-v1');
+ 
+ const ROOT = __dirname;
+ const PORT = Number(process.env.PORT || 3000);
+@@ -640,6 +641,7 @@
    await seedPracticeDemos();
    await seedHsk6Papers();
-+  if (pool) {
-+    const hanbanRepair = await repairHanbanHsk6Duplicates(dbQuery);
-+    console.log(
-+      `HANBAN HSK6 repair: ${hanbanRepair.labelledRows} canonical rows labelled; ` +
-+      `${hanbanRepair.hiddenDuplicates} duplicate rows hidden; ` +
-+      `${hanbanRepair.missing.length} code/skill pairs not found.`
-+    );
-+  }
    await seedHsk5Papers();
++  await seedHsk6JanPredictionReading(dbQuery).catch(e => console.error('HSK6 Jan prediction Reading seed failed:', e?.message || e));
    await migrateLegacySubmissions();
  }
+ 
